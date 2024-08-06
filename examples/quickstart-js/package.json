@@ -1,0 +1,24 @@
+{
+  "name": "quickstart-js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"node server.js\"",
+    "build": "vite build",
+    "serve": "concurrently \"vite preview\" \"node server.js\"",
+    "start": "node server.js",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.3.4"
+  },
+  "dependencies": {
+    "axios": "^1.7.3",
+    "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "ultravox-client": "link:/Users/ben/Documents/GitHub/FixieProjects/ultravox-client-sdk-js"
+  }
+}
