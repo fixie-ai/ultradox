@@ -38,6 +38,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
       - name: Print out current commit
         run: |
           echo "Commit: ${{ inputs.commit-sha }}" || echo "No commit sha provided"
