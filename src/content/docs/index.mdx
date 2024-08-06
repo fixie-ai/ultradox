@@ -1,36 +1,33 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash
+title: Ultravox API
+description: Developer documentation for Ultravox API.
+# template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
+  tagline: Build real-time, multimodal AI applications.
   image:
-    file: ../../assets/houston.webp
+    file: ../../assets/logos/UVMarkColor.png
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Quick Start
+      link: /guides/quickstart/
       icon: right-arrow
       variant: primary
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
+    - text: Read the docs
+      link: /reference/example/
+      icon: open-book
+tableOfContents: false
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, Steps, Icon } from '@astrojs/starlight/components';
+
+## Intro text
+Bacon ipsum dolor amet elit et turducken, brisket pariatur sausage nostrud. T-bone nulla aliquip pork loin leberkas corned beef ut shankle fugiat commodo eu. Irure elit esse excepteur filet mignon lorem fugiat incididunt commodo enim cow. Ex chicken sunt, sint venison meatball flank leberkas. Pig incididunt pastrami anim, spare ribs veniam frankfurter excepteur sirloin duis tempor. Ground round magna burgdoggen ea biltong jerky deserunt dolor. Ball tip capicola chicken, magna enim andouille lorem voluptate ea ribeye reprehenderit.
 
 ## Next steps
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
-</CardGrid>
+<Steps>
+1. **Get an API Key** → Apply for an API key at [fixie.ai](https://fixie.ai).
+
+1. **Do the Quickstart** → [Build](/guides/quickstart/) your first voice-enabled AI agent in minutes.
+
+1. **Read the Docs** → Learn more in [the Ultravox Dox](/reference/api/).
+</Steps>
