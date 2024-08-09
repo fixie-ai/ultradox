@@ -1,0 +1,58 @@
+---
+title: Quickstart
+description: Build your first voice powered AI agent in minutes.
+---
+import { Steps } from '@astrojs/starlight/components';
+import SimpleUltravoxDemo from '../../../components/SimpleUltravoxDemo.astro';
+
+:::note[API Key Required]
+The Ultravox API (and the completion of this Quickstart) requires an API key. [Apply for a key](https://forms.gle/BNmUBrqymzH3vkxj8).
+:::
+
+Creating your first voice-powered AI agent with Ultravox is easy.
+This guide will walk you through the process of creating a simple voice-enabled AI agent.
+
+There are three main steps to building a voice-enabled AI agent with the Ultravox API:
+
+<Steps>
+1. **Create a Call** → Construct a `systemPrompt` and choose a `voice` for your AI agent. This returns a `joinUrl` that you use to start the call.
+
+1. **Start the Call** → Using the `joinUrl` from the previous step, start the call which starts a speech-to-speech conversation with your AI agent.
+
+1. **End the Call** → When the conversation is complete, end the call to stop the conversation.
+</Steps>
+
+## Create a Call
+The first step is to create a call. This is done by doing a `POST` to the `/calls` endpoint. Here is what that looks like:
+
+This returns the following response:
+
+The `joinUrl` will be used in the next step.
+
+
+```terminal
+curl --location 'https://api.ultravox.ai/api/calls' \
+--header 'Content-Type: application/json' \
+--header 'X-API-Key: ••••••' \
+--data '{
+    "systemPrompt": "You are an expert on speech-to-speech communication.",
+    "temperature": 0.8,
+}'
+```
+## Start the Call
+TODO
+
+## End the Call
+TODO
+
+## TODO
+```javascript
+console.log('Hello world.');
+```
+
+```python
+print("Hello world.")
+```
+
+## Simple Ultravox Demo
+<SimpleUltravoxDemo />

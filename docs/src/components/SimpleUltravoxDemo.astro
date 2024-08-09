@@ -1,0 +1,126 @@
+---
+---
+<style>
+  .form-container {
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .input-group {
+      margin-bottom: 20px;
+  }
+  .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+  }
+  .input-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+  }
+  .input-group .note {
+      font-size: 0.8em;
+      margin-top: 5px;
+  }
+  .button-group {
+      gap: 10px;
+      margin-bottom: 20px;
+  }
+  .button-group button {
+      width: 100px;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+  }
+  .start-button {
+      background-color: #4CAF50;
+      color: white;
+  }
+  .end-button {
+      background-color: #f44336;
+      color: white;
+  }
+  .section {
+      margin-bottom: 20px;
+  }
+  .section h2 {
+      margin-bottom: 10px;
+  }
+  .scrollable-area {
+      height: 150px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      overflow-y: auto;
+  }
+</style>
+
+<div class="form-container">
+  <h1>Ultravox API Demo</h1>
+  <form>
+    <div class="input-group">
+      <label for="joinUrl">Join URL:</label>
+      <input type="text" id="joinUrl" placeholder="Enter a valid join URL." required />
+      <p class="note">Note: you must manually create this using the \calls endpoint.</p>
+    </div>
+    
+    <div class="button-group">
+      <button type="button" class="start-button" id="startCall">Start Call</button>
+      <button type="button" class="end-button" id="endCall">End Call</button>
+    </div>
+    
+    <div class="section">
+      <h2>Call Status</h2>
+      <div class="scrollable-area" id="callStatus"></div>
+    </div>
+    
+    <div class="section">
+      <h2>Call Transcript</h2>
+      <div class="scrollable-area" id="callTranscript"></div>
+    </div>
+  </form>
+</div>
+
+<script type="module">
+  import { UltravoxSession } from 'https://unpkg.com/ultravox-client/dist/esm/session.js?module';
+  let UVSession = new UltravoxSession();
+  let state;
+
+  function appendUpdate(target, message) {
+    const updateTarget = document.getElementById(target);
+    updateTarget.innerHTML += `<p>${message}</p>`;
+    updateTarget.scrollTop = updateTarget.scrollHeight;
+  }
+
+  // Start Call button click event handler
+  document.getElementById('startCall').onclick = async function() {
+    const joinUrl = document.getElementById('joinUrl').value;
+    if (!joinUrl) {
+      appendUpdate('callStatus', 'Please enter a valid join URL');
+      return;
+    } else {
+      appendUpdate('callStatus', 'Starting call');
+      state = await UVSession.joinCall(joinUrl);
+      appendUpdate('callStatus', `Joining call: ${state.getStatus()}`);
+
+      state.addEventListener('ultravoxSessionStatusChanged', (event) => {
+        appendUpdate('callStatus', `Session status changed: ${event.state}`);
+      });
+
+      state.addEventListener('ultravoxTranscriptsChanged', (event) => {
+        appendUpdate('callTranscript', `Transcripts changed: ${JSON.stringify(event.transcripts)}`);
+      });
+    }
+  };
+
+  // End Call button click event handler
+  document.getElementById('endCall').onclick = async function() {
+    appendUpdate('callStatus', 'Ending call');
+    UVSession.leaveCall();
+  };
+</script>
