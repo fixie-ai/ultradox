@@ -5,11 +5,6 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-// const cors = require('cors');
-// const axios = require('axios');
-// require('dotenv').config();
-
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -32,7 +27,6 @@ app.post('/startCall', async (req, res) => {
 
       // Prepare the payload for the Ultravox API
       const payload = {
-          model: 'fixie-ai/ultravox-v0.2', // Hardcoded model
           temperature: 0.8, // Hardcoded temperature
           systemPrompt: systemPrompt
       };

@@ -26,16 +26,13 @@
 <body>
     <h1>Ultravox API Demo</h1>
     <textarea id="systemPrompt" rows="4" placeholder="Enter system prompt here"></textarea>
-    <button id="getJoinUrl">Get Join URL</button>
-    <input type="text" id="joinUrl" name="joinUrl" readonly>
-    <button id="createCall">Create Call</button>
+    <button id="startCall">Start Call</button>
     <button id="endCall">End Call</button>
     <div id="conversation"></div>
 
     <script type="module">
-      import { createCall, getJoinUrl, endCall } from './main.js';
-      document.getElementById('getJoinUrl').onclick = getJoinUrl;
-      document.getElementById('createCall').onclick = createCall;
+      import { startCall, endCall } from './main.js';
+      document.getElementById('startCall').onclick = startCall;
       document.getElementById('endCall').onclick = endCall;
       
         function connectWebSocket(url) {

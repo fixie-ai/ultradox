@@ -2,10 +2,8 @@ import { UltravoxSession, UltravoxSessionStatus } from 'ultravox-client';
 const apiUrl = 'http://localhost:3000/startCall';
 let UVSession = new UltravoxSession;
 
-export async function getJoinUrl() {
+async function getJoinUrl(systemPrompt) {
   console.log('getJoinUrl called');
-  const systemPrompt = document.getElementById('systemPrompt').value;
-
   const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -19,18 +17,17 @@ export async function getJoinUrl() {
   if (response.ok) {
       const data = await response.json();
       console.log(`Call created: ${JSON.stringify(data)}`);
-
-      const joinUrlBox = document.getElementById('joinUrl');
-      joinUrlBox.value = data.joinUrl;
+      return data.joinUrl;
 
   } else {
       console.error('Error creating call:', await response.text());
   }
 }
 
-export async function createCall() {
+export async function startCall() {
   console.log('createCall called');
-  const joinUrl = document.getElementById('joinUrl').value;
+  const systemPrompt = document.getElementById('systemPrompt').value;
+  const joinUrl = await getJoinUrl(systemPrompt);
   const callStatus = document.getElementById('conversation');
 
   if (!joinUrl) {
@@ -50,7 +47,7 @@ export async function createCall() {
 
     state.addEventListener('ultravoxTranscriptsChanged', (event) => {
       console.log('Transcripts changed:', event.transcripts);
-      appendToConversation(`Transcripts changed: ${event.transcripts}`);
+      appendToConversation(`Transcripts changed: ${JSON.stringify(event.transcripts)}`);
     });
   }
 
