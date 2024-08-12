@@ -3,7 +3,7 @@ title: Quickstart
 description: Build your first voice powered AI agent in minutes.
 ---
 import { Steps } from '@astrojs/starlight/components';
-import SimpleUltravoxDemo from '../../../components/SimpleUltravoxDemo.astro';
+import simpleDemoContent from '../../../../../examples/simple-vanilla-html/UltravoxCall.html?raw';
 
 :::note[API Key Required]
 The Ultravox API (and the completion of this Quickstart) requires an API key. [Apply for a key](https://forms.gle/BNmUBrqymzH3vkxj8).
@@ -15,20 +15,15 @@ This guide will walk you through the process of creating a simple voice-enabled 
 There are three main steps to building a voice-enabled AI agent with the Ultravox API:
 
 <Steps>
-1. **Create a Call** → Construct a `systemPrompt` and choose a `voice` for your AI agent. This returns a `joinUrl` that you use to start the call.
+1. **[Create a Call](#create-a-call)** → Construct a `systemPrompt` and choose a `voice` for your AI agent. This returns a `joinUrl` that you use to start the call.
 
-1. **Start the Call** → Using the `joinUrl` from the previous step, start the call which starts a speech-to-speech conversation with your AI agent.
+1. **[Start the Call](#start-the-call)** → Using the `joinUrl` from the previous step, start the call which starts a speech-to-speech conversation with your AI agent.
 
-1. **End the Call** → When the conversation is complete, end the call to stop the conversation.
+1. **[End the Call](#end-the-call)** → When the conversation is complete, end the call to stop the conversation.
 </Steps>
 
 ## Create a Call
-The first step is to create a call. This is done by doing a `POST` to the `/calls` endpoint. Here is what that looks like:
-
-This returns the following response:
-
-The `joinUrl` will be used in the next step.
-
+The first step is to create a call. This is done by doing a `POST` to the [`/calls`](/api-reference/operations/calls_create) endpoint. Here is what that looks like:
 
 ```terminal
 curl --location 'https://api.ultravox.ai/api/calls' \
@@ -39,20 +34,49 @@ curl --location 'https://api.ultravox.ai/api/calls' \
     "temperature": 0.8,
 }'
 ```
+
+This returns the following response:
+
+```json
+{
+    "uuid": "9b74f1aa-0802-4198-a5f3-cfa89871aebb",
+    "created": "2024-08-12T18:47:22.365692Z",
+    "ended": null,
+    "model": "fixie-ai/ultravox",
+    "systemPrompt": "You are an expert on speech-to-speech communication.",
+    "temperature": 0.8,
+    "voice": null,
+    "languageHint": null,
+    "joinUrl": "wss://voice...app/calls/9b74f1aa-0802-4198-a5f3-cfa89871aebb"
+}
+```
+
+We will ignore `voice` and `languageHint` for now.
+
+`joinUrl` will be used in the next step.
+
 ## Start the Call
-TODO
+Now that we have a `joinUrl`, we can start the call. We will use the `ultravox-client` which can be [found in npm](https://www.npmjs.com/package/ultravox-client).
+
+We need to reference the `ultravox-client` in our front-end, create an `UltravoxSession`, and then call the `joinCall` method:
+
+```html
+<script type="module">
+  import { UltravoxSession } from 'https://unpkg.com/ultravox-client/dist/esm/session.js?module';
+  let UVSession = new UltravoxSession();
+  const joinUrl = "wss://voice...app/calls/9b74f1aa-0802-4198-a5f3-cfa89871aebb" // From the POST to /calls
+  UVSession.joinCall(joinUrl);
+</script>
+```
 
 ## End the Call
-TODO
+When the call is over, simply use the `endCall()` method on the `UltravoxSession` object:
 
-## TODO
 ```javascript
-console.log('Hello world.');
+UVSession.leaveCall();
 ```
 
-```python
-print("Hello world.")
-```
+## Try It:  Simple Ultravox Demo
+Here is a simple demo of a complete call. Full source code for this application can be found in the `examples` folder.
 
-## Simple Ultravox Demo
-<SimpleUltravoxDemo />
+<div set:html={simpleDemoContent}></div>
