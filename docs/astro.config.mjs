@@ -14,14 +14,13 @@ export default defineConfig({
 			// },
 			plugins: [
 				// Generate Ultravox API from OpenAPI spec
-				// starlightOpenAPI([
-				// 	{
-				// 		base: 'api-reference',
-				// 		label: 'API Reference',
-				// 		schema: './src/content/schemas/ultravox.yml',
-				// 		collapsed: true,
-				// 	},
-				// ]),
+				starlightOpenAPI([
+					{
+						base: 'api-reference',
+						schema: './src/content/schemas/ultravox.yml',
+						collapsed: true,
+					},
+				]),
 			],
 			customCss: [
 				'./src/styles/custom.css',
@@ -37,12 +36,10 @@ export default defineConfig({
 			sidebar: [
 				{ label: 'Welcome', link: '/' },
 				{ label: 'Quickstart', link: 'guides/quickstart' },
-				{ label: 'Reference',
+				{ label: 'API Reference',
 					collapsed: false,
 					items: [
-					{ label: 'API Overview', link: 'reference/apioverview' },
-					// { label: 'Architecture', link: 'reference/architecture' },
-					// ...openAPISidebarGroups,
+					...openAPISidebarGroups,
 				]},
 			],
 			components: {

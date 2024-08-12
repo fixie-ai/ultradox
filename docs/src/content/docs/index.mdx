@@ -12,7 +12,7 @@ hero:
       icon: right-arrow
       variant: primary
     - text: Read the docs
-      link: ./reference/apioverview/
+      link: ./api-reference/
       icon: open-book
 tableOfContents: false
 ---
@@ -21,6 +21,25 @@ import { Steps } from '@astrojs/starlight/components';
 ## Intro
 The Ultravox API enables developers to build speech-to-speech AI applications. Built on the open source [Ultravox LLM](https://github.com/fixie-ai/ultravox), the Ultravox API provides a simple REST API for creating calls with AI agents.
 
+
+## Ultravox REST API
+We expect most applications to have a backend that will use the Ultravox REST API to create calls (and secure the API key).
+
+The Ultravox API base url is `http://api.ultravox.ai`.
+
+The API requires an API key and currently provides two endpoints:
+* Calls (`/api/calls`)
+* Voices (`/api/voices`)
+
+### Authorization
+Pass in an API key using the `X-API-Key` header.
+
+### OpenAPI Specification
+There is an [OpenAPI spec](https://github.com/fixie-ai/ultradox/blob/main/docs/src/content/schemas/ultravox.yml) file available in the repo. This spec is also used to generate the [API Reference](./api-reference/). Additionally, you can use the [Ultravox API Playground](https://api.ultravox.ai/api/schema/swagger-ui/) to quickly explore and test the API.
+
+## `ultravox-client`
+You will need to use the `ultravox-client` in any web-based applications. The REST API is used to create calls but the client is needed to join (and end) calls. You can [find it](https://www.npmjs.com/package/ultravox-client) in the npm registry. Please let us know if you need a client for a specific language or framework.
+
 ## Next steps
 
 <Steps>
@@ -28,5 +47,11 @@ The Ultravox API enables developers to build speech-to-speech AI applications. B
 
 1. **Do the Quickstart** → [Build](./guides/quickstart/) your first voice-enabled AI agent in minutes.
 
-1. **Read the Docs** → Learn more in [the Ultravox Dox](./reference/apioverview).
+1. **Read the Docs** → Learn more in [the API Reference](./api-reference).
 </Steps>
+
+:::caution[Under Construction]
+The Ultravox API is under active development. This means you should expect it to get better, faster, stronger, etc. It also means you should that things could break.
+
+If you have questions or would like us to change/add something, please reach out on the [Ultravox Discord](https://discord.gg/Qw6KHxv8YB) or [submit an issue or PR](https://github.com/fixie-ai/ultravox).
+:::
