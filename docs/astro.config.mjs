@@ -4,6 +4,8 @@ import starlightOpenAPI, { openAPISidebarGroups } from 'starlight-openapi';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://fixie-ai.github.io',
+	base: '/ultradox',
 	integrations: [
 		starlight({
 			title: 'Ultravox API',
