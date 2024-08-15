@@ -47,7 +47,7 @@ jobs:
 
       - name: Copy Ultravox Schema File
         run: |
-          cp fixie/src/ultravox/schema.yml ./docs/src/content/schemas/ultravox.yml
+          cp fixie/src/ultravox/schema.yml ./src/content/schemas/ultravox.yml
           rm -rf fixie
 
       - name: Commit and Push if Changed
