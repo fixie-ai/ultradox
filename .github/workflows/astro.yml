@@ -45,6 +45,9 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           path: fixie
 
+      - name: Print cwd
+        run: pwd
+
       - name: Copy Ultravox Schema File
         run: |
           cp fixie/src/ultravox/schema.yml ./src/content/schemas/ultravox.yml
