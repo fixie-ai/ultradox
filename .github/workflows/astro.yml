@@ -82,30 +82,6 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
         working-directory: ${{ env.BUILD_PATH }}
       
-      
-      - name: Checkout fixie Repo
-        uses: actions/checkout@v4
-        with:
-          repository: fixie-ai/fixie
-          token: ${{ secrets.GH_TOKEN }}
-          path: fixie
-
-      - name: Print cwd
-        run: pwd
-
-      - name: Copy Ultravox Schema File
-        run: |
-          cp fixie/src/ultravox/schema.yml ./docs/src/content/schemas/ultravox.yml
-          rm -rf fixie
-
-      - name: Commit and Push if Changed
-        run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update ultravox.yml file from fixie repo" && git push)
-
-
       - name: Build with Astro
         run: |
           ${{ steps.detect-package-manager.outputs.runner }} astro build \
