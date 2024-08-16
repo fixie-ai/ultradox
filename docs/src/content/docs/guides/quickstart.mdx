@@ -22,7 +22,7 @@ There are three main steps to building a voice-enabled AI agent with the Ultravo
 </Steps>
 
 ### Create a Call
-The first step is to create a call. This is done by doing a `POST` to the [`/calls`](../../api-reference/operations/calls_create) endpoint. Here is what that looks like:
+The first step is to create a call. This is done by doing a `POST` to the [`/calls`](../../api-reference/operations/calls_create) endpoint. This call should be made from a server to prevent accidentally leaking your API key on the client. Here is what that looks like:
 
 ```terminal
 curl --location 'https://api.ultravox.ai/api/calls' \
