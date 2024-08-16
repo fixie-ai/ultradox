@@ -258,6 +258,72 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/tools:
+    get:
+      operationId: tools_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      tags:
+      - tools
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedToolList'
+          description: ''
+    post:
+      operationId: tools_create
+      tags:
+      - tools
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tool'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tool'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tool'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+          description: ''
+  /api/voices:
+    get:
+      operationId: voices_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      tags:
+      - voices
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVoiceList'
+          description: ''
 components:
   schemas:
     Call:
@@ -286,6 +352,23 @@ components:
           format: double
           maximum: 1.0
           minimum: 0.0
+        initialMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          writeOnly: true
+        availableTools:
+          type: array
+          items:
+            $ref: '#/components/schemas/_AvailableTools'
+          writeOnly: true
+        voice:
+          type: string
+        languageHint:
+          type: string
+          nullable: true
+          description: BCP47 language code that may be used to guide speech recognition.
+          maxLength: 16
         joinUrl:
           type: string
           nullable: true
@@ -295,23 +378,35 @@ components:
       - ended
       - joinUrl
       - uuid
+    LocationEnum:
+      enum:
+      - path
+      - query
+      - header
+      - body
+      type: string
+      description: |-
+        * `path` - path
+        * `query` - query
+        * `header` - header
+        * `body` - body
     Message:
       type: object
       properties:
         ordinal:
           type: integer
-          maximum: 2147483647
-          minimum: 0
+          readOnly: true
         role:
           $ref: '#/components/schemas/RoleEnum'
         text:
           type: string
           description: The message text for user and assistant messages, tool arguments
             for tool_call messages, tool results for tool_result messages.
-        toolId:
+        invocationId:
           type: string
           nullable: true
-          description: The tool ID for tool messages.
+          description: The invocation ID for tool messages. Used to pair tool calls
+            with their results.
         toolName:
           type: string
           nullable: true
@@ -358,6 +453,44 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Message'
+    PaginatedToolList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+    PaginatedVoiceList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Voice'
     RoleEnum:
       enum:
       - USER
@@ -370,6 +503,88 @@ components:
         * `ASSISTANT` - Assistant
         * `TOOL_CALL` - Tool Call
         * `TOOL_RESULT` - Tool Result
+    Tool:
+      type: object
+      properties:
+        toolId:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        baseUrlPattern:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - baseUrlPattern
+      - description
+      - name
+      - toolId
+    Voice:
+      type: object
+      properties:
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+          nullable: true
+        previewUrl:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+      required:
+      - description
+      - name
+      - previewUrl
+    _AuthToken:
+      type: object
+      properties:
+        name:
+          type: string
+        token:
+          type: string
+      required:
+      - name
+      - token
+    _AvailableTools:
+      type: object
+      properties:
+        tool:
+          type: string
+        authTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/_AuthToken'
+        parameterRestrictions:
+          type: array
+          items:
+            $ref: '#/components/schemas/_ParameterRestriction'
+        nameOverride:
+          type: string
+      required:
+      - tool
+    _ParameterRestriction:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          $ref: '#/components/schemas/LocationEnum'
+        value:
+          type: string
+          description: The value to definitively set for the parameter.
+      required:
+      - location
+      - name
+      - value
   securitySchemes:
     apiKeyAuth:
       type: apiKey
