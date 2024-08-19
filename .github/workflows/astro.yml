@@ -7,13 +7,13 @@ on:
   workflow_call:
     inputs:
       commit-sha:
-        description: 'The commit SHA from the latest run-benchmarks job'
+        description: 'The commit SHA from the latest job'
         required: false
         type: string
         default: ''
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -67,26 +67,6 @@ jobs:
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
         working-directory: ${{ env.BUILD_PATH }}
-
-      - name: Checkout fixie Repo
-        uses: actions/checkout@v4
-        with:
-          repository: fixie-ai/fixie
-          token: ${{ secrets.GH_TOKEN }}
-          path: fixie
-
-      - name: Copy Ultravox Schema File
-        run: |
-          mkdir -p ./docs/src/content/schemas/
-          cp fixie/src/ultravox/schema.yml ./docs/src/content/schemas/ultravox.yml
-          rm -rf fixie
-
-      - name: Commit and Push if Changed
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update ultravox.yml file from fixie repo" && git push)
 
       - name: Build with Astro
         run: |

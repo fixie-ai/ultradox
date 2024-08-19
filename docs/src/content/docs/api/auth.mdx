@@ -1,0 +1,42 @@
+---
+title: "Authentication"
+sidebar:
+  order: 0
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+:::note
+Using the Ultravox API requires an API key. You can apply for a key [here](https://forms.gle/BNmUBrqymzH3vkxj8).
+:::
+
+## Base URL
+The Ultravox API is available at `https://api.ultravox.ai/api/`.
+
+## X-API-Key Header
+When making API calls, pass your key in using the `X-API-Key` header.
+
+Here's an example showing how to use the fictional API key `aBCDef.123456` to get a list of calls.
+<Tabs syncKey="constellations">
+  <TabItem label="cURL">
+  ```bash
+  curl --request GET \
+  --url https://api.ultravox.ai/api/calls \
+  --header 'X-API-Key: aBCDef.123456'
+  
+  ```
+  </TabItem>
+  <TabItem label="JavaScript">
+  ```javascript
+  fetch('https://api.ultravox.ai/api/calls', {
+    method: 'GET',
+    headers: {
+      'X-API-Key': 'aBCDef.123456'
+    }
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+  ```
+  </TabItem>
+</Tabs>
