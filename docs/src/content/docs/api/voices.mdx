@@ -1,0 +1,137 @@
+---
+title: "Voices"
+sidebar:
+  order: 2
+tableOfContents: false
+---
+import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Your AI can speak to your end users in different voices. At the moment we only support two voices but we have plans to build this out soon. Please let us know what types of voices you need for your apps.
+
+## List Voices
+
+<Badge text="GET /voices" variant="note" size="large" />
+
+Lists all available voices. Currently only two voices are available: `lily` and `terrence`. API key scoped.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">cursor</td>
+        <td>(Optional) Pagination cursor.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">name</td>
+        <td>string</td>
+        <td>The name of the voice. This is the value to pass in for `voice` when creating a call. </td>
+      </tr>
+      <tr>
+        <td class="font-mono">description</td>
+        <td>string</td>
+        <td>Text description for the voice.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">previewUrl</td>
+        <td>string</td>
+        <td>URL for an audio preview of the voice.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+### Example: List All Available Voices
+<Tabs syncKey="constellations">
+  <TabItem label="cURL">
+  ```bash
+  curl --request GET \
+  --url https://api.ultravox.ai/api/voices \
+  --header 'X-API-Key: aBCDef.123456'
+  
+  ```
+  </TabItem>
+  <TabItem label="JavaScript">
+  ```javascript
+  fetch('https://api.ultravox.ai/api/voices', {
+    method: 'GET',
+    headers: {
+      'X-API-Key': 'aBCDef.123456'
+    }
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+  ```
+  </TabItem>
+</Tabs>
+
+**Response**
+<Tabs syncKey="constellations">
+  <TabItem label="cURL">
+  ```bash
+  {
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "name": "lily",
+        "description": "Default Female",
+        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/lily_preview.wav"
+      },
+      {
+        "name": "terrence",
+        "description": "Default Male",
+        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/terrence_preview.wav"
+      }
+    ]
+  }
+  ```
+  </TabItem>
+  <TabItem label="JavaScript">
+  ```javascript
+  {
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "name": "lily",
+        "description": "Default Female",
+        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/lily_preview.wav"
+      },
+      {
+        "name": "terrence",
+        "description": "Default Male",
+        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/terrence_preview.wav"
+      }
+    ]
+  }
+  ```
+  </TabItem>
+</Tabs>

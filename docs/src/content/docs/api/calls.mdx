@@ -1,0 +1,488 @@
+---
+title: "Calls"
+sidebar:
+  order: 1
+---
+import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Calls are what drive all speech-to-speech interactions between your end users and AI. At their most basic level, calls consist of a set of instructions to instruct the LLM how to behave (i.e. the `systemPrompt`) and the selection of the voice the AI should use when speaking.
+
+## List Calls
+<Badge text="GET /calls" variant="note" size="large" />
+
+Lists all calls that have been created. API key scoped.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">cursor</td>
+        <td>Pagination cursor.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">none</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">uuid</td>
+        <td>string</td>
+        <td>Unique identifier for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the call was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">ended</td>
+        <td>string</td>
+        <td>Datetime in UTC when the call was ended. Will be null upon call creation and while call is underway.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">model</td>
+        <td>string</td>
+        <td>Name of the model used for the call. Currently only `fixie-ai/ultravox` is supported.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">systemPrompt</td>
+        <td>string</td>
+        <td>The system prompt used to create the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">temperature</td>
+        <td>float</td>
+        <td>The temperature setting used for the model in this call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">voice</td>
+        <td>string</td>
+        <td>The name of the AI voice used for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">languageHint</td>
+        <td>string</td>
+        <td>BCP47 identifier used as a hint to indentify the user's spoken language.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">joinUrl</td>
+        <td>string</td>
+        <td>URL to use with the ultravox client library to join (AKA start) the call.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Create Call
+<Badge text="POST /calls" variant="success" size="large" />
+
+Creates a new call using the specified system prompt. Optional parameters can be used to specify voice, temperature, and lanugage hint. API key scoped.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-4/12"></th>
+        <th class="w-8/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">No parameters</td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">systemPrompt <br /> <span class="text-sm text-red-500">required</span></td>
+        <td>string</td>
+        <td>The system prompt to use for the AI.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">languageHint</td>
+        <td>string</td>
+        <td>A hint about the language to be used if your end users are speaking a language other than English. Must be a valid BCP47 language code. Best effort is made to select the closest supported language.  (default: "en")</td>
+      </tr>
+      <tr>
+        <td class="font-mono">model</td>
+        <td>string</td>
+        <td>The model to be used for the call. Currently only `fixie-ai/ultravox` is supported and is the default.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">temperature</td>
+        <td>float</td>
+        <td>The temperature setting for the model. Value between 0.0 and 1.0. (default: 0.0)</td>
+      </tr>
+      <tr>
+        <td class="font-mono">voice</td>
+        <td>string</td>
+        <td>The voice the AI will use for speaking. There are currently two options: `lily` (default) and `terrence`. Please contact us if you have other voice requirements.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">uuid</td>
+        <td>string</td>
+        <td>Unique identifier for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the call was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">ended</td>
+        <td>string</td>
+        <td>Datetime in UTC when the call was ended. Will be null upon call creation and while call is underway.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">model</td>
+        <td>string</td>
+        <td>Name of the model used for the call. Currently only `fixie-ai/ultravox` is supported.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">systemPrompt</td>
+        <td>string</td>
+        <td>The system prompt used to create the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">temperature</td>
+        <td>float</td>
+        <td>The temperature setting used for the model in this call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">voice</td>
+        <td>string</td>
+        <td>The name of the AI voice used for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">languageHint</td>
+        <td>string</td>
+        <td>BCP47 identifier used as a hint to indentify the user's spoken language.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">joinUrl</td>
+        <td>string</td>
+        <td>URL to use with the ultravox client library to join (AKA start) the call.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Get Call
+<Badge text="GET /calls/{uuid}" variant="note" size="large" />
+
+Gets details for the call with `uuid` specified in the path. API key scoped.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier for the call to retrieve.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">uuid</td>
+        <td>string</td>
+        <td>Unique identifier for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the call was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">ended</td>
+        <td>string</td>
+        <td>Datetime in UTC when the call was ended. Will be null upon call creation and while call is underway.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">model</td>
+        <td>string</td>
+        <td>Name of the model used for the call. Currently only `fixie-ai/ultravox` is supported.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">systemPrompt</td>
+        <td>string</td>
+        <td>The system prompt used to create the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">temperature</td>
+        <td>float</td>
+        <td>The temperature setting used for the model in this call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">voice</td>
+        <td>string</td>
+        <td>The name of the AI voice used for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">languageHint</td>
+        <td>string</td>
+        <td>BCP47 identifier used as a hint to indentify the user's spoken language.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">joinUrl</td>
+        <td>string</td>
+        <td>URL to use with the ultravox client library to join (AKA start) the call.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+
+## Delete Call
+<Badge text="DELETE /calls/{uuid}" variant="danger" size="large" />
+
+Deletes the specified call.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier for the call to delete.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-12/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">No request body</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-12/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">No response body</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## List Call Messages
+<Badge text="GET /calls/{uuid}/messages" variant="note" size="large" />
+
+Lists all messages generated during the given call.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the call for which messages are being retrieved.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">cursor</td>
+        <td>Pagination cursor.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-12/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">No request body</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">next</td>
+        <td>string</td>
+        <td>URL with the cursor value for the next page of results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">previous</td>
+        <td>string</td>
+        <td>URL with the cursor value for the previous page of results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">results</td>
+        <td>array</td>
+        <td>Array of message objects. Each message object contains:</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">ordinal</td>
+        <td>number</td>
+        <td>Ordinal position of the message. Used to determine sequence.</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">role</td>
+        <td>string</td>
+        <td>Role that generated the message. Corresponds to one of the following: `USER` or `ASSISTANT`.</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">text</td>
+        <td>string</td>
+        <td>The message text.</td>
+      </tr>
+    </table>    
+  </TabItem>
+</Tabs>
+
+## Examples
+### List All Calls
+<Tabs syncKey="constellations">
+  <TabItem label="cURL">
+  ```bash
+  curl --request GET \
+  --url https://api.ultravox.ai/api/voices \
+  --header 'X-API-Key: aBCDef.123456'
+  
+  ```
+  </TabItem>
+  <TabItem label="JavaScript">
+  ```javascript
+  fetch('https://api.ultravox.ai/api/voices', {
+    method: 'GET',
+    headers: {
+      'X-API-Key': 'aBCDef.123456'
+    }
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+  ```
+  </TabItem>
+</Tabs>
+
+**Response**
+<Tabs syncKey="constellations">
+  <TabItem label="cURL">
+  ```bash
+  {
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "name": "lily",
+        "description": "Default Female",
+        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/lily_preview.wav"
+      },
+      {
+        "name": "terrence",
+        "description": "Default Male",
+        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/terrence_preview.wav"
+      }
+    ]
+  }
+  ```
+  </TabItem>
+  <TabItem label="JavaScript">
+  ```javascript
+  {
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "name": "lily",
+        "description": "Default Female",
+        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/lily_preview.wav"
+      },
+      {
+        "name": "terrence",
+        "description": "Default Male",
+        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/terrence_preview.wav"
+      }
+    ]
+  }
+  ```
+  </TabItem>
+</Tabs>
+
+
+
+
+{/* <Badge text="POST" variant="success" size="large" />
+<Badge text="GET" variant="note" size="large" />
+<Badge text="DELETE" variant="danger" size="large" /> */}
