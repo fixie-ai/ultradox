@@ -1,64 +1,62 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { startCall, endCall } from '@/utils/callFunctions'
 import config from '@/config.json';
 import { Transcript } from 'ultravox-client';
 import Image from 'next/image';
 import logo from '@/public/dr-donut.webp';
 
-type StringArraySetter = React.Dispatch<React.SetStateAction<string[]>>;
-
 export default function Home() {
   const [isCallActive, setIsCallActive] = useState(false);
   const [agentStatus, setAgentStatus] = useState<string>('');
-  const [callStatus, setCallStatus] = useState<string[]>([]);
   const [callTranscript, setCallTranscript] = useState<Transcript[]>([]);
-  const callStatusRef = useRef<HTMLDivElement>(null);
-  const callTranscriptRef = useRef<HTMLDivElement>(null);
+  const transcriptContainerRef = useRef<HTMLDivElement>(null);
 
-  const appendUpdate = useCallback((target: 'callStatus' | 'callTranscript', message: string) => {
-    const setFunction = (target === 'callStatus' ? setCallStatus : setCallTranscript) as StringArraySetter;
-    const ref = target === 'callStatus' ? callStatusRef : callTranscriptRef;
-
-    if(target === 'callStatus') {
-      setAgentStatus(message);
+  useEffect(() => {
+    if (transcriptContainerRef.current) {
+      transcriptContainerRef.current.scrollTop = transcriptContainerRef.current.scrollHeight;
     }
+  }, [callTranscript]);
 
-    setFunction((prev: string[]) => [...prev, message]);
-    setTimeout(() => {
-      if (ref.current) {
-        ref.current.scrollTop = ref.current.scrollHeight;
-      }
-    }, 0);
+  const handleStatusChange = useCallback((status: string) => {
+    setAgentStatus(status);
   }, []);
+
+  const handleTranscriptChange = useCallback((transcripts: Transcript[]) => {
+    setCallTranscript(prevTranscripts => {  
+      return [...transcripts];
+    });
+  }, []);
+
+  let cleanupCall: (() => void) | undefined;
 
   const handleStartCallButtonClick = async () => {
     try {
-      appendUpdate('callStatus', 'Starting call...');
-      await startCall({
-        onStatusChange: (status: string) => {
-          appendUpdate('callStatus', `${status}`);
-        },
-        onTranscriptChange: (transcripts: Transcript[]) => {
-          setCallTranscript(transcripts);
-        }
+      handleStatusChange('Starting call...');
+      cleanupCall = await startCall({
+        onStatusChange: handleStatusChange,
+        onTranscriptChange: handleTranscriptChange
       });
       setIsCallActive(true);
-      appendUpdate('callStatus', 'Call started successfully');
+      handleStatusChange('Call started successfully');
     } catch (error) {
-      appendUpdate('callStatus', `Error starting call: ${error instanceof Error ? error.message : String(error)}`);
+      handleStatusChange(`Error starting call: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
   const handleEndCallButtonClick = async () => {
     try {
-      appendUpdate('callStatus', 'Ending call...');
+      handleStatusChange('Ending call...');
+      // Cleanup the event handlers for the call
+      if (cleanupCall) {
+        cleanupCall();
+      }
       await endCall();
       setIsCallActive(false);
-      appendUpdate('callStatus', 'Call ended successfully');
+      handleStatusChange('Call ended successfully');
     } catch (error) {
-      appendUpdate('callStatus', `Error ending call: ${error instanceof Error ? error.message : String(error)}`);
+      handleStatusChange(`Error ending call: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
@@ -96,12 +94,13 @@ export default function Home() {
             <div className="mb-5">
               <h2 className="mb-2.5">Call Transcript</h2>
               <div 
-                ref={callTranscriptRef}
+                ref={transcriptContainerRef}
                 className="h-[300px] border border-gray-300 rounded-md p-2.5 overflow-y-auto bg-gray-50" 
-                id="callTranscript"
               >
-                {callTranscript.map((transcript, index) => (
-                  <p key={index}><span className="font-bold">{transcript.speaker}</span>: {transcript.text}</p>
+                {callTranscript && callTranscript.map((transcript, index) => (
+                  <div key={index}>
+                    <p><span className="font-bold">{transcript.speaker}</span>: {transcript.text}</p>
+                  </div>
                 ))}
               </div>
             </div>

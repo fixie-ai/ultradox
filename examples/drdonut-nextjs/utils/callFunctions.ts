@@ -36,19 +36,18 @@ async function createCall(): Promise<string> {
     const data: JoinUrlResponse = await response.json();
     console.log(`Call created. Join URL: ${data.joinUrl}`);
     return data.joinUrl;
-    // Handle the response data as needed
   } catch (error) {
     console.error('Error creating call:', error);
     throw error;
   }
 }
 
-export async function startCall(callbacks: CallCallbacks): Promise<void> {
+export async function startCall(callbacks: CallCallbacks): Promise<() => void> {
   const joinUrl = await createCall();
 
   if (!joinUrl) {
     console.error('Join URL is required');
-    return;
+    return () => {};
   } else {
     console.log('Joining call:', joinUrl);
 
@@ -57,18 +56,27 @@ export async function startCall(callbacks: CallCallbacks): Promise<void> {
     const state: UltravoxSessionState = UVSession.joinCall(joinUrl);
     console.log('Session status:', state.getStatus());
 
-    state.addEventListener('ultravoxSessionStatusChanged', (event: any) => {
+    const statusChangeListener = (event: any) => {
       callbacks.onStatusChange(event.state);
-    });
+    };
 
-    state.addEventListener('ultravoxTranscriptsChanged', (event: any) => {
+    const transcriptChangeListener = (event: any) => {
       let te: UltravoxSessionStateChangeEvent = event;
-      console.log(te.transcripts)
+      console.log(te.transcripts);
       callbacks.onTranscriptChange(te.transcripts);
-    });
-  }
+    };
 
-  console.log('Call started!'); 
+    state.addEventListener('ultravoxSessionStatusChanged', statusChangeListener);
+    state.addEventListener('ultravoxTranscriptsChanged', transcriptChangeListener);
+
+    console.log('Call started!');
+
+    // For cleaning up when calls end
+    return () => {
+      state.removeEventListener('ultravoxSessionStatusChanged', statusChangeListener);
+      state.removeEventListener('ultravoxTranscriptsChanged', transcriptChangeListener);
+    };
+  }
 }
 
 export async function endCall(): Promise<void> {
