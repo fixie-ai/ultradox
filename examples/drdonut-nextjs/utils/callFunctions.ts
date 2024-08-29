@@ -1,6 +1,6 @@
 'use client';
 import { UltravoxSession, UltravoxSessionStatus, Transcript, UltravoxSessionStateChangeEvent, UltravoxSessionState } from 'ultravox-client';
-let UVSession: UltravoxSession;
+let UVSession: UltravoxSession | null = null;
 
 interface JoinUrlResponse {
   uuid: string;
@@ -53,8 +53,13 @@ export async function startCall(callbacks: CallCallbacks): Promise<() => void> {
 
     await initUVSession();
 
-    const state: UltravoxSessionState = UVSession.joinCall(joinUrl);
-    console.log('Session status:', state.getStatus());
+    let state: UltravoxSessionState;
+    if (UVSession) {
+      state = UVSession.joinCall(joinUrl);
+      console.log('Session status:', state.getStatus());
+    } else {
+      return () => {};
+    }
 
     const statusChangeListener = (event: any) => {
       callbacks.onStatusChange(event.state);
@@ -81,5 +86,9 @@ export async function startCall(callbacks: CallCallbacks): Promise<() => void> {
 
 export async function endCall(): Promise<void> {
   console.log('Call ended.');
-  UVSession.leaveCall();
+
+  if (UVSession) {
+    UVSession.leaveCall();
+    UVSession = null;
+  }
 }
