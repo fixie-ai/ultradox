@@ -138,6 +138,11 @@ Creates a new call using the specified system prompt. Optional parameters can be
         <td>The model to be used for the call. Currently only `fixie-ai/ultravox` is supported and is the default.</td>
       </tr>
       <tr>
+        <td class="font-mono">recordingEnabled</td>
+        <td>boolean</td>
+        <td>A recording will be saved for the call when set to `true`. Recording can be retrieved via `GET /calls/{uuid}/recording`. Default value of `false`.</td>
+      </tr>
+      <tr>
         <td class="font-mono">temperature</td>
         <td>float</td>
         <td>The temperature setting for the model. Value between 0.0 and 1.0. (default: 0.0)</td>
@@ -380,6 +385,80 @@ Lists all messages generated during the given call.
         <td class="font-mono">next</td>
         <td>string</td>
         <td>URL with the cursor value for the next page of results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">previous</td>
+        <td>string</td>
+        <td>URL with the cursor value for the previous page of results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">results</td>
+        <td>array</td>
+        <td>Array of message objects. Each message object contains:</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">ordinal</td>
+        <td>number</td>
+        <td>Ordinal position of the message. Used to determine sequence.</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">role</td>
+        <td>string</td>
+        <td>Role that generated the message. Corresponds to one of the following: `USER` or `ASSISTANT`.</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">text</td>
+        <td>string</td>
+        <td>The message text.</td>
+      </tr>
+    </table>    
+  </TabItem>
+</Tabs>
+
+## Get Call Recording
+<Badge text="GET /calls/{uuid}/recording" variant="note" size="large" />
+
+Returns a link to the recording of the call (via a 302 redirect to the file location).
+
+:::note
+Call recordings are only generated if you add `"recordingEnabled": true` to the request body when creating a call.
+:::
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the call for which the recording is being retrieved.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-12/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">No request body</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">detail</td>
+        <td>string</td>
+        <td>Only returned if call recording was not enabled. If a recording was enabled, there is no response body and the call recording location is provided via a 302 redirect.</td>
       </tr>
       <tr>
         <td class="font-mono">previous</td>
