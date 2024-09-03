@@ -2,7 +2,7 @@
 title: "Voices"
 sidebar:
   order: 20
-tableOfContents: false
+tableOfContents: true
 ---
 import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
 
@@ -67,8 +67,77 @@ Lists all available voices. Currently only two voices are available: `lily` and 
   </TabItem>
 </Tabs>
 
-### Example: List All Available Voices
-<Tabs syncKey="constellations">
+## Create (Clone) Voice
+
+<Badge text="POST /voices" variant="success" size="large" />
+
+Create a new cloned voice. API key scoped.
+
+Uses multipart/form-data encoding to provide the name of the voice along with an audio file containing the voice to be used for cloning.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">name<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>string</td>
+        <td>The name of the voice. Can contain letters, numbers, underscore, or hyphen. Maximum of 64 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">description</td>
+        <td>string</td>
+        <td>(Optional) Description for the voice.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">name</td>
+        <td>string</td>
+        <td>The name of the voice. This is the value to pass in for `voice` when creating a call. </td>
+      </tr>
+      <tr>
+        <td class="font-mono">description</td>
+        <td>string</td>
+        <td>Text description for the voice.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">previewUrl</td>
+        <td>string</td>
+        <td>URL for an audio preview of the voice.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Examples
+### List All Available Voices
+<Tabs syncKey="example-language">
   <TabItem label="cURL">
   ```bash
   curl --request GET \
@@ -93,7 +162,7 @@ Lists all available voices. Currently only two voices are available: `lily` and 
 </Tabs>
 
 **Response**
-<Tabs syncKey="constellations">
+<Tabs syncKey="example-language">
   <TabItem label="cURL">
   ```bash
   {
@@ -131,6 +200,32 @@ Lists all available voices. Currently only two voices are available: `lily` and 
         "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/terrence_preview.wav"
       }
     ]
+  }
+  ```
+  </TabItem>
+</Tabs>
+
+### Create (Clone) Voice
+<Tabs syncKey="example-language">
+  <TabItem label="cURL">
+  ```bash
+  curl -X POST -F "file=@./myvoice.mp3;type=audio/mpeg" \
+  -F "name=My-Cloned-Voice" -F "description=I am now a robot." \
+  --url https://api.ultravox.ai/api/voices \
+  --header 'X-API-Key: aBCDef.123456'
+  ```
+  </TabItem>
+</Tabs>
+
+**Response**
+<Tabs syncKey="example-language">
+  <TabItem label="cURL">
+  ```bash
+  {
+    "voiceId": "d90c9fff-5aad-1578-ced9-d8eg99aa4a0b",
+    "name": "My-Cloned-Voice",
+    "description": "I am now a robot.",
+    "previewUrl": null
   }
   ```
   </TabItem>
