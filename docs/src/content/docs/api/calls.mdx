@@ -99,19 +99,25 @@ Lists all calls that have been created. API key scoped.
 ## Create Call
 <Badge text="POST /calls" variant="success" size="large" />
 
-Creates a new call using the specified system prompt. Optional parameters can be used to specify voice, temperature, and lanugage hint. API key scoped.
+Creates a new call using the specified system prompt. API key scoped.
+
+Optional parameters can be used to specify voice, temperature, language hint, and recordingEnabled.
+
+An optional query parameter called `priorCallId` can be provided to continue an existing call (AKA resume a call).
 
 #### Parameters
 <Tabs>
   <TabItem label="Parameters">
     <table class="w-full">
       <tr class="w-full">
-        <th class="w-4/12"></th>
-        <th class="w-8/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">No parameters</td>
-        <td></td>
+        <td class="font-mono">priorCallId</td>
+        <td>string</td>
+        <td>The UUID of an existing call. If provided, the new call will inherit all call properties (unless overridden in the current request body). The prior call's message history will be used in place of `initialMessages`. Setting `initialMessages` in the body is not allowed.</td>
       </tr>
     </table>
   </TabItem>
