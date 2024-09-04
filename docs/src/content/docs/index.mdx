@@ -16,7 +16,11 @@ hero:
       icon: open-book
 tableOfContents: false
 ---
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, CardGrid, Card } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import flutterLogo from '../../assets/logos/flutter.svg';
+import jsLogo from '../../assets/logos/js.svg';
+import kotlinLogo from '../../assets/logos/kotlin.svg';
 
 ## Intro
 The Ultravox API enables developers to build speech-to-speech AI applications. Built on the open source [Ultravox LLM](https://github.com/fixie-ai/ultravox), the Ultravox API provides a simple REST API for creating calls with AI agents.
@@ -37,8 +41,26 @@ Pass in an API key using the `X-API-Key` header.
 ### OpenAPI Specification
 There is an [OpenAPI spec](https://github.com/fixie-ai/ultradox/blob/main/docs/src/content/schemas/ultravox.yml) file available in the repo. This spec is also used to generate the [API Reference](./api-reference/). Additionally, you can use the [Ultravox API Playground](https://api.ultravox.ai/api/schema/swagger-ui/) to quickly explore and test the API.
 
-## `ultravox-client`
-You will need to use the `ultravox-client` in any web-based applications. The REST API is used to create calls but the client is needed to join (and end) calls. You can [find it](https://www.npmjs.com/package/ultravox-client) in the npm registry. Please let us know if you need a client for a specific language or framework.
+## Client SDKs 
+While there is a RESTful API for Ultravox that is used to create calls, you will need to use one of our client SDKs to join and end calls.
+
+There are currently three SDK flavors available:
+
+<CardGrid stagger>
+  <Card title="Flutter">
+    <Image src={flutterLogo} width={24} alt="Flutter logo" /> Get it on <a href="https://pub.dev/packages/ultravox_client">pub.dev</a>.
+  </Card>
+
+  <Card title="JavaScript">
+    <Image src={jsLogo} width={24} alt="JavaScript logo" /> Available in the [npm registry.](https://www.npmjs.com/package/ultravox-client)
+  </Card>
+
+  <Card title="Kotlin">
+    <Image src={kotlinLogo} width={24} alt="Kotlin logo" /> Find it on [Maven Central](https://central.sonatype.com/artifact/ai.fixie/ultravox-client-sdk)
+  </Card>
+</CardGrid>
+
+Please let us know if you need a client for a specific language or framework.
 
 ## Next steps
 
@@ -51,7 +73,7 @@ You will need to use the `ultravox-client` in any web-based applications. The RE
 </Steps>
 
 :::caution[Under Construction]
-The Ultravox API is under active development. This means you should expect it to get better, faster, stronger, etc. It also means you should that things could break.
+The Ultravox API is under active development. This means you should expect it to get better, faster, stronger, etc. It also means that things could break.
 
 If you have questions or would like us to change/add something, please reach out on the [Ultravox Discord](https://discord.gg/Qw6KHxv8YB) or [submit an issue or PR](https://github.com/fixie-ai/ultravox).
 :::
