@@ -1,7 +1,7 @@
 ---
 title: "Calls"
 sidebar:
-  order: 1
+  order: 10
 ---
 import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
 
@@ -99,19 +99,25 @@ Lists all calls that have been created. API key scoped.
 ## Create Call
 <Badge text="POST /calls" variant="success" size="large" />
 
-Creates a new call using the specified system prompt. Optional parameters can be used to specify voice, temperature, and lanugage hint. API key scoped.
+Creates a new call using the specified system prompt. API key scoped.
+
+Optional parameters can be used to specify voice, temperature, language hint, and recordingEnabled.
+
+An optional query parameter called `priorCallId` can be provided to continue a previous conversation. If used, all properties of the prior call (e.g. systemPrompt, voice, etc.) will be used for the new call. Can also be used in combination with overriding individual properties (e.g. inherit all properties but override the voice).
 
 #### Parameters
 <Tabs>
   <TabItem label="Parameters">
     <table class="w-full">
       <tr class="w-full">
-        <th class="w-4/12"></th>
-        <th class="w-8/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">No parameters</td>
-        <td></td>
+        <td class="font-mono">priorCallId</td>
+        <td>string</td>
+        <td>The UUID of an existing call. If provided, the new call will inherit all call properties (unless overridden in the current request body). The prior call's message history will be used in place of `initialMessages`. Setting `initialMessages` in the body is not allowed.</td>
       </tr>
     </table>
   </TabItem>
@@ -136,6 +142,11 @@ Creates a new call using the specified system prompt. Optional parameters can be
         <td class="font-mono">model</td>
         <td>string</td>
         <td>The model to be used for the call. Currently only `fixie-ai/ultravox` is supported and is the default.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">recordingEnabled</td>
+        <td>boolean</td>
+        <td>A recording will be saved for the call when set to `true`. Recording can be retrieved via `GET /calls/{uuid}/recording`. Default value of `false`.</td>
       </tr>
       <tr>
         <td class="font-mono">temperature</td>
@@ -410,9 +421,58 @@ Lists all messages generated during the given call.
   </TabItem>
 </Tabs>
 
+## Get Call Recording
+<Badge text="GET /calls/{uuid}/recording" variant="note" size="large" />
+
+Returns a link to the recording of the call (via a 302 redirect to the file location). The recording only becomes available after the call ends. If the recording is not yet available, a 425 (Too Early) HTTP status will be returned.
+
+:::note
+Call recordings are only generated if you add `"recordingEnabled": true` to the request body when creating a call.
+:::
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the call for which the recording is being retrieved.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-12/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">No request body</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">detail</td>
+        <td>string</td>
+        <td>Only returned if call recording was not enabled. If a recording was enabled, there is no response body and the call recording location is provided via a 302 redirect.</td>
+      </tr>
+    </table>    
+  </TabItem>
+</Tabs>
+
 ## Examples
 ### List All Calls
-<Tabs syncKey="constellations">
+<Tabs syncKey="example-language">
   <TabItem label="cURL">
   ```bash
   curl --request GET \
@@ -437,7 +497,7 @@ Lists all messages generated during the given call.
 </Tabs>
 
 **Response**
-<Tabs syncKey="constellations">
+<Tabs syncKey="example-language">
   <TabItem label="cURL">
   ```bash
   {
@@ -480,9 +540,3 @@ Lists all messages generated during the given call.
   </TabItem>
 </Tabs>
 
-
-
-
-{/* <Badge text="POST" variant="success" size="large" />
-<Badge text="GET" variant="note" size="large" />
-<Badge text="DELETE" variant="danger" size="large" /> */}
