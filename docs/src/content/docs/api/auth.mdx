@@ -16,6 +16,13 @@ The Ultravox API is available at `https://api.ultravox.ai/api/`.
 ## X-API-Key Header
 When making API calls, pass your key in using the `X-API-Key` header.
 
+:::note
+**You should never expose your API key to client code.**
+
+If you *really* want to ignore this advice for a local demo, use the X-Unsafe-API-Key header
+instead at your own risk. It works the same way except that our server will allow it in CORS preflight requests.
+:::
+
 Here's an example showing how to use the fictional API key `aBCDef.123456` to get a list of calls.
 <Tabs syncKey="example-language">
   <TabItem label="cURL">
@@ -23,7 +30,7 @@ Here's an example showing how to use the fictional API key `aBCDef.123456` to ge
   curl --request GET \
   --url https://api.ultravox.ai/api/calls \
   --header 'X-API-Key: aBCDef.123456'
-  
+
   ```
   </TabItem>
   <TabItem label="JavaScript">
