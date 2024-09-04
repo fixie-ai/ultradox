@@ -466,31 +466,6 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
         <td>string</td>
         <td>Only returned if call recording was not enabled. If a recording was enabled, there is no response body and the call recording location is provided via a 302 redirect.</td>
       </tr>
-      <tr>
-        <td class="font-mono">previous</td>
-        <td>string</td>
-        <td>URL with the cursor value for the previous page of results.</td>
-      </tr>
-      <tr>
-        <td class="font-mono">results</td>
-        <td>array</td>
-        <td>Array of message objects. Each message object contains:</td>
-      </tr>
-      <tr>
-        <td class="font-mono text-sm">ordinal</td>
-        <td>number</td>
-        <td>Ordinal position of the message. Used to determine sequence.</td>
-      </tr>
-      <tr>
-        <td class="font-mono text-sm">role</td>
-        <td>string</td>
-        <td>Role that generated the message. Corresponds to one of the following: `USER` or `ASSISTANT`.</td>
-      </tr>
-      <tr>
-        <td class="font-mono text-sm">text</td>
-        <td>string</td>
-        <td>The message text.</td>
-      </tr>
     </table>    
   </TabItem>
 </Tabs>
