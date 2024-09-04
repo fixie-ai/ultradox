@@ -71,7 +71,7 @@ Lists all available voices. Currently only two voices are available: `lily` and 
 
 <Badge text="POST /voices" variant="success" size="large" />
 
-Create a new cloned voice. API key scoped.
+Create a new cloned voice. Any created voices are private to your account.
 
 Uses multipart/form-data encoding to provide the name of the voice along with an audio file containing the voice to be used for cloning.
 
@@ -98,6 +98,11 @@ Uses multipart/form-data encoding to provide the name of the voice along with an
         <th class="w-10/12"></th>
       </tr>
       <tr>
+        <td class="font-mono">file<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>audio file</td>
+        <td>A file that contains the audio to use for creating the cloned voice.</td>
+      </tr>
+      <tr>
         <td class="font-mono">name<br /> <span class="text-sm text-red-500">required</span></td>
         <td>string</td>
         <td>The name of the voice. Can contain letters, numbers, underscore, or hyphen. Maximum of 64 characters.</td>
@@ -117,6 +122,11 @@ Uses multipart/form-data encoding to provide the name of the voice along with an
         <th class="w-10/12"></th>
       </tr>
       <tr>
+        <td class="font-mono">voice_id</td>
+        <td>string</td>
+        <td>UUID for the created voice. Pass in as `voice` when creating a new call to use this voice.</td>
+      </tr>
+      <tr>
         <td class="font-mono">name</td>
         <td>string</td>
         <td>The name of the voice. This is the value to pass in for `voice` when creating a call. </td>
@@ -129,7 +139,7 @@ Uses multipart/form-data encoding to provide the name of the voice along with an
       <tr>
         <td class="font-mono">previewUrl</td>
         <td>string</td>
-        <td>URL for an audio preview of the voice.</td>
+        <td>URL for an audio preview of the voice. Currently always `null` for cloned voices.</td>
       </tr>
     </table>
   </TabItem>

@@ -103,7 +103,7 @@ Creates a new call using the specified system prompt. API key scoped.
 
 Optional parameters can be used to specify voice, temperature, language hint, and recordingEnabled.
 
-An optional query parameter called `priorCallId` can be provided to continue an existing call (AKA resume a call).
+An optional query parameter called `priorCallId` can be provided to continue a previous conversation. If used, all properties of the prior call (e.g. systemPrompt, voice, etc.) will be used for the new call. Can also be used in combination with overriding individual properties (e.g. inherit all properties but override the voice).
 
 #### Parameters
 <Tabs>
@@ -424,7 +424,7 @@ Lists all messages generated during the given call.
 ## Get Call Recording
 <Badge text="GET /calls/{uuid}/recording" variant="note" size="large" />
 
-Returns a link to the recording of the call (via a 302 redirect to the file location).
+Returns a link to the recording of the call (via a 302 redirect to the file location). The recording only becomes available after the call ends. If the recording is not yet available, a 425 (Too Early) HTTP status will be returned.
 
 :::note
 Call recordings are only generated if you add `"recordingEnabled": true` to the request body when creating a call.
