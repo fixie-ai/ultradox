@@ -21,6 +21,7 @@ import { Image } from 'astro:assets';
 import flutterLogo from '../../assets/logos/flutter.svg';
 import jsLogo from '../../assets/logos/js.svg';
 import kotlinLogo from '../../assets/logos/kotlin.svg';
+import pythonLogo from '../../assets/logos/python.svg';
 
 ## Intro
 The Ultravox API enables developers to build speech-to-speech AI applications. Built on the open source [Ultravox LLM](https://github.com/fixie-ai/ultravox), the Ultravox API provides a simple REST API for creating calls with AI agents.
@@ -48,15 +49,19 @@ There are currently three SDK flavors available:
 
 <CardGrid>
   <Card title="Flutter">
-    <Image src={flutterLogo} width={24} alt="Flutter logo" /> Get it on <a href="https://pub.dev/packages/ultravox_client">pub.dev</a>.
+    <Image src={flutterLogo} width={24} alt="Flutter logo" />`flutter add ultravox_client` <br /> Get it on <a href="https://pub.dev/packages/ultravox_client">pub.dev</a>.
   </Card>
 
   <Card title="JavaScript">
-    <Image src={jsLogo} width={24} alt="JavaScript logo" /> Available in the [npm registry.](https://www.npmjs.com/package/ultravox-client)
+    <Image src={jsLogo} width={24} alt="JavaScript logo" /> `npm install ultravox-client` <br /> Available in the [npm registry.](https://www.npmjs.com/package/ultravox-client)
   </Card>
 
   <Card title="Kotlin">
     <Image src={kotlinLogo} width={24} alt="Kotlin logo" /> Find it on [Maven Central](https://central.sonatype.com/artifact/ai.fixie/ultravox-client-sdk)
+  </Card>
+
+  <Card title="Python">
+    <Image src={pythonLogo} width={24} alt="Python logo" /> `pip install ultravox-client` <br /> More info on [PyPi](https://pypi.org/project/ultravox-client/)
   </Card>
 </CardGrid>
 
