@@ -6,12 +6,12 @@ import jsLogo from '../assets/logos/js.svg';
 import kotlinLogo from '../assets/logos/kotlin.svg';
 import pythonLogo from '../assets/logos/python.svg';
 
-const wordForNum = {
+const wordForNum: { [key: number]: string } = {
   3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seven',
   8: 'eight', 9: 'nine', 10: 'ten'
 };
 
-function numToWord(num) {
+function numToWord(num: number): string {
   return wordForNum[num] || num.toString();
 }
 
@@ -56,7 +56,7 @@ const sdks = [
 ---
 
 <div class="sdk-cards">
-  There are currently {numToWord(sdks.length)} flavors of the SDK available:
+  There are currently {numToWord(sdks.length)} implementations of the SDK available:
   <br />
   <CardGrid>
     {sdks.map((lang) => (
