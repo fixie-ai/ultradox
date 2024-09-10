@@ -1,0 +1,103 @@
+---
+title: "Ultravox SDK"
+sidebar:
+  order: 0
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import SDKCards from '../../components/SDKCards.astro';
+
+The Ultravox [REST API](./api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page uses examples in JavaScript. The concepts are the same across all the [SDK flavors](#sdk-flavors).
+
+## Ultravox Session
+The core of the SDK is the `UltravoxSession`. The session is used to join and leave calls.
+
+```javascript
+import { UltravoxSession } from 'ultravox-client';
+
+const session = new UltravoxSession();
+const state = await session.joinCall('wss://your-call-join-url');
+
+session.leaveCall();
+```
+
+## Session State
+When a call is joined, an `UltravoxSessionState` is returned. This object returns the current status, can be used to get text transcripts of the call, and surfaces debug messages that are helpful when building your application.
+
+### Status
+The session status is based on the `UltravoxSessionStatus` enum and can be one of the following:
+
+| status        | description                                 |
+|-------------- | ------------------------------------------- |
+| disconnected | Session is not connected. This is the initial state prior to joinCall. |
+| disconnecting | Session is in the process of disconnecting. |
+| connecting    | Session is establishing the connection.     |
+| idle          | Session is connected but not yet active.      |
+| listening     | Listening to the end user.                  |
+| thinking      | The model is processing/thinking.           |
+| speaking      | The model is speaking.                      |
+
+The status can be retrieved by adding an event listener to the state:
+
+```javascript
+import { UltravoxSession } from 'ultravox-client';
+
+const session = new UltravoxSession();
+const state = await session.joinCall('wss://your-call-join-url');
+
+// Listen for status changing events
+state.addEventListener('ultravoxSessionStatusChanged', (event) => {
+  console.log('Session status changed: ', event.state);
+});
+
+session.leaveCall();
+```
+
+### Transcripts
+Sometimes you may want to augment the audio with text transcripts (e.g. if you want to show the end user the model's output in real-time). Transcripts can be retrieved by adding an event listener to state:
+
+```javascript
+import { UltravoxSession } from 'ultravox-client';
+
+const session = new UltravoxSession();
+const state = await session.joinCall('wss://your-call-join-url');
+
+// Listen for transcripts changing events
+state.addEventListener('ultravoxTranscriptsChanged', (event) => {
+  console.log('Transcripts updated: ', event.transcripts);
+  console.log('Current session status: ', event.state); // Session status is also available on the event
+});
+
+session.leaveCall();
+```
+
+Transcripts are an array of transcript objects. Each transcript has the following properties:
+
+| property | type    | definition                                                                                                                |
+| -------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| text     | string  | Text transcript of the speech from the end user or the agent.                                                             |
+| isFinal  | boolean | True if the transcript represents a complete utterance. False if it is a fragment of an utterance that is still underway. |
+| speaker  | Role    | Either "user" or "agent". Denotes who was speaking.                                                                       |
+| medium   | Medium  | Either "voice" or "text". Denotes how the message was sent.                                                               |
+
+### Debug Messages
+The state object also provides debug messages. Debug messages must be enabled when creating the `UltravoxSession` and then are available via an event listener similar to status and transcripts:
+
+```javascript
+import { UltravoxSession } from 'ultravox-client';
+
+const debugMessages = new Set(["debug"]);
+const session = new UltravoxSession({ experimentalMessages: debugMessages });
+const state = await session.joinCall('wss://your-call-join-url');
+
+// Listen for debug messages
+state.addEventListener('ultravoxExperimentalMessage', (msg) => {
+  console.log('Got a debug message: ', JSON.stringify(msg));
+});
+
+session.leaveCall();
+```
+
+## SDK Flavors
+
+<SDKCards />

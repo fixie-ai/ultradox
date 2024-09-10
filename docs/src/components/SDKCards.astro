@@ -1,0 +1,75 @@
+---
+import { CardGrid, Card } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import flutterLogo from '../assets/logos/flutter.svg';
+import jsLogo from '../assets/logos/js.svg';
+import kotlinLogo from '../assets/logos/kotlin.svg';
+import pythonLogo from '../assets/logos/python.svg';
+
+const wordForNum = {
+  3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seven',
+  8: 'eight', 9: 'nine', 10: 'ten'
+};
+
+function numToWord(num) {
+  return wordForNum[num] || num.toString();
+}
+
+const sdks = [
+  {
+    title: "Flutter",
+    logo: flutterLogo,
+    logoAlt: "Flutter logo",
+    installCommand: "flutter add ultravox_client",
+    introLinkText: "Get it on ",
+    linkText: "pub.dev",
+    linkUrl: "https://pub.dev/packages/ultravox_client"
+  },
+  {
+    title: "JavaScript",
+    logo: jsLogo,
+    logoAlt: "JavaScript logo",
+    installCommand: "npm install ultravox-client",
+    introLinkText: "Available in the ",
+    linkText: "npm registry",
+    linkUrl: "https://www.npmjs.com/package/ultravox-client"
+  },
+  {
+    title: "Kotlin",
+    logo: kotlinLogo,
+    logoAlt: "Kotlin logo",
+    introLinkText: "Find it on ",
+    linkText: "Maven Central",
+    linkUrl: "https://central.sonatype.com/artifact/ai.fixie/ultravox-client-sdk"
+  },
+  {
+    title: "Python",
+    logo: pythonLogo,
+    logoAlt: "Python logo",
+    installCommand: "pip install ultravox-client",
+    introLinkText: "More info on ",
+    linkText: "PyPi",
+    linkUrl: "https://pypi.org/project/ultravox-client/"
+  }
+];
+
+---
+
+<div class="sdk-cards">
+  There are currently {numToWord(sdks.length)} flavors of the SDK available:
+  <br />
+  <CardGrid>
+    {sdks.map((lang) => (
+      <Card title={lang.title}>
+        <Image src={lang.logo} width={24} alt={lang.logoAlt} />
+        {lang.installCommand && (
+          <>
+            <code>{lang.installCommand}</code>
+            <br />
+          </>
+        )}
+        {lang.introLinkText} <a href={lang.linkUrl}>{lang.linkText}</a>
+      </Card>
+    ))}
+  </CardGrid>
+</div>

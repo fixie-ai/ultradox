@@ -24,8 +24,8 @@ importers:
         specifier: ^4.19.2
         version: 4.19.2
       ultravox-client:
-        specifier: ^0.2.9
-        version: 0.2.9
+        specifier: ^0.2.15
+        version: 0.2.15
     devDependencies:
       vite:
         specifier: ^5.3.4
@@ -688,8 +688,8 @@ packages:
   typed-emitter@2.1.0:
     resolution: {integrity: sha512-g/KzbYKbH5C2vPkaXGu8DJlHrGKHLsM25Zg9WuC9pMGfuvT+X25tZQWo5fK1BjBm8+UrVE9LDCvaY0CQk+fXDA==}
 
-  ultravox-client@0.2.9:
-    resolution: {integrity: sha512-4bASHuKvD81NwpGB5cuR3JQONGQZHt1oEUeNYNycsLm1ayQ/AFiUuYW+rpa6qpefgPMqozRntwr9CnDgeY1KKw==}
+  ultravox-client@0.2.15:
+    resolution: {integrity: sha512-rhklBYZHvtBlpXuvVD7mJycWdeJLfrujqzsyuq45uIjskZMjsUW6GPgxIYNi3egD3QfIGt8UMDmnPfepvBL7YA==}
     engines: {pnpm: '>=6.0.0'}
 
   unpipe@1.0.0:
@@ -1363,7 +1363,7 @@ snapshots:
     optionalDependencies:
       rxjs: 7.8.1
 
-  ultravox-client@0.2.9:
+  ultravox-client@0.2.15:
     dependencies:
       livekit-client: 2.4.2
 

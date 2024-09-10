@@ -40,6 +40,10 @@ export default defineConfig({
           directory: 'api'
         }
       },
+      {
+        label: 'SDK',
+        link: 'sdk'
+      },
     ],
     components: {}
   }), 
