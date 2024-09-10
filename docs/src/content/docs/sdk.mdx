@@ -10,7 +10,7 @@ import SDKCards from '../../components/SDKCards.astro';
 The Ultravox [REST API](./api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page uses examples in JavaScript. The concepts are the same across all the [SDK flavors](#sdk-flavors).
 
 ## Ultravox Session
-The core of the SDK us the `UltravoxSession`. The session is used to join and leave calls.
+The core of the SDK is the `UltravoxSession`. The session is used to join and leave calls.
 
 ```javascript
 import { UltravoxSession } from 'ultravox-client';
@@ -29,9 +29,10 @@ The session status is based on the `UltravoxSessionStatus` enum and can be one o
 
 | status        | description                                 |
 |-------------- | ------------------------------------------- |
+| disconnected | Session is not connected. This is the initial state prior to joinCall. |
 | disconnecting | Session is in the process of disconnecting. |
 | connecting    | Session is establishing the connection.     |
-| idle          | Session is idle.                            |
+| idle          | Session is connected but not yet active.      |
 | listening     | Listening to the end user.                  |
 | thinking      | The model is processing/thinking.           |
 | speaking      | The model is speaking.                      |
