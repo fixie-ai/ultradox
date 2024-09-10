@@ -7,7 +7,7 @@ sidebar:
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 import SDKCards from '../../components/SDKCards.astro';
 
-The Ultravox [REST API](./api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page uses examples in JavaScript. The concepts are the same across all the [SDK flavors](#sdk-flavors).
+The Ultravox [REST API](../api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
 
 ## Ultravox Session
 The core of the SDK is the `UltravoxSession`. The session is used to join and leave calls.
@@ -98,6 +98,6 @@ state.addEventListener('ultravoxExperimentalMessage', (msg) => {
 session.leaveCall();
 ```
 
-## SDK Flavors
+## SDK Implementations
 
 <SDKCards />
