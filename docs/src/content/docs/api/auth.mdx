@@ -16,8 +16,7 @@ The Ultravox API is available at `https://api.ultravox.ai/api/`.
 ## X-API-Key Header
 When making API calls, pass your key in using the `X-API-Key` header.
 
-:::note
-**You should never expose your API key to client code.**
+:::danger[You should never expose your API key to client code]
 
 If you *really* want to ignore this advice for a local demo, use the X-Unsafe-API-Key header
 instead at your own risk. It works the same way except that our server will allow it in CORS preflight requests.

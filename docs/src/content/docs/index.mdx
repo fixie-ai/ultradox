@@ -17,11 +17,7 @@ hero:
 tableOfContents: false
 ---
 import { Steps, CardGrid, Card } from '@astrojs/starlight/components';
-import { Image } from 'astro:assets';
-import flutterLogo from '../../assets/logos/flutter.svg';
-import jsLogo from '../../assets/logos/js.svg';
-import kotlinLogo from '../../assets/logos/kotlin.svg';
-import pythonLogo from '../../assets/logos/python.svg';
+import SDKCards from '../../components/SDKCards.astro';
 
 ## Intro
 The Ultravox API enables developers to build speech-to-speech AI applications. Built on the open source [Ultravox LLM](https://github.com/fixie-ai/ultravox), the Ultravox API provides a simple REST API for creating calls with AI agents.
@@ -45,25 +41,7 @@ There is an [OpenAPI spec](https://github.com/fixie-ai/ultradox/blob/main/docs/s
 ## Client SDKs 
 While there is a RESTful API for Ultravox that is used to create calls, you will need to use one of our client SDKs to join and end calls.
 
-There are currently three SDK flavors available:
-
-<CardGrid>
-  <Card title="Flutter">
-    <Image src={flutterLogo} width={24} alt="Flutter logo" />`flutter add ultravox_client` <br /> Get it on <a href="https://pub.dev/packages/ultravox_client">pub.dev</a>.
-  </Card>
-
-  <Card title="JavaScript">
-    <Image src={jsLogo} width={24} alt="JavaScript logo" /> `npm install ultravox-client` <br /> Available in the [npm registry.](https://www.npmjs.com/package/ultravox-client)
-  </Card>
-
-  <Card title="Kotlin">
-    <Image src={kotlinLogo} width={24} alt="Kotlin logo" /> Find it on [Maven Central](https://central.sonatype.com/artifact/ai.fixie/ultravox-client-sdk)
-  </Card>
-
-  <Card title="Python">
-    <Image src={pythonLogo} width={24} alt="Python logo" /> `pip install ultravox-client` <br /> More info on [PyPi](https://pypi.org/project/ultravox-client/)
-  </Card>
-</CardGrid>
+<SDKCards />
 
 Please let us know if you need a client for a specific language or framework.
 

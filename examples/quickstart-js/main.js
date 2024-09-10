@@ -1,6 +1,7 @@
 import { UltravoxSession, UltravoxSessionStatus } from 'ultravox-client';
 const apiUrl = 'http://localhost:3000/startCall';
-let UVSession = new UltravoxSession;
+const expMessages = new Set(["debug"]);
+let UVSession = new UltravoxSession({ experimentalMessages: expMessages });
 
 async function getJoinUrl(systemPrompt) {
   console.log('getJoinUrl called');
@@ -48,6 +49,10 @@ export async function startCall() {
     state.addEventListener('ultravoxTranscriptsChanged', (event) => {
       console.log('Transcripts changed:', event.transcripts);
       appendToConversation(`Transcripts changed: ${JSON.stringify(event.transcripts)}`);
+    });
+
+    state.addEventListener('ultravoxExperimentalMessage', (event) => {
+      console.log('Exp Message:', event);
     });
   }
 
