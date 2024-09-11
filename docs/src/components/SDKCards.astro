@@ -1,14 +1,21 @@
 ---
-import { CardGrid, Card } from '@astrojs/starlight/components';
-import { Image } from 'astro:assets';
-import flutterLogo from '../assets/logos/flutter.svg';
-import jsLogo from '../assets/logos/js.svg';
-import kotlinLogo from '../assets/logos/kotlin.svg';
-import pythonLogo from '../assets/logos/python.svg';
+import { CardGrid, Card, Icon } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import flutterLogo from "../assets/logos/flutter.svg";
+import jsLogo from "../assets/logos/js.svg";
+import kotlinLogo from "../assets/logos/kotlin.svg";
+import pythonLogo from "../assets/logos/python.svg";
+import ghLogo from "../assets/logos/github-mark.svg";
 
 const wordForNum: { [key: number]: string } = {
-  3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seven',
-  8: 'eight', 9: 'nine', 10: 'ten'
+  3: "three",
+  4: "four",
+  5: "five",
+  6: "six",
+  7: "seven",
+  8: "eight",
+  9: "nine",
+  10: "ten",
 };
 
 function numToWord(num: number): string {
@@ -23,7 +30,8 @@ const sdks = [
     installCommand: "flutter add ultravox_client",
     introLinkText: "Get it on ",
     linkText: "pub.dev",
-    linkUrl: "https://pub.dev/packages/ultravox_client"
+    linkUrl: "https://pub.dev/packages/ultravox_client",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-flutter",
   },
   {
     title: "JavaScript",
@@ -32,7 +40,8 @@ const sdks = [
     installCommand: "npm install ultravox-client",
     introLinkText: "Available in the ",
     linkText: "npm registry",
-    linkUrl: "https://www.npmjs.com/package/ultravox-client"
+    linkUrl: "https://www.npmjs.com/package/ultravox-client",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-js",
   },
   {
     title: "Kotlin",
@@ -40,7 +49,9 @@ const sdks = [
     logoAlt: "Kotlin logo",
     introLinkText: "Find it on ",
     linkText: "Maven Central",
-    linkUrl: "https://central.sonatype.com/artifact/ai.fixie/ultravox-client-sdk"
+    linkUrl:
+      "https://central.sonatype.com/artifact/ai.fixie/ultravox-client-sdk",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-android",
   },
   {
     title: "Python",
@@ -49,27 +60,45 @@ const sdks = [
     installCommand: "pip install ultravox-client",
     introLinkText: "More info on ",
     linkText: "PyPi",
-    linkUrl: "https://pypi.org/project/ultravox-client/"
-  }
+    linkUrl: "https://pypi.org/project/ultravox-client/",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-python",
+  },
 ];
-
 ---
 
 <div class="sdk-cards">
   There are currently {numToWord(sdks.length)} implementations of the SDK available:
   <br />
   <CardGrid>
-    {sdks.map((lang) => (
-      <Card title={lang.title}>
-        <Image src={lang.logo} width={24} alt={lang.logoAlt} />
-        {lang.installCommand && (
-          <>
-            <code>{lang.installCommand}</code>
-            <br />
-          </>
-        )}
-        {lang.introLinkText} <a href={lang.linkUrl}>{lang.linkText}</a>
-      </Card>
-    ))}
+    {
+      sdks.map((lang) => (
+        <Card title={lang.title}>
+          <div class="flex flex-row items-end h-6 mb-4">
+            <Image
+              src={lang.logo}
+              height={24}
+              alt={lang.logoAlt}
+              class="mr-2"
+            />
+            {lang.installCommand && (
+              <div>
+                <code>{lang.installCommand}</code>
+              </div>
+            )}
+          </div>
+
+          <div class="flex flex-row items-center w-full justify-between h-10">
+            <div>
+             {lang.introLinkText} <a href={lang.linkUrl}>{lang.linkText}</a>
+            </div>
+            <div>
+              <a href={lang.repo} class="">
+                <Image src={ghLogo} height={18} alt="h" />
+              </a>
+            </div>
+          </div>
+        </Card>
+      ))
+    }
   </CardGrid>
 </div>
