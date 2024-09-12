@@ -48,7 +48,7 @@ Lists all calls that have been created. API key scoped.
         <th class="w-10/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">uuid</td>
+        <td class="font-mono">callId</td>
         <td>string</td>
         <td>Unique identifier for the call.</td>
       </tr>
@@ -86,6 +86,16 @@ Lists all calls that have been created. API key scoped.
         <td class="font-mono">languageHint</td>
         <td>string</td>
         <td>BCP47 identifier used as a hint to indentify the user's spoken language.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">maxDuration</td>
+        <td>string</td>
+        <td>Maximum length that was set for the call. Format is `HH:MM:SS`.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">timeExceededMessage</td>
+        <td>string</td>
+        <td>Message that the agent will say if the call reaches the `maxDuration`.</td>
       </tr>
       <tr>
         <td class="font-mono">joinUrl</td>
@@ -146,7 +156,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
       <tr>
         <td class="font-mono">recordingEnabled</td>
         <td>boolean</td>
-        <td>A recording will be saved for the call when set to `true`. Recording can be retrieved via `GET /calls/{uuid}/recording`. Default value of `false`.</td>
+        <td>A recording will be saved for the call when set to `true`. Recording can be retrieved via `GET /calls/{call_id}/recording`. Default value of `false`.</td>
       </tr>
       <tr>
         <td class="font-mono">temperature</td>
@@ -158,6 +168,21 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>string</td>
         <td>The voice the AI will use for speaking. There are currently two options: `lily` (default) and `terrence`. Please contact us if you have other voice requirements.</td>
       </tr>
+      <tr>
+        <td class="font-mono">maxDuration</td>
+        <td>string</td>
+        <td>Maximum length for the call in the format `HH:MM:SS`. Can be used to limit the length of the call. Optionally, set `timeExceededMessage` to have the agent say a message when the allotted time is reached.<br /><br />For the free plan, defaults to amount of free time remaining (less any calls that are currently in-progress). For paid plans, defaults to the system maximum of one hour ("01:00:00"). </td>
+      </tr>
+      <tr>
+        <td class="font-mono">timeExceededMessage</td>
+        <td>string</td>
+        <td>Message that the agent will say if the call reaches the `maxDuration`.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">joinUrl</td>
+        <td>string</td>
+        <td>URL to use with the ultravox client library to join (AKA start) the call.</td>
+      </tr>
     </table>
   </TabItem>
   <TabItem label="Response">
@@ -168,7 +193,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <th class="w-10/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">uuid</td>
+        <td class="font-mono">callId</td>
         <td>string</td>
         <td>Unique identifier for the call.</td>
       </tr>
@@ -208,6 +233,16 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>BCP47 identifier used as a hint to indentify the user's spoken language.</td>
       </tr>
       <tr>
+        <td class="font-mono">maxDuration</td>
+        <td>string</td>
+        <td>Maximum length that was set for the call. Format is `HH:MM:SS`.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">timeExceededMessage</td>
+        <td>string</td>
+        <td>Message that the agent will say if the call reaches the `maxDuration`.</td>
+      </tr>
+      <tr>
         <td class="font-mono">joinUrl</td>
         <td>string</td>
         <td>URL to use with the ultravox client library to join (AKA start) the call.</td>
@@ -217,9 +252,9 @@ An optional query parameter called `priorCallId` can be provided to continue a p
 </Tabs>
 
 ## Get Call
-<Badge text="GET /calls/{uuid}" variant="note" size="large" />
+<Badge text="GET /calls/{call_id}" variant="note" size="large" />
 
-Gets details for the call with `uuid` specified in the path. API key scoped.
+Gets details for the call with `call_id` specified in the path. API key scoped.
 
 #### Parameters
 <Tabs>
@@ -230,7 +265,7 @@ Gets details for the call with `uuid` specified in the path. API key scoped.
         <th class="w-11/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
         <td>Unique identifier for the call to retrieve.</td>
       </tr>
     </table>
@@ -257,7 +292,7 @@ Gets details for the call with `uuid` specified in the path. API key scoped.
         <th class="w-10/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">uuid</td>
+        <td class="font-mono">callId</td>
         <td>string</td>
         <td>Unique identifier for the call.</td>
       </tr>
@@ -307,7 +342,7 @@ Gets details for the call with `uuid` specified in the path. API key scoped.
 
 
 ## Delete Call
-<Badge text="DELETE /calls/{uuid}" variant="danger" size="large" />
+<Badge text="DELETE /calls/{call_id}" variant="danger" size="large" />
 
 Deletes the specified call.
 
@@ -320,7 +355,7 @@ Deletes the specified call.
         <th class="w-11/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
         <td>Unique identifier for the call to delete.</td>
       </tr>
     </table>
@@ -348,7 +383,7 @@ Deletes the specified call.
 </Tabs>
 
 ## List Call Messages
-<Badge text="GET /calls/{uuid}/messages" variant="note" size="large" />
+<Badge text="GET /calls/{call_id}/messages" variant="note" size="large" />
 
 Lists all messages generated during the given call.
 
@@ -361,7 +396,7 @@ Lists all messages generated during the given call.
         <th class="w-11/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
         <td>Unique identifier of the call for which messages are being retrieved.</td>
       </tr>
       <tr>
@@ -422,7 +457,7 @@ Lists all messages generated during the given call.
 </Tabs>
 
 ## Get Call Recording
-<Badge text="GET /calls/{uuid}/recording" variant="note" size="large" />
+<Badge text="GET /calls/{call_id}/recording" variant="note" size="large" />
 
 Returns a link to the recording of the call (via a 302 redirect to the file location). The recording only becomes available after the call ends. If the recording is not yet available, a 425 (Too Early) HTTP status will be returned.
 
@@ -439,7 +474,7 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
         <th class="w-11/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">uuid<br /> <span class="text-sm text-red-500">required</span></td>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
         <td>Unique identifier of the call for which the recording is being retrieved.</td>
       </tr>
     </table>
