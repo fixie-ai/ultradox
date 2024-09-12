@@ -100,7 +100,7 @@ The status can be retrieved by adding an event listener to the state:
     import 'package:ultravox_client/ultravox_client.dart';
 
     UltravoxSession session = UltravoxSession.create();
-    UltravoxSessionState state = await _session.joinCall(joinUrl);
+    UltravoxSessionState state = await _session.joinCall('wss://your-call-join-url');
     state.addListener(() {
       print('Status is now ${state.status}');
     })
