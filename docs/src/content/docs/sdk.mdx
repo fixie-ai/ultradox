@@ -7,19 +7,57 @@ sidebar:
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 import SDKCards from '../../components/SDKCards.astro';
 
-The Ultravox [REST API](../api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
+The Ultravox [REST API](../api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page primarily uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
 
 ## Ultravox Session
 The core of the SDK is the `UltravoxSession`. The session is used to join and leave calls.
 
-```javascript
-import { UltravoxSession } from 'ultravox-client';
+<Tabs syncKey="example-language">
+  <TabItem label="JavaScript">
+    ```js
+    import { UltravoxSession } from 'ultravox-client';
 
-const session = new UltravoxSession();
-const state = await session.joinCall('wss://your-call-join-url');
+    const session = new UltravoxSession();
+    const state = await session.joinCall('wss://your-call-join-url');
 
-session.leaveCall();
-```
+    session.leaveCall();
+    ```
+  </TabItem>
+
+  <TabItem label="Flutter">
+    ```dart
+    import 'package:ultravox_client/ultravox_client.dart';
+
+    UltravoxSession session = UltravoxSession.create();
+    UltravoxSessionState state = await _session.joinCall('wss://your-call-join-url');
+
+    await session.leaveCall();
+    ```
+  </TabItem>
+
+  <TabItem label="Kotlin">
+    ```kotlin
+    import ai.ultravox.UltravoxSession
+
+    val session = UltravoxSession()
+    val state = session.joinCall("wss://your-call-join-url")
+
+    session.leaveCall()
+    ```
+  </TabItem>
+
+  <TabItem label="Python">
+    ```python
+    import asyncio
+    import ultravox_client as uv
+
+    session = uv.UltravoxSession()
+    state = await session.join_call("wss://your-call-join-url")
+
+    await session.leave_call()
+    ```
+  </TabItem>
+</Tabs>
 
 ## Session State
 When a call is joined, an `UltravoxSessionState` is returned. This object returns the current status, can be used to get text transcripts of the call, and surfaces debug messages that are helpful when building your application.
@@ -37,21 +75,27 @@ The session status is based on the `UltravoxSessionStatus` enum and can be one o
 | thinking      | The model is processing/thinking.           |
 | speaking      | The model is speaking.                      |
 
-The status can be retrieved by adding an event listener to the state:
+#### Status Events
+The status can be retrieved by adding an event listener to the state. Building on what we did above:
 
-```javascript
-import { UltravoxSession } from 'ultravox-client';
+<Tabs syncKey="example-language">
+  <TabItem label="JavaScript">
+    ```js
+    // Listen for status changing events
+    state.addEventListener('ultravoxSessionStatusChanged', (event) => {
+      console.log('Session status changed: ', event.state);
+    });
+    ```
+  </TabItem>
 
-const session = new UltravoxSession();
-const state = await session.joinCall('wss://your-call-join-url');
-
-// Listen for status changing events
-state.addEventListener('ultravoxSessionStatusChanged', (event) => {
-  console.log('Session status changed: ', event.state);
-});
-
-session.leaveCall();
-```
+  <TabItem label="Flutter">
+    ```dart
+    state.addListener(() {
+      print('Status is now ${state.status}');
+    })
+    ```
+  </TabItem>
+</Tabs>
 
 ### Transcripts
 Sometimes you may want to augment the audio with text transcripts (e.g. if you want to show the end user the model's output in real-time). Transcripts can be retrieved by adding an event listener to state:
