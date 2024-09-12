@@ -76,69 +76,23 @@ The session status is based on the `UltravoxSessionStatus` enum and can be one o
 | speaking      | The model is speaking.                      |
 
 #### Status Events
-The status can be retrieved by adding an event listener to the state:
+The status can be retrieved by adding an event listener to the state. Building on what we did above:
 
 <Tabs syncKey="example-language">
   <TabItem label="JavaScript">
     ```js
-    import { UltravoxSession } from 'ultravox-client';
-
-    const session = new UltravoxSession();
-    const state = await session.joinCall('wss://your-call-join-url');
-
     // Listen for status changing events
     state.addEventListener('ultravoxSessionStatusChanged', (event) => {
       console.log('Session status changed: ', event.state);
     });
-
-    session.leaveCall();
     ```
   </TabItem>
 
   <TabItem label="Flutter">
     ```dart
-    import 'package:ultravox_client/ultravox_client.dart';
-
-    UltravoxSession session = UltravoxSession.create();
-    UltravoxSessionState state = await _session.joinCall('wss://your-call-join-url');
     state.addListener(() {
       print('Status is now ${state.status}');
     })
-    await session.leaveCall();
-
-    ```
-  </TabItem>
-
-  <TabItem label="Kotlin">
-    ```kotlin
-    import ai.ultravox.UltravoxSession
-
-    val session = UltravoxSession()
-    val sessionState = session.joinCall("wss://your-call-join-url")
-
-    sessionState.addEventHandler("ultravoxSessionStatusChanged") { event ->
-      println("Session status changed: ${event.state}")
-    }
-
-    session.leaveCall()
-    ```
-  </TabItem>
-
-  <TabItem label="Python">
-    ```python
-    import asyncio
-    import ultravox_client as uv
-
-    session = uv.UltravoxSession()
-    state = await session.join_call("wss://your-call-join-url")
-
-    # Listen for status changing events
-    def on_status_changed(event):
-        print('Session status changed:', event.state)
-
-    state.add_event_listener('ultravox_session_status_changed', on_status_changed)
-
-    await session.leave_call()
     ```
   </TabItem>
 </Tabs>
