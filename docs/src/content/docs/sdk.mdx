@@ -40,7 +40,7 @@ The core of the SDK is the `UltravoxSession`. The session is used to join and le
     import ai.ultravox.UltravoxSession
 
     val session = UltravoxSession()
-    val sessionState = session.joinCall("wss://your-call-join-url")
+    val state = session.joinCall("wss://your-call-join-url")
 
     session.leaveCall()
     ```
