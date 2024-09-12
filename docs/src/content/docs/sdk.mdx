@@ -29,7 +29,7 @@ The core of the SDK is the `UltravoxSession`. The session is used to join and le
     import 'package:ultravox_client/ultravox_client.dart';
 
     UltravoxSession session = UltravoxSession.create();
-    UltravoxSessionState state = await _session.joinCall(joinUrl);
+    UltravoxSessionState state = await _session.joinCall('wss://your-call-join-url');
 
     await session.leaveCall();
     ```
