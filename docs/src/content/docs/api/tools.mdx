@@ -7,6 +7,15 @@ import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Tools in Ultravox allow you to extend the capabilities of your AI assistant by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.
 
+### Two Types of Tools
+Ultravox supports durable and temporary tools. There is no functional difference between them. Durable tools are persisted and can be reused across calls or applications. Temporary tools are created each time you create a new Call.
+
+Iteration is faster when using temporary tools. Durable tools shine once you have things dialed in, when you want to share tools across multiple applications, or if you have split responsibilities on the team.
+
+### Creating Tools
+Temporary tools are defined and passed in the request body of the [`Create Call`](../calls/#create-call) endpoint.
+
+You create durable tools either by uploading an OpenAPI spec or via the request body in the [`Create Tool`](./#create-tool) endpoint. Your OpenAPI spec must be either `json` or `yaml` format.
 
 ## List Tools
 <Badge text="GET /tools" variant="note" size="large" />
@@ -60,7 +69,7 @@ Lists all available tools. API key scoped.
       <tr>
         <td class="font-mono">results</td>
         <td>array</td>
-        <td>Array of Tool objects.</td>
+        <td>Array of [Tool](./#tool-definition-schema) objects.</td>
       </tr>
     </table>
   </TabItem>
@@ -99,7 +108,7 @@ Creates a new tool. API key scoped.
       <tr>
         <td class="font-mono">definition<br /><span class="text-sm text-red-500">required</span></td>
         <td>object</td>
-        <td>The definition of the tool. See BaseToolDefinition schema for details.</td>
+        <td>A [Tool](./#tool-definition-schema) definition.</td>
       </tr>
     </table>
   </TabItem>
@@ -128,7 +137,7 @@ Creates a new tool. API key scoped.
       <tr>
         <td class="font-mono">definition</td>
         <td>object</td>
-        <td>The definition of the tool.</td>
+        <td>The definition of the [Tool](./#tool-definition-schema).</td>
       </tr>
     </table>
   </TabItem>
@@ -192,7 +201,7 @@ Retrieves details of a specific tool. API key scoped.
       <tr>
         <td class="font-mono">definition</td>
         <td>object</td>
-        <td>The definition of the tool.</td>
+        <td>A [Tool](./#tool-definition-schema) defintion object for the tool.</td>
       </tr>
     </table>
   </TabItem>
@@ -231,7 +240,7 @@ Updates an existing tool. API key scoped.
       <tr>
         <td class="font-mono">definition<br /><span class="text-sm text-red-500">required</span></td>
         <td>object</td>
-        <td>The updated definition of the tool. See BaseToolDefinition schema for details.</td>
+        <td>The updated [Tool](./#tool-definition-schema) definition of the tool.</td>
       </tr>
     </table>
   </TabItem>
@@ -260,7 +269,7 @@ Updates an existing tool. API key scoped.
       <tr>
         <td class="font-mono">definition</td>
         <td>object</td>
-        <td>The updated definition of the tool.</td>
+        <td>The updated [Tool](./#tool-definition-schema) definition for the tool.</td>
       </tr>
     </table>
   </TabItem>
@@ -301,10 +310,14 @@ Deletes a specific tool. API key scoped.
   <TabItem label="Response">
     <table class="w-full">
       <tr class="w-full">
-        <th class="w-12/12"></th>
+        <th class="w-full"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
       </tr>
-      <tr>
+      <tr class="">
         <td class="font-mono">No response body</td>
+        <td></td>
+        <td></td>
       </tr>
     </table>
   </TabItem>
@@ -368,6 +381,19 @@ Deletes a specific tool. API key scoped.
   ]
 }
 ```
+
+### Create Tools from OpenAPI (Swagger) File
+<Tabs syncKey="example-language">
+  <TabItem label="cURL">
+  ```bash
+  curl -X POST -F "file=@./<your_tools_file.yaml>;type=text/yaml" \
+  --url https://api.ultravox.ai/api/tools \
+  --header 'X-API-Key: aBCDef.123456'
+
+  ```
+  </TabItem>
+</Tabs>
+
 
 ### Create a New Tool
 <Tabs syncKey="example-language">
@@ -567,35 +593,36 @@ Deletes a specific tool. API key scoped.
 
 ### Tool Definition Schema
 
-The `definition` object in the tool creation and update requests follows the BaseToolDefinition schema. Here's a breakdown of its main components:
+
+The `definition` object in the tool creation and update requests follows the [BaseToolDefinition schema](https://api.ultravox.ai/api/schema/swagger-ui/#/). Here's a breakdown of its main components:
 
 - `description` (string): A clear, concise description of what the tool does.
-- `dynamicParameters` (array): List of parameters that can be set by the AI model when using the tool.
+- `dynamicParameters` (array): List of parameters that can be set by the AI model when using the tool. Each parameter is an object containining:
   - `name` (string): The name of the parameter.
   - `location` (string): Where the parameter is used (e.g., "PARAMETER_LOCATION_QUERY", "PARAMETER_LOCATION_PATH").
-  - `schema` (object): JSON Schema definition of the parameter, including type and description.
+  - `schema` (object): JSON Schema definition of the parameter. This typically includes things like type, description, enum values, format, other restrictions, etc.
   - `required` (boolean): Whether the parameter is required.
-- `staticParameters` (array, optional): List of parameters that are always set to a fixed value when the tool is used.
-- `automaticParameters` (array, optional): Additional parameters automatically set by the system.
-- `requirements` (object, optional): Any specific requirements for using the tool.
+- `staticParameters` (array, optional): List of parameters that are always set to a known, fixed value when the tool is used. These are unconditionally added when the tool is invoked. These parameters are not exposed to or set by the model.
+- `automaticParameters` (array, optional): Additional parameters automatically set by the system. Used when the value is not known when the tool is created but that will be known when the tool is called.
+- `requirements` (object, optional): Any specific requirements for using the tool. Currently this is used for security (e.g. API keys or HTTP Auth) and for overriding dynamic parameter values.
 - `http` (object): Details for invoking the tool via HTTP.
-  - `baseUrlPattern` (string): The base URL pattern for the tool, possibly with placeholders for path parameters.
+  - `baseUrlPattern` (string): The base URL pattern for  the tool, possibly with placeholders for path parameters.
   - `httpMethod` (string): The HTTP method for the tool (e.g., "GET", "POST").
 
 ### Best Practices for Creating Tools
 
 1. **Clear Naming**: Choose a descriptive and unique name for your tool that clearly indicates its function.
 
-2. **Detailed Description**: Provide a comprehensive description of what the tool does, including any important details about its usage or limitations.
+1. **Detailed Description**: Provide a comprehensive description of what the tool does, including any important details about its usage or limitations.
 
-3. **Precise Parameters**: Define your dynamic parameters carefully, ensuring that the AI model has all the information it needs to use the tool effectively.
+1. **Precise Parameters**: Define your dynamic parameters carefully, ensuring that the AI model has all the information it needs to use the tool effectively.
 
-4. **Error Handling**: Consider how your tool will handle errors or unexpected inputs, and document this behavior in the tool's description.
+1. **Error Handling**: Consider how your tool will handle errors or unexpected inputs, and document this behavior in the tool's description.
 
-5. **Version Control**: When updating tools, consider creating a new version (e.g., "stock_price_v2") rather than modifying the existing tool, to maintain backward compatibility.
+1. **Iterate Faster**: Use temporary tools when you are building your application and iteration. Persist durable tools in the system when things have stabilized.
 
-6. **Security**: Be mindful of security when creating tools, especially when they interact with external APIs. Use appropriate authentication methods and avoid exposing sensitive information.
+1. **Version Control**: When updating tools, consider creating a new version (e.g., "stock_price_v2") rather than modifying the existing tool, to maintain backward compatibility.
 
-7. **Testing**: Thoroughly test your tools before deploying them in production conversations to ensure they function as expected.
+1. **Security**: Be mindful of security when creating tools, especially when they interact with external APIs. Use appropriate authentication methods and avoid exposing sensitive information.
 
-By following these guidelines and leveraging the Ultravox Tools API, you can create powerful, custom functionalities that enhance your AI assistant's capabilities and provide more value to your users.
+1. **Testing**: Thoroughly test your tools before deploying them in production conversations to ensure they function as expected.
