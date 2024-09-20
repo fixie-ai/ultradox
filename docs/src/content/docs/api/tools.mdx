@@ -7,15 +7,56 @@ import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Tools in Ultravox allow you to extend the capabilities of your AI assistant by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.
 
-### Two Types of Tools
-Ultravox supports durable and temporary tools. There is no functional difference between them. Durable tools are persisted and can be reused across calls or applications. Temporary tools are created each time you create a new Call and exist exclusively within the context of that call. (Temporary tools aren't visible in the ListTools response for example.)
+## Tools Quickstart
+The fastest way to get started with tools is to pass them in when you call [`Create Call`](../calls/#create-call) in the request body:
 
-Iteration is faster when using temporary tools. Durable tools shine once you have things dialed in, when you want to share tools across multiple applications, or if you have split responsibilities on the team.
+```javascript
+// Request body for creating an Ultravox call with a tool
+{
+  "model": "fixie-ai/ultravox-70B",
+  "systemPrompt": ...
+  "selectedTools": [
+    "temporaryTool": {
+      "nameOverride": "stock_price",
+      "description": "Get the current stock price for a given symbol",
+      "dynamicParameters": [
+        {
+          "name": "symbol",
+          "location": "PARAMETER_LOCATION_QUERY",
+          "schema": {
+            "type": "string",
+            "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
+          },
+          "required": true
+        }
+      ],
+      "http": {
+        "baseUrlPattern": "https://api.stockmarket.com/v1/price",
+        "httpMethod": "GET"
+      }
+    }
+  ]
+}
+```
+We call these temporary tools.
 
-### Creating Tools
+## Temporary Tools
+Temporary tools are created each time you create a new Call and exist exclusively within the context of that call. (Temporary tools aren't visible in the [List Tools](./#list-tools) response for example.)
+
+Iteration is faster when using temporary tools.
+
+### Creating Temporary Tools
 Temporary tools are defined and passed in the request body of the [`Create Call`](../calls/#create-call) endpoint.
 
+## Durable Tools
+In addition to temporary tools, Ultravox supports the creation of durable tools. There is no functional difference between durable and temporary tools.
+
+Durable tools are persisted and can be reused across calls or applications. They shine once you have things dialed in, when you want to share tools across multiple applications, or if you have split responsibilities on the team.
+
+### Creating Durable Tools
 You create durable tools either by uploading an OpenAPI spec or via the request body in the [`Create Tool`](./#create-tool) endpoint. Your OpenAPI spec must be either `json` or `yaml` format.
+
+The `/tools` endpoint in the Ultravox API is for working with durable tools.
 
 ## List Tools
 <Badge text="GET /tools" variant="note" size="large" />
@@ -69,7 +110,7 @@ Lists all available tools. Account scoped.
       <tr>
         <td class="font-mono">results</td>
         <td>array</td>
-        <td>Array of [Tool](./#tool-definition-schema) objects.</td>
+        <td>Array of objects. Each object contains: `toolId`, `name`, `created`, and `definition` (see the [tool definition](./#tool-definition-schema) for details.) </td>
       </tr>
     </table>
   </TabItem>
@@ -210,7 +251,7 @@ Retrieves details of a specific tool. Account scoped.
 ## Update Tool
 <Badge text="PUT /tools/{tool_id}" variant="caution" size="large" />
 
-Replaces an existing tool. Account scoped.
+Replaces an existing tool. Updating a single field in a tool is not supported. The entire tool definition must be provided. Account scoped.
 
 <Tabs>
   <TabItem label="Parameters">
@@ -592,8 +633,6 @@ Deletes a specific tool. Account scoped.
 ## Additional Information
 
 ### Tool Definition Schema
-
-
 The `definition` object in the tool creation and update requests follows the [BaseToolDefinition schema](https://api.ultravox.ai/api/schema/swagger-ui/#/). Here's a breakdown of its main components:
 
 - `description` (string): A clear, concise description of what the tool does.
@@ -617,11 +656,9 @@ The `definition` object in the tool creation and update requests follows the [Ba
 
 1. **Precise Parameters**: Define your dynamic parameters carefully, ensuring that the AI model has all the information it needs to use the tool effectively.
 
-1. **Error Handling**: Consider how your tool will handle errors or unexpected inputs, and document this behavior in the tool's description.
-
 1. **Iterate Faster**: Use temporary tools when you are building your application and iteration. Persist durable tools in the system when things have stabilized.
 
-1. **Version Control**: When updating tools, consider creating a new version (e.g., "stock_price_v2") rather than modifying the existing tool, to maintain backward compatibility.
+1. **Version Control**: When updating tools, consider creating a new version (e.g., "stock_price_v2") rather than modifying the existing tool. This allows testing of the new tool before impacting new calls made with the prior version of the tool.
 
 1. **Security**: Be mindful of security when creating tools, especially when they interact with external APIs. Use appropriate authentication methods and avoid exposing sensitive information.
 
