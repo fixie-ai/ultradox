@@ -597,7 +597,7 @@ Deletes a specific tool. Account scoped.
 The `definition` object in the tool creation and update requests follows the [BaseToolDefinition schema](https://api.ultravox.ai/api/schema/swagger-ui/#/). Here's a breakdown of its main components:
 
 - `description` (string): A clear, concise description of what the tool does.
-- `dynamicParameters` (array): List of parameters that can be set by the AI model when using the tool. Each parameter is an object containining:
+- `dynamicParameters` (array, optional): List of parameters that can be set by the AI model when using the tool. Each parameter is an object containining:
   - `name` (string): The name of the parameter.
   - `location` (string): Where the parameter is used (e.g., "PARAMETER_LOCATION_QUERY", "PARAMETER_LOCATION_PATH").
   - `schema` (object): JSON Schema definition of the parameter. This typically includes things like type, description, enum values, format, other restrictions, etc.
