@@ -10,7 +10,7 @@ Calls are what drive all speech-to-speech interactions between your end users an
 ## List Calls
 <Badge text="GET /calls" variant="note" size="large" />
 
-Lists all calls that have been created. API key scoped.
+Lists all calls that have been created. Account scoped.
 
 #### Parameters
 <Tabs>
@@ -109,7 +109,7 @@ Lists all calls that have been created. API key scoped.
 ## Create Call
 <Badge text="POST /calls" variant="success" size="large" />
 
-Creates a new call using the specified system prompt. API key scoped.
+Creates a new call using the specified system prompt. Account scoped.
 
 Optional parameters can be used to specify voice, temperature, language hint, and recordingEnabled.
 
@@ -254,7 +254,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
 ## Get Call
 <Badge text="GET /calls/{call_id}" variant="note" size="large" />
 
-Gets details for the call with `call_id` specified in the path. API key scoped.
+Gets details for the call with `call_id` specified in the path. Account scoped.
 
 #### Parameters
 <Tabs>
@@ -376,7 +376,7 @@ Deletes the specified call.
         <th class="w-12/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">No response body</td>
+        <td class="font-mono">None</td>
       </tr>
     </table>
   </TabItem>
