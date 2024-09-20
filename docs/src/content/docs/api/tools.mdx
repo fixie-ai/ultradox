@@ -8,7 +8,7 @@ import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
 Tools in Ultravox allow you to extend the capabilities of your AI assistant by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.
 
 ### Two Types of Tools
-Ultravox supports durable and temporary tools. There is no functional difference between them. Durable tools are persisted and can be reused across calls or applications. Temporary tools are created each time you create a new Call.
+Ultravox supports durable and temporary tools. There is no functional difference between them. Durable tools are persisted and can be reused across calls or applications. Temporary tools are created each time you create a new Call and exist exclusively within the context of that call. (Temporary tools aren't visible in the ListTools response for example.)
 
 Iteration is faster when using temporary tools. Durable tools shine once you have things dialed in, when you want to share tools across multiple applications, or if you have split responsibilities on the team.
 
