@@ -3,7 +3,7 @@ title: "Tools"
 sidebar:
   order: 30
 ---
-import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Badge, Tabs, TabItem, Steps } from '@astrojs/starlight/components';
 
 Tools in Ultravox allow you to extend the capabilities of your AI assistant by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.
 
@@ -11,8 +11,22 @@ Tools in Ultravox allow you to extend the capabilities of your AI assistant by g
 Currently, Ultravox only supports tools with our 70B model. Make sure to set the model to `fixie-ai/ultravox-70B` in any calls where you want to use tools.
 :::
 
-## Tools Quickstart
-The fastest way to get started with tools is to pass them in when you call [`Create Call`](../calls/#create-call) in the request body:
+### Temporary vs. Durable Tools
+Ultravox supports two types of tools: temporary and durable. There is much more information below but there are a few things to consider right upfront:
+<Steps>
+1. **Creation** → Temporary tools are created in the request body when a new call is created. Durable tools are created using the Ultravox REST API.
+1. **No Functional Difference** → There is no functional difference within the context of an Ultravox call between the two tool types.
+1. **Iteration Speed** → Temporary tools are great when you are building out a new application and need to iterate.
+1. **Reuse & Collaboration** → Durable tools are best when you have things dialed in and want to reuse tools across applications and/or work with a team and want to divide ownership of tools from the rest of your app.
+</Steps>
+
+## Temporary Tools
+Temporary tools are created each time you create a new Call and exist exclusively within the context of that call. (Temporary tools aren't visible in the [List Tools](./#list-tools) response for example.)
+
+Iteration is faster when using temporary tools because you don't have to create/update/delete tools as you build out your application. You can simply adjust the JSON in the request body and start a new call.
+
+### Creating & Using Temporary Tools
+Temporary tools are defined and passed in the request body of the [`Create Call`](../calls/#create-call) endpoint. They are available during the current call.
 
 ```javascript
 // Request body for creating an Ultravox call with a tool
@@ -42,15 +56,6 @@ The fastest way to get started with tools is to pass them in when you call [`Cre
   ]
 }
 ```
-We call these temporary tools.
-
-## Temporary Tools
-Temporary tools are created each time you create a new Call and exist exclusively within the context of that call. (Temporary tools aren't visible in the [List Tools](./#list-tools) response for example.)
-
-Iteration is faster when using temporary tools.
-
-### Creating Temporary Tools
-Temporary tools are defined and passed in the request body of the [`Create Call`](../calls/#create-call) endpoint.
 
 ## Durable Tools
 In addition to temporary tools, Ultravox supports the creation of durable tools. There is no functional difference between durable and temporary tools within the context of a call.
