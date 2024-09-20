@@ -7,6 +7,10 @@ import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Tools in Ultravox allow you to extend the capabilities of your AI assistant by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.
 
+:::danger[Use ultravox-70B for Tools]
+Currently, Ultravox only supports tools with our 70B model. Make sure to set the model to `fixie-ai/ultravox-70B` in any calls where you want to use tools.
+:::
+
 ## Tools Quickstart
 The fastest way to get started with tools is to pass them in when you call [`Create Call`](../calls/#create-call) in the request body:
 
@@ -16,8 +20,8 @@ The fastest way to get started with tools is to pass them in when you call [`Cre
   "model": "fixie-ai/ultravox-70B",
   "systemPrompt": ...
   "selectedTools": [
+    "nameOverride": "stock_price",
     "temporaryTool": {
-      "nameOverride": "stock_price",
       "description": "Get the current stock price for a given symbol",
       "dynamicParameters": [
         {
@@ -57,6 +61,20 @@ Durable tools are persisted and can be reused across calls or applications. They
 You create durable tools either by uploading an OpenAPI spec or via the request body in the [`Create Tool`](./#create-tool) endpoint. Your OpenAPI spec must be either `json` or `yaml` format.
 
 The `/tools` endpoint in the Ultravox API is for working with durable tools.
+
+### Using Durable Tools
+To use a durable tool in a call, set the toolName or toolId field instead of temporaryTool. For example:
+
+```javascript
+// Request body for creating an Ultravox call with a durable tool
+{
+  "model": "fixie-ai/ultravox-70B",
+  "systemPrompt": ...
+  "selectedTools": [
+    "toolName": "stock_price",
+  ]
+}
+```
 
 ## List Tools
 <Badge text="GET /tools" variant="note" size="large" />
