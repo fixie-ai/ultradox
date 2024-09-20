@@ -604,7 +604,7 @@ The `definition` object in the tool creation and update requests follows the [Ba
   - `required` (boolean): Whether the parameter is required.
 - `staticParameters` (array, optional): List of parameters that are always set to a known, fixed value when the tool is used. These are unconditionally added when the tool is invoked. These parameters are not exposed to or set by the model. Example: you use an API for various things but want to track which requests come from your Ultravox app so you always append `utm=ultravox` to the query parameters.
 - `automaticParameters` (array, optional): Additional parameters automatically set by the system. Used when the value is not known when the tool is created but that will be known when the tool is called. Example: you want to use the unique `call_id` from ultravox as a key in your backend and you have the tool include `call_id` in the request body when your tool's API is called.
-- `requirements` (object, optional): Any specific requirements for using the tool. Currently this is used for security (e.g. API keys or HTTP Auth) and for overriding dynamic parameter values.
+- `requirements` (object, optional): Any specific requirements for using the tool. Currently this is used for security (e.g. API keys or HTTP Auth).
 - `http` (object): Details for invoking the tool via HTTP.
   - `baseUrlPattern` (string): The base URL pattern for  the tool, possibly with placeholders for path parameters.
   - `httpMethod` (string): The HTTP method for the tool (e.g., "GET", "POST").
