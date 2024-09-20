@@ -59,7 +59,77 @@ The core of the SDK is the `UltravoxSession`. The session is used to join and le
   </TabItem>
 </Tabs>
 
-## Session State
+### Methods
+The `UltravoxSession` contains methods for joining/leaving a call, for sending text messages to the model and for muting the microphone/speaker.
+
+#### joinCall()
+
+```typescript
+joinCall(joinUrl: string): UltravoxSessionState
+```
+Joins a call. Requires a joinUrl (string). Returns an [`UltravoxSessionState`](#ultravox-session-state).
+
+#### leaveCall()
+
+```typescript
+async leaveCall(): Promise<void>
+```
+Leaves the current call. Returns a promise (with no return value) that resolves when the call has successfully been left.
+
+#### sendText()
+
+```typescript
+sendText(text: string): void
+```
+Sends a message to the model. Model replies via text transcript. Requires inputting the text message (string).
+
+#### isMicMuted()
+
+```typescript
+isMicMuted(): boolean
+```
+Returns a boolen indicating if the end user's microphone is muted. This is scoped to the Ultravox SDK and does not detect muting done by the user outside of your application.
+
+#### isSpeakerMuted()
+
+```typescript
+isSpeakerMuted(): boolean
+```
+Returns a boolen indicating if the speaker (the agent's voice output) is muted. This is scoped to the Ultravox SDK and does not detect muting done by the user outside of your application.
+
+
+#### muteMic()
+
+```typescript
+muteMic(): void
+```
+Mutes the end user's microphone. This is scoped to the Ultravox SDK.
+
+#### unmuteMic()
+
+```typescript
+unmuteMic(): void
+```
+Un mutes the end user's microphone. This is scoped to the Ultravox SDK.
+
+
+#### muteSpeaker()
+
+```typescript
+muteSpeaker(): void
+```
+Mutes the end user's speaker (the agent's voice output). This is scoped to the Ultravox SDK.
+
+
+#### unmuteSpeaker()
+
+```typescript
+unmuteSpeaker(): void
+```
+Un mutes the end user's speaker (the agent's voice output). This is scoped to the Ultravox SDK.
+
+
+## Ultravox Session State
 When a call is joined, an `UltravoxSessionState` is returned. This object returns the current status, can be used to get text transcripts of the call, and surfaces debug messages that are helpful when building your application.
 
 ### Status
