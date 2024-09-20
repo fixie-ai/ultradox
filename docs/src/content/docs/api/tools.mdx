@@ -636,14 +636,14 @@ Deletes a specific tool. Account scoped.
 The `definition` object in the tool creation and update requests follows the [BaseToolDefinition schema](https://api.ultravox.ai/api/schema/swagger-ui/#/). Here's a breakdown of its main components:
 
 - `description` (string): A clear, concise description of what the tool does.
-- `dynamicParameters` (array): List of parameters that can be set by the AI model when using the tool. Each parameter is an object containining:
+- `dynamicParameters` (array, optional): List of parameters that can be set by the AI model when using the tool. Each parameter is an object containining:
   - `name` (string): The name of the parameter.
   - `location` (string): Where the parameter is used (e.g., "PARAMETER_LOCATION_QUERY", "PARAMETER_LOCATION_PATH").
   - `schema` (object): JSON Schema definition of the parameter. This typically includes things like type, description, enum values, format, other restrictions, etc.
   - `required` (boolean): Whether the parameter is required.
 - `staticParameters` (array, optional): List of parameters that are always set to a known, fixed value when the tool is used. These are unconditionally added when the tool is invoked. These parameters are not exposed to or set by the model. Example: you use an API for various things but want to track which requests come from your Ultravox app so you always append `utm=ultravox` to the query parameters.
 - `automaticParameters` (array, optional): Additional parameters automatically set by the system. Used when the value is not known when the tool is created but that will be known when the tool is called. Example: you want to use the unique `call_id` from ultravox as a key in your backend and you have the tool include `call_id` in the request body when your tool's API is called.
-- `requirements` (object, optional): Any specific requirements for using the tool. Currently this is used for security (e.g. API keys or HTTP Auth) and for overriding dynamic parameter values.
+- `requirements` (object, optional): Any specific requirements for using the tool. Currently this is used for security (e.g. API keys or HTTP Auth).
 - `http` (object): Details for invoking the tool via HTTP.
   - `baseUrlPattern` (string): The base URL pattern for  the tool, possibly with placeholders for path parameters.
   - `httpMethod` (string): The HTTP method for the tool (e.g., "GET", "POST").
@@ -656,7 +656,9 @@ The `definition` object in the tool creation and update requests follows the [Ba
 
 1. **Precise Parameters**: Define your dynamic parameters carefully, ensuring that the AI model has all the information it needs to use the tool effectively.
 
-1. **Iterate Faster**: Use temporary tools when you are building your application and iteration. Persist durable tools in the system when things have stabilized.
+1. **Error Handling**: Consider how your tool will handle errors or unexpected inputs, and document this behavior in the tool's description.
+
+1. **Iterate Faster**: Use temporary tools when you are building your application. Persist durable tools in the system when things have stabilized.
 
 1. **Version Control**: When updating tools, consider creating a new version (e.g., "stock_price_v2") rather than modifying the existing tool. This allows testing of the new tool before impacting new calls made with the prior version of the tool.
 
