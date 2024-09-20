@@ -1,0 +1,690 @@
+---
+title: "Tools"
+sidebar:
+  order: 30
+---
+import { Badge, Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+Tools in Ultravox allow you to extend the capabilities of your AI assistant by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.
+
+:::danger[Use ultravox-70B for Tools]
+Currently, Ultravox only supports tools with our 70B model. Make sure to set the model to `fixie-ai/ultravox-70B` in any calls where you want to use tools.
+:::
+
+### Temporary vs. Durable Tools
+Ultravox supports two types of tools: temporary and durable. There is much more information below but there are a few things to consider right upfront:
+<Steps>
+1. **Creation** → Temporary tools are created in the request body when a new call is created. Durable tools are created using the Ultravox REST API.
+1. **No Functional Difference** → There is no functional difference within the context of an Ultravox call between the two tool types.
+1. **Iteration Speed** → Temporary tools are great when you are building out a new application and need to iterate.
+1. **Reuse & Collaboration** → Durable tools are best when you have things dialed in and want to reuse tools across applications and/or work with a team and want to divide ownership of tools from the rest of your app.
+</Steps>
+
+## Temporary Tools
+Temporary tools are created each time you create a new Call and exist exclusively within the context of that call. (Temporary tools aren't visible in the [List Tools](./#list-tools) response for example.)
+
+Iteration is faster when using temporary tools because you don't have to create/update/delete tools as you build out your application. You can simply adjust the JSON in the request body and start a new call.
+
+### Creating & Using Temporary Tools
+Temporary tools are defined and passed in the request body of the [`Create Call`](../calls/#create-call) endpoint. They are available during the current call.
+
+```javascript
+// Request body for creating an Ultravox call with a tool
+{
+  "model": "fixie-ai/ultravox-70B",
+  "systemPrompt": ...
+  "selectedTools": [
+    "nameOverride": "stock_price",
+    "temporaryTool": {
+      "description": "Get the current stock price for a given symbol",
+      "dynamicParameters": [
+        {
+          "name": "symbol",
+          "location": "PARAMETER_LOCATION_QUERY",
+          "schema": {
+            "type": "string",
+            "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
+          },
+          "required": true
+        }
+      ],
+      "http": {
+        "baseUrlPattern": "https://api.stockmarket.com/v1/price",
+        "httpMethod": "GET"
+      }
+    }
+  ]
+}
+```
+
+## Durable Tools
+In addition to temporary tools, Ultravox supports the creation of durable tools. There is no functional difference between durable and temporary tools within the context of a call.
+
+Durable tools are persisted and can be reused across calls or applications. They shine once you have things dialed in, when you want to share tools across multiple applications, or if you have split responsibilities on the team.
+
+### Creating Durable Tools
+You create durable tools either by uploading an OpenAPI spec or via the request body in the [`Create Tool`](./#create-tool) endpoint. Your OpenAPI spec must be either `json` or `yaml` format.
+
+The `/tools` endpoint in the Ultravox API is for working with durable tools.
+
+### Using Durable Tools
+To use a durable tool in a call, set the toolName or toolId field instead of temporaryTool. For example:
+
+```javascript
+// Request body for creating an Ultravox call with a durable tool
+{
+  "model": "fixie-ai/ultravox-70B",
+  "systemPrompt": ...
+  "selectedTools": [
+    "toolName": "stock_price",
+  ]
+}
+```
+
+## List Tools
+<Badge text="GET /tools" variant="note" size="large" />
+
+Lists all available tools. Account scoped.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">cursor</td>
+        <td>Pagination cursor.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">next</td>
+        <td>string</td>
+        <td>URL for the next page of results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">previous</td>
+        <td>string</td>
+        <td>URL for the previous page of results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">results</td>
+        <td>array</td>
+        <td>Array of objects. Each object contains: `toolId`, `name`, `created`, and `definition` (see the [tool definition](./#tool-definition-schema) for details.) </td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Create Tool
+<Badge text="POST /tools" variant="success" size="large" />
+
+Creates a new tool. Account scoped.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">name<br /><span class="text-sm text-red-500">required</span></td>
+        <td>string</td>
+        <td>The name of the tool. Maximum 40 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">definition<br /><span class="text-sm text-red-500">required</span></td>
+        <td>object</td>
+        <td>A [Tool](./#tool-definition-schema) definition.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">toolId</td>
+        <td>string</td>
+        <td>Unique identifier for the created tool.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">name</td>
+        <td>string</td>
+        <td>The name of the tool.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Timestamp of when the tool was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">definition</td>
+        <td>object</td>
+        <td>The definition of the [Tool](./#tool-definition-schema).</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+
+## Get Tool
+<Badge text="GET /tools/{tool_id}" variant="note" size="large" />
+
+Retrieves details of a specific tool. Account scoped.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">tool_id<br /><span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the tool to retrieve.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">toolId</td>
+        <td>string</td>
+        <td>Unique identifier for the tool.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">name</td>
+        <td>string</td>
+        <td>The name of the tool.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Timestamp of when the tool was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">definition</td>
+        <td>object</td>
+        <td>A [Tool](./#tool-definition-schema) defintion object for the tool.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Update Tool
+<Badge text="PUT /tools/{tool_id}" variant="caution" size="large" />
+
+Replaces an existing tool. Updating a single field in a tool is not supported. The entire tool definition must be provided. Account scoped.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">tool_id<br /><span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the tool to update.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">name<br /><span class="text-sm text-red-500">required</span></td>
+        <td>string</td>
+        <td>The updated name of the tool. Maximum 40 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">definition<br /><span class="text-sm text-red-500">required</span></td>
+        <td>object</td>
+        <td>The updated [Tool](./#tool-definition-schema) definition of the tool.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">toolId</td>
+        <td>string</td>
+        <td>Unique identifier for the updated tool.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">name</td>
+        <td>string</td>
+        <td>The updated name of the tool.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Timestamp of when the tool was originally created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">definition</td>
+        <td>object</td>
+        <td>The updated [Tool](./#tool-definition-schema) definition for the tool.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Delete Tool
+<Badge text="DELETE /tools/{tool_id}" variant="danger" size="large" />
+
+Deletes a specific tool. Account scoped.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">tool_id<br /><span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the tool to delete.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-full"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr class="">
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Examples
+
+### List All Tools
+<Tabs syncKey="example-language">
+  <TabItem label="cURL">
+  ```bash
+  curl --request GET \
+  --url 'https://api.ultravox.ai/api/tools' \
+  --header 'X-API-Key: aBCDef.123456'
+  ```
+  </TabItem>
+  <TabItem label="JavaScript">
+  ```javascript
+  fetch('https://api.ultravox.ai/api/tools', {
+    method: 'GET',
+    headers: {
+      'X-API-Key': 'aBCDef.123456'
+    }
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+  ```
+  </TabItem>
+</Tabs>
+
+**Response**
+```json
+{
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "toolId": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "weather_api",
+      "created": "2024-09-18T10:30:00Z",
+      "definition": {
+        "description": "Get current weather information for a given location",
+        "dynamicParameters": [
+          {
+            "name": "location",
+            "location": "PARAMETER_LOCATION_QUERY",
+            "schema": {
+              "type": "string",
+              "description": "City name or ZIP code"
+            },
+            "required": true
+          }
+        ],
+        "http": {
+          "baseUrlPattern": "https://api.weatherservice.com/v1/current",
+          "httpMethod": "GET"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Create Tools from OpenAPI (Swagger) File
+<Tabs syncKey="example-language">
+  <TabItem label="cURL">
+  ```bash
+  curl -X POST -F "file=@./<your_tools_file.yaml>;type=text/yaml" \
+  --url https://api.ultravox.ai/api/tools \
+  --header 'X-API-Key: aBCDef.123456'
+
+  ```
+  </TabItem>
+</Tabs>
+
+
+### Create a New Tool
+<Tabs syncKey="example-language">
+  <TabItem label="cURL">
+  ```bash
+  curl --request POST \
+  --url 'https://api.ultravox.ai/api/tools' \
+  --header 'Content-Type: application/json' \
+  --header 'X-API-Key: aBCDef.123456' \
+  --data '{
+    "name": "stock_price",
+    "definition": {
+      "description": "Get the current stock price for a given symbol",
+      "dynamicParameters": [
+        {
+          "name": "symbol",
+          "location": "PARAMETER_LOCATION_QUERY",
+          "schema": {
+            "type": "string",
+            "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
+          },
+          "required": true
+        }
+      ],
+      "http": {
+        "baseUrlPattern": "https://api.stockmarket.com/v1/price",
+        "httpMethod": "GET"
+      }
+    }
+  }'
+  ```
+  </TabItem>
+  <TabItem label="JavaScript">
+  ```javascript
+  const toolData = {
+    name: "stock_price",
+    definition: {
+      description: "Get the current stock price for a given symbol",
+      dynamicParameters: [
+        {
+          name: "symbol",
+          location: "PARAMETER_LOCATION_QUERY",
+          schema: {
+            type: "string",
+            description: "Stock symbol (e.g., AAPL for Apple Inc.)"
+          },
+          required: true
+        }
+      ],
+      http: {
+        baseUrlPattern: "https://api.stockmarket.com/v1/price",
+        httpMethod: "GET"
+      }
+    }
+  };
+
+  fetch('https://api.ultravox.ai/api/tools', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'aBCDef.123456'
+    },
+    body: JSON.stringify(toolData)
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+  ```
+  </TabItem>
+</Tabs>
+
+**Response**
+```json
+{
+  "toolId": "7f1e3b78-c71e-4b1f-9c4a-b83f7683f0d2",
+  "name": "stock_price",
+  "created": "2024-09-18T14:15:22Z",
+  "definition": {
+    "description": "Get the current stock price for a given symbol",
+    "dynamicParameters": [
+      {
+        "name": "symbol",
+        "location": "PARAMETER_LOCATION_QUERY",
+        "schema": {
+          "type": "string",
+          "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
+        },
+        "required": true
+      }
+    ],
+    "http": {
+      "baseUrlPattern": "https://api.stockmarket.com/v1/price",
+      "httpMethod": "GET"
+    }
+  }
+}
+```
+
+### Update an Existing Tool
+<Tabs syncKey="example-language">
+  <TabItem label="cURL">
+  ```bash
+  curl --request PUT \
+  --url 'https://api.ultravox.ai/api/tools/7f1e3b78-c71e-4b1f-9c4a-b83f7683f0d2' \
+  --header 'Content-Type: application/json' \
+  --header 'X-API-Key: aBCDef.123456' \
+  --data '{
+    "name": "stock_price_v2",
+    "definition": {
+      "description": "Get the current stock price and company info for a given symbol",
+      "dynamicParameters": [
+        {
+          "name": "symbol",
+          "location": "PARAMETER_LOCATION_QUERY",
+          "schema": {
+            "type": "string",
+            "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
+          },
+          "required": true
+        }
+      ],
+      "http": {
+        "baseUrlPattern": "https://api.stockmarket.com/v2/price-and-info",
+        "httpMethod": "GET"
+      }
+    }
+  }'
+  ```
+  </TabItem>
+  <TabItem label="JavaScript">
+  ```javascript
+  const updatedToolData = {
+    name: "stock_price_v2",
+    definition: {
+      description: "Get the current stock price and company info for a given symbol",
+      dynamicParameters: [
+        {
+          name: "symbol",
+          location: "PARAMETER_LOCATION_QUERY",
+          schema: {
+            type: "string",
+            description: "Stock symbol (e.g., AAPL for Apple Inc.)"
+          },
+          required: true
+        }
+      ],
+      http: {
+        baseUrlPattern: "https://api.stockmarket.com/v2/price-and-info",
+        httpMethod: "GET"
+      }
+    }
+  };
+
+  fetch('https://api.ultravox.ai/api/tools/7f1e3b78-c71e-4b1f-9c4a-b83f7683f0d2', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'aBCDef.123456'
+    },
+    body: JSON.stringify(updatedToolData)
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+  ```
+  </TabItem>
+</Tabs>
+
+**Response**
+```json
+{
+  "toolId": "7f1e3b78-c71e-4b1f-9c4a-b83f7683f0d2",
+  "name": "stock_price_v2",
+  "created": "2024-09-18T14:15:22Z",
+  "definition": {
+    "description": "Get the current stock price and company info for a given symbol",
+    "dynamicParameters": [
+      {
+        "name": "symbol",
+        "location": "PARAMETER_LOCATION_QUERY",
+        "schema": {
+          "type": "string",
+          "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
+        },
+        "required": true
+      }
+    ],
+    "http": {
+      "baseUrlPattern": "https://api.stockmarket.com/v2/price-and-info",
+      "httpMethod": "GET"
+    }
+  }
+}
+```
+
+## Additional Information
+
+### Tool Definition Schema
+The `definition` object in the tool creation and update requests follows the [BaseToolDefinition schema](https://api.ultravox.ai/api/schema/swagger-ui/#/). Here's a breakdown of its main components:
+
+- `description` (string): A clear, concise description of what the tool does.
+- `dynamicParameters` (array, optional): List of parameters that can be set by the AI model when using the tool. Each parameter is an object containining:
+  - `name` (string): The name of the parameter.
+  - `location` (string): Where the parameter is used (e.g., "PARAMETER_LOCATION_QUERY", "PARAMETER_LOCATION_PATH").
+  - `schema` (object): JSON Schema definition of the parameter. This typically includes things like type, description, enum values, format, other restrictions, etc.
+  - `required` (boolean): Whether the parameter is required.
+- `staticParameters` (array, optional): List of parameters that are always set to a known, fixed value when the tool is used. These are unconditionally added when the tool is invoked. These parameters are not exposed to or set by the model. Example: you use an API for various things but want to track which requests come from your Ultravox app so you always append `utm=ultravox` to the query parameters.
+- `automaticParameters` (array, optional): Additional parameters automatically set by the system. Used when the value is not known when the tool is created but that will be known when the tool is called. Example: you want to use the unique `call_id` from ultravox as a key in your backend and you have the tool include `call_id` in the request body when your tool's API is called.
+- `requirements` (object, optional): Any specific requirements for using the tool. Currently this is used for security (e.g. API keys or HTTP Auth).
+- `http` (object): Details for invoking the tool via HTTP.
+  - `baseUrlPattern` (string): The base URL pattern for  the tool, possibly with placeholders for path parameters.
+  - `httpMethod` (string): The HTTP method for the tool (e.g., "GET", "POST").
+
+### Best Practices for Creating Tools
+
+1. **Clear Naming**: Choose a descriptive and unique name for your tool that clearly indicates its function.
+
+1. **Detailed Description**: Provide a comprehensive description of what the tool does, including any important details about its usage or limitations. This and the name will help the model decide when and how to use your tool.
+
+1. **Precise Parameters**: Define your dynamic parameters carefully, ensuring that the AI model has all the information it needs to use the tool effectively.
+
+1. **Error Handling**: Consider how your tool will handle errors or unexpected inputs, and document this behavior in the tool's description.
+
+1. **Iterate Faster**: Use temporary tools when you are building your application. Persist durable tools in the system when things have stabilized.
+
+1. **Version Control**: When updating tools, consider creating a new version (e.g., "stock_price_v2") rather than modifying the existing tool. This allows testing of the new tool before impacting new calls made with the prior version of the tool.
+
+1. **Security**: Be mindful of security when creating tools, especially when they interact with external APIs. Use appropriate authentication methods and avoid exposing sensitive information.
+
+1. **Testing**: Thoroughly test your tools before deploying them in production conversations to ensure they function as expected.
