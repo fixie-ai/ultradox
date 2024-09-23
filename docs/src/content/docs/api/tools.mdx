@@ -83,7 +83,7 @@ To use a durable tool in a call, set the toolName or toolId field instead of tem
 
 ## Tool Authentication
 :::tip[Tools in Ultravox are Different]
-Unlike using tools with other LLM APIs, Ultravox actually calls the tool. This means you need to do a bit more work upfront in defining tools with the proper authentication and parameters.
+Unlike using tools with single-generation LLM APIs, Ultravox actually calls your tool. This means you need to do a bit more work upfront in defining tools with the proper authentication and parameters.
 :::
 
 Ultravox has rich support for tools auth. When creating a tool, you must specify what is required for successful auth to the backend service. Three methods for passing API keys are supported and are used when creating the tool:
