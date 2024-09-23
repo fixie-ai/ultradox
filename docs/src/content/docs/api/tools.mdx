@@ -81,6 +81,129 @@ To use a durable tool in a call, set the toolName or toolId field instead of tem
 }
 ```
 
+## Tool Authentication
+:::tip[Tools in Ultravox are Different]
+Unlike using tools with other LLM APIs, Ultravox actually calls the tool. This means you need to do a bit more work upfront in defining tools with the proper authentication and parameters.
+:::
+
+Ultravox has rich support for tools auth. When creating a tool, you must specify what is required for successful auth to the backend service. Three methods for passing API keys are supported and are used when creating the tool:
+1. **Query Parameter** → The API key will be passed via the querystring. The name of the parameter must be provided when the tool is created.
+1. **Header** → The API key will be passed via a custom header. The name of the header must be provided.
+1. **HTTP Authentication** → The API key will be passed via the HTTP Authentication header. The name of the scheme must be provided (e.g. `Bearer`).
+
+You then pass in the key(s) in the `authTokens` property of `selectedTools` when creating a call.
+
+<Tabs>
+  <TabItem label="Query Parameter">
+  ```javascript
+  // Create a tool that uses a querystring parameter called 'apiKey'
+  {
+    "name": "symbol"
+    "definition": {
+      "description": "Get the current stock price for a given symbol",
+      "requirements": {
+        "httpSecurityOptions": {
+          "options": [
+            "requirements": {
+              "queryApiKey": {
+                "name": "apiKey"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+
+  // Pass the API key during call creation
+  {
+    "model": "fixie-ai/ultravox-70B"
+    "systemPrompt": ...
+    "selectedTools": [
+      {
+        "toolName": "symbol"
+        "authTokens": {
+          "apiKey": "your_token_here"
+        }
+      }
+    ]
+  }
+  ```
+  </TabItem>
+  <TabItem label="Header">
+  ```javascript
+  // Create a tool that uses an HTTP Header named 'X-My-Header'
+  {
+    "name": "symbol"
+    "definition": {
+      "description": "Get the current stock price for a given symbol",
+      "requirements": {
+        "httpSecurityOptions": {
+          "options": [
+            "requirements": {
+              "headerApiKey": {
+                "name": "X-My-Header"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+
+  // Pass the API key during call creation
+  {
+    "model": "fixie-ai/ultravox-70B"
+    "systemPrompt": ...
+    "selectedTools": [
+      {
+        "toolName": "symbol"
+        "authTokens": {
+          "X-My-Header": "your_token_here"
+        }
+      }
+    ]
+  }
+  ```
+  </TabItem>
+  <TabItem label="HTTP Authentication">
+  ```javascript
+  // Create a tool that uses HTTP Authentication scheme 'Bearer'
+  {
+    "name": "symbol"
+    "definition": {
+      "description": "Get the current stock price for a given symbol",
+      "requirements": {
+        "httpSecurityOptions": {
+          "options": [
+            "requirements": {
+              "httpAuth": {
+                "scheme": "Bearer"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+
+  // Pass the Bearer token during call creation
+  {
+    "model": "fixie-ai/ultravox-70B"
+    "systemPrompt": ...
+    "selectedTools": [
+      {
+        "toolName": "symbol"
+        "authTokens": {
+          "Bearer": "your_token_here"
+        }
+      }
+    ]
+  }
+  ```
+  </TabItem>
+</Tabs>
+
 ## List Tools
 <Badge text="GET /tools" variant="note" size="large" />
 
