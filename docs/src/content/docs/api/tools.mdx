@@ -88,7 +88,7 @@ Unlike using tools with single-generation LLM APIs, Ultravox actually calls your
 
 Ultravox has rich support for tools auth. When creating a tool, you must specify what is required for successful auth to the backend service. Three methods for passing API keys are supported and are used when creating the tool:
 1. **Query Parameter** → The API key will be passed via the query string. The name of the parameter must be provided when the tool is created.
-1. **Header** → The API key will be passed via a custom header. The name of the header must be provided.
+1. **Header** → The API key will be passed via a custom header. The name of the header must be provided when the tool is created.
 1. **HTTP Authentication** → The API key will be passed via the HTTP Authentication header. The name of the scheme must be provided (e.g. `Bearer`).
 
 You then pass in the key(s) in the `authTokens` property of `selectedTools` when creating a call.
