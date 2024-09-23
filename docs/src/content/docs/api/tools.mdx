@@ -172,7 +172,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
   </TabItem>
   <TabItem label="HTTP Authentication">
   ```javascript
-  // Create a tool that uses HTTP Authentication scheme 'Bearer'
+  // Create a tool that uses HTTP Authentication scheme 'Bearer'. When the tool is invoked it will receive an 'Authorization' header with value "Bearer your_token_here".
   {
     "name": "symbol"
     "definition": {
