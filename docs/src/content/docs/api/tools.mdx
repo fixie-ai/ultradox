@@ -87,9 +87,11 @@ Unlike using tools with other LLM APIs, Ultravox actually calls the tool. This m
 :::
 
 Ultravox has rich support for tools auth. When creating a tool, you must specify what is required for successful auth to the backend service. Three methods for passing API keys are supported and are used when creating the tool:
+<Steps>
 1. **Query Parameter** → The API key will be passed via the querystring. The name of the parameter must be provided when the tool is created.
 1. **Header** → The API key will be passed via a custom header. The name of the header must be provided.
 1. **HTTP Authentication** → The API key will be passed via the HTTP Authentication header. The name of the scheme must be provided (e.g. `Bearer`).
+</Steps>
 
 You then pass in the key(s) in the `authTokens` property of `selectedTools` when creating a call.
 
@@ -98,7 +100,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
   ```javascript
   // Create a tool that uses a querystring parameter called 'apiKey'
   {
-    "name": "symbol"
+    "name": "stock_price"
     "definition": {
       "description": "Get the current stock price for a given symbol",
       "requirements": {
@@ -121,7 +123,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
     "systemPrompt": ...
     "selectedTools": [
       {
-        "toolName": "symbol"
+        "toolName": "stock_price"
         "authTokens": {
           "apiKey": "your_token_here"
         }
@@ -134,7 +136,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
   ```javascript
   // Create a tool that uses an HTTP Header named 'X-My-Header'
   {
-    "name": "symbol"
+    "name": "stock_price"
     "definition": {
       "description": "Get the current stock price for a given symbol",
       "requirements": {
@@ -157,7 +159,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
     "systemPrompt": ...
     "selectedTools": [
       {
-        "toolName": "symbol"
+        "toolName": "stock_price"
         "authTokens": {
           "X-My-Header": "your_token_here"
         }
@@ -170,7 +172,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
   ```javascript
   // Create a tool that uses HTTP Authentication scheme 'Bearer'
   {
-    "name": "symbol"
+    "name": "stock_price"
     "definition": {
       "description": "Get the current stock price for a given symbol",
       "requirements": {
@@ -193,7 +195,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
     "systemPrompt": ...
     "selectedTools": [
       {
-        "toolName": "symbol"
+        "toolName": "stock_price"
         "authTokens": {
           "Bearer": "your_token_here"
         }
@@ -203,6 +205,92 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
   ```
   </TabItem>
 </Tabs>
+
+## Tool Parameters
+Tool parameters define what gets passed in to your backend service when the tool is called. When creating a tool, parameters are defined as one of three types:
+<Steps>
+1. **Dynamic** → The model will choose which values to pass. Can be overridden (see [below](./#parameter-overrides)).
+1. **Static** → Value is known and unconditionally set when the call starts. Not exposed to or set by the model.
+1. **Automatic** → Automatically set by the system. Not known when the call starts but known at tool invocation.
+</Steps>
+
+### Dynamic Parameters
+Dynamic parameters will have their values set by the model. Creating a dynamic parameter on a tool looks like this:
+
+```javascript
+// Adding a dynamic parameter to a stock price tool
+{
+  "name": "stock_price",
+  "description": "Get the current stock price for a given symbol",
+  "dynamicParameters": [
+    {
+      "name": "symbol",
+      "location": "PARAMETER_LOCATION_QUERY",
+      "schema": {
+        "type": "string",
+        "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
+      },
+      "required": true
+    }
+  ]
+}
+```
+
+#### Parameter Overrides
+You can choose to set static values for dynamic parameters when you start a call. The model won't see any parameters that you override. When creating a call simply pass in the overrides with each tool:
+
+```javascript
+// Overriding dynamic parameter when starting a new call
+// Always set the color to 'green'
+{
+  "model": "fixie-ai/ultravox-70B",
+  "systemPrompt": ...
+  "selectedTools": [
+    "toolName": "colorPicker",
+    "parameterOverrides": {
+      "color": "green"
+    }
+  ]
+}
+```
+
+Parameter overrides don't make sense for temporary tools. Instead of overriding a dynamic parameter, use a static parameter instead.
+
+### Static Parameters
+If you have parameters that are known at the time you create the tool, static parameters can be used.
+
+```javascript
+// Adding a static parameter to a stock price tool
+{
+  "name": "stock_price",
+  "description": "Get the current stock price for a given symbol",
+  "staticParameters": [
+    {
+      "name": "close_date",
+      "location": "PARAMETER_LOCATION_QUERY",
+      "value": "2024-06-01"
+    }
+  ]
+}
+```
+
+### Automatic Parameters
+Automatic parameters are used when you don't want the model to specify the value and you don't know the value when the tool is created. The primary use case for automatic parameters today is for using the `call_id` that is generated for the current call and then passing it as a unique identifier to your tool.
+
+```javascript
+// Adding an automatic parameter to a profile creation tool
+{
+  "name": "create_profile",
+  "description": "Creates a profile for the current caller",
+  "automaticParameters": [
+    {
+      "name": "call_id",
+      "location": "PARAMETER_LOCATION_QUERY",
+      "knownValue": "KNOWN_PARAM_CALL_ID"
+    }
+  ]
+}
+```
 
 ## List Tools
 <Badge text="GET /tools" variant="note" size="large" />
