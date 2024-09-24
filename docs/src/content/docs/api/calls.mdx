@@ -445,14 +445,14 @@ Lists all messages generated during the given call.
       <tr>
         <td class="font-mono text-sm">role</td>
         <td>string</td>
-        <td>Role that generated the message. Corresponds to one of the following: `USER` or `ASSISTANT`.</td>
+        <td>Role that generated the message. Corresponds to one of the following: `USER` or `AGENT`.</td>
       </tr>
       <tr>
         <td class="font-mono text-sm">text</td>
         <td>string</td>
         <td>The message text.</td>
       </tr>
-    </table>    
+    </table>
   </TabItem>
 </Tabs>
 
@@ -501,7 +501,7 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
         <td>string</td>
         <td>Only returned if call recording was not enabled. If a recording was enabled, there is no response body and the call recording location is provided via a 302 redirect.</td>
       </tr>
-    </table>    
+    </table>
   </TabItem>
 </Tabs>
 
@@ -513,7 +513,7 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
   curl --request GET \
   --url https://api.ultravox.ai/api/voices \
   --header 'X-API-Key: aBCDef.123456'
-  
+
   ```
   </TabItem>
   <TabItem label="JavaScript">
