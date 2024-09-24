@@ -248,14 +248,14 @@ You can choose to set static values for dynamic parameters when you start a call
 
 ```javascript
 // Overriding dynamic parameter when starting a new call
-// Always set the color to 'green'
+// Always set the stock symbol to 'NVDA'
 {
   "model": "fixie-ai/ultravox-70B",
   "systemPrompt": ...
   "selectedTools": [
-    "toolName": "colorPicker",
+    "toolName": "stock_price",
     "parameterOverrides": {
-      "color": "green"
+      "symbol": "NVDA"
     }
   ]
 }
