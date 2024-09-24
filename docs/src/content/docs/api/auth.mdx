@@ -6,12 +6,19 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-:::note
+:::note[Apply for an API Key]
 Using the Ultravox API requires an API key. You can apply for a key [here](https://forms.gle/BNmUBrqymzH3vkxj8).
 :::
 
 ## Base URL
 The Ultravox API is available at `https://api.ultravox.ai/api/`.
+
+## API Keys
+Ultravox API keys are 41 characters long and are made up of two alphanumeric parts separated by a period. The first part is 8 characters long and the second is 32 characters.
+
+For example: `Zk9Ht7Lm.wX7pN9fM3kLj6tRq2bGhA8yE5cZvD4sT`
+
+Throughout the docs we use `aBCDef.123456` for brevity.
 
 ## X-API-Key Header
 When making API calls, pass your key in using the `X-API-Key` header.

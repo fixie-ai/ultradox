@@ -35,6 +35,10 @@ export default defineConfig({
         link: 'guides/quickstart'
       },
       {
+        label: 'Tools in Ultravox',
+        link: '/tools'
+      },
+      {
         label: 'API',
         autogenerate: {
           directory: 'api'
