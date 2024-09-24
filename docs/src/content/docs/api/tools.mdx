@@ -216,7 +216,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
 ## Tool Parameters
 Tool parameters define what gets passed in to your backend service when the tool is called. When creating a tool, parameters are defined as one of three types:
 <Steps>
-1. **Dynamic** → The model will choose which values to pass. Can be overridden (see [below](./#parameter-overrides)).
+1. **Dynamic** → The model will choose which values to pass. These are the parameters you'd use for a single-generation LLM API. Can be overridden (see [below](./#parameter-overrides)).
 1. **Static** → Value is known when the tool is defined and is unconditionally set on invocations. Not exposed to or set by the model.
 1. **Automatic** → Automatically set by the system. Not known when the call starts but known at tool invocation.
 </Steps>
