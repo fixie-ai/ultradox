@@ -218,7 +218,7 @@ Tool parameters define what gets passed in to your backend service when the tool
 <Steps>
 1. **Dynamic** → The model will choose which values to pass. These are the parameters you'd use for a single-generation LLM API. Can be overridden (see [below](./#parameter-overrides)).
 1. **Static** → Value is known when the tool is defined and is unconditionally set on invocations. Not exposed to or set by the model.
-1. **Automatic** → Automatically set by the system. Not known when the call starts but known at tool invocation.
+1. **Automatic** → Like "Static", except that the value may not be known when the tool is defined but will instead be populated by the system when the tool is invoked.
 </Steps>
 
 ### Dynamic Parameters
