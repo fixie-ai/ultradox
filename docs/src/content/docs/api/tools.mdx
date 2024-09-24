@@ -267,22 +267,22 @@ Parameter overrides don't make sense for temporary tools. Instead of overriding 
 If you have parameters that are known at the time you create the tool, static parameters can be used.
 
 ```javascript
-// Adding a static parameter to a stock price tool
+// Adding a static parameter that always sends utm=ultravox
 {
   "name": "stock_price",
   "description": "Get the current stock price for a given symbol",
   "staticParameters": [
     {
-      "name": "close_date",
+      "name": "utm",
       "location": "PARAMETER_LOCATION_QUERY",
-      "value": "2024-06-01"
+      "value": "ultravox"
     }
   ]
 }
 ```
 
 ### Automatic Parameters
-Automatic parameters are used when you don't want the model to specify the value and you don't know the value when the tool is created. The primary use case for automatic parameters today is for using the `call_id` that is generated for the current call and then passing it as a unique identifier to your tool.
+Automatic parameters are used when you don't want the model to specify the value and you don't know the value when the tool is created. The primary use case for automatic parameters today is for using the `call_id` that is generated for the current call and then passing it as a unique identifier to your tool. Can also be used to get the current conversation history.
 
 ```javascript
 // Adding an automatic parameter to a profile creation tool
