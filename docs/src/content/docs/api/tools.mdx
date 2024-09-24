@@ -5,7 +5,7 @@ sidebar:
 ---
 import { Badge, Tabs, TabItem, Steps } from '@astrojs/starlight/components';
 
-Tools in Ultravox allow you to extend the capabilities of your AI assistant by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.
+Tools in Ultravox allow you to extend the capabilities of your AI agent by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.
 
 :::danger[Use ultravox-70B for Tools]
 Currently, Ultravox only supports tools with our 70B model. Make sure to set the model to `fixie-ai/ultravox-70B` in any calls where you want to use tools.
@@ -83,14 +83,15 @@ To use a durable tool in a call, set the toolName or toolId field instead of tem
 
 ## Tool Authentication
 :::tip[Tools in Ultravox are Different]
-Unlike using tools with other LLM APIs, Ultravox actually calls the tool. This means you need to do a bit more work upfront in defining tools with the proper authentication and parameters.
+Unlike using tools with single-generation LLM APIs, Ultravox actually calls your tool. This means you need to do a bit more work upfront in defining tools with the proper authentication and parameters.
 :::
 
 Ultravox has rich support for tools auth. When creating a tool, you must specify what is required for successful auth to the backend service. Three methods for passing API keys are supported and are used when creating the tool:
+
 <Steps>
-1. **Query Parameter** → The API key will be passed via the querystring. The name of the parameter must be provided when the tool is created.
-1. **Header** → The API key will be passed via a custom header. The name of the header must be provided.
-1. **HTTP Authentication** → The API key will be passed via the HTTP Authentication header. The name of the scheme must be provided (e.g. `Bearer`).
+1. **Query Parameter** → The API key will be passed via the query string. The name of the parameter must be provided when the tool is created.
+1. **Header** → The API key will be passed via a custom header. The name of the header must be provided when the tool is created.
+1. **HTTP Authentication** → The API key will be passed via the HTTP Authentication header. The name of the scheme (e.g. `Bearer`) must be provided when the tool is created.
 </Steps>
 
 You then pass in the key(s) in the `authTokens` property of `selectedTools` when creating a call.
@@ -98,7 +99,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
 <Tabs>
   <TabItem label="Query Parameter">
   ```javascript
-  // Create a tool that uses a querystring parameter called 'apiKey'
+  // Create a tool that uses a query parameter called 'apiKey'
   {
     "name": "stock_price"
     "definition": {
@@ -107,8 +108,10 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
         "httpSecurityOptions": {
           "options": [
             "requirements": {
-              "queryApiKey": {
-                "name": "apiKey"
+              "mySeviceApiKey": {
+                "queryApiKey": {
+                  "name": "apiKey"
+                }
               }
             }
           ]
@@ -125,7 +128,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
       {
         "toolName": "stock_price"
         "authTokens": {
-          "apiKey": "your_token_here"
+          "myServiceApiKey": "your_token_here"
         }
       }
     ]
@@ -143,8 +146,10 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
         "httpSecurityOptions": {
           "options": [
             "requirements": {
-              "headerApiKey": {
-                "name": "X-My-Header"
+              "myServiceApiKey": {
+                "headerApiKey": {
+                  "name": "X-My-Header"
+                }
               }
             }
           ]
@@ -161,7 +166,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
       {
         "toolName": "stock_price"
         "authTokens": {
-          "X-My-Header": "your_token_here"
+          "myServiceApiKey": "your_token_here"
         }
       }
     ]
@@ -170,7 +175,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
   </TabItem>
   <TabItem label="HTTP Authentication">
   ```javascript
-  // Create a tool that uses HTTP Authentication scheme 'Bearer'
+  // Create a tool that uses HTTP Authentication scheme 'Bearer'. When the tool is invoked it will receive an 'Authorization' header with value "Bearer your_token_here".
   {
     "name": "stock_price"
     "definition": {
@@ -179,8 +184,10 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
         "httpSecurityOptions": {
           "options": [
             "requirements": {
-              "httpAuth": {
-                "scheme": "Bearer"
+              "myServiceApiKey": {
+                "httpAuth": {
+                  "scheme": "Bearer"
+                }
               }
             }
           ]
@@ -197,7 +204,7 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
       {
         "toolName": "stock_price"
         "authTokens": {
-          "Bearer": "your_token_here"
+          "myServiceApiKey": "your_token_here"
         }
       }
     ]
