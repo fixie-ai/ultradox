@@ -6,6 +6,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 import SDKCards from '@components/SDKCards.astro';
+import CallOut from '@components/CallOut.astro';
 
 The Ultravox [REST API](../api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page primarily uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
 
@@ -195,6 +196,7 @@ Transcripts are an array of transcript objects. Each transcript has the followin
 | medium   | Medium  | Either "voice" or "text". Denotes how the message was sent.                                                               |
 
 ### Debug Messages
+<CallOut title="Subject to Change" text="The structure and content of debug messages are subject to change. Relying on the structure or content is not advised." />
 The state object also provides debug messages. Debug messages must be enabled when creating the `UltravoxSession` and then are available via an event listener similar to status and transcripts:
 
 ```javascript
@@ -219,7 +221,9 @@ LLM response: Tool calls: [FunctionCall(name='createProfile', args='{"firstName"
 ```
 
 #### Debug Message:  Tool Call Result
-When the tool call completes, the message contains an array of messages. The first is the tool call. The second is the tool result. These messages are also available via [List Call Messages](../api/calls/#list-call-messages)
+When the tool call completes, the message contains an array of messages. Multiple tools can be invoked by the model. This message array will conatain all the calls followed by all the results. These messages are also available via [List Call Messages](../api/calls/#list-call-messages).
+
+Here's an example of what we might see from a single tool invocation:
 
 ```bash
 Tool call complete.
