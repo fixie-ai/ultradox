@@ -212,6 +212,25 @@ state.addEventListener('ultravoxExperimentalMessage', (msg) => {
 session.leaveCall();
 ```
 
+#### Debug Message:  Tool Call
+When the agent invokes a tool, the message contains the function, all arguments, and an invocation ID:
+```bash
+LLM response: Tool calls: [FunctionCall(name='createProfile', args='{"firstName":"Ron","lastName":"Burgandy","organization":"Fixie.ai","useCase":"creating a talking AI news reporter"}', invocation_id='call_D2qQVS8OQc998aMEw5PRa9cF')]
+```
+
+#### Debug Message:  Tool Call Result
+When the tool call completes, the message contains an array of messages. The first is the tool call. The second is the tool result. These messages are also available via [List Call Messages](../api/calls/#list-call-messages)
+
+```bash
+Tool call complete.
+
+Result: [
+  role: MESSAGE_ROLE_TOOL_CALL ordinal: 6 text: "{\"firstName\":\"Ron\",\"lastName\":\"Burgandy\",\"organization\":\"Fixie.ai\",\"useCase\":\"creating a talking AI news reporter\"}" tool_name: "createProfile" invocation_id: "call_D2qQVS8OQc998aMEw5PRa9cF" tool_id: "aa737e12-0989-4adb-9895-f387f40557d8" ,
+  role: MESSAGE_ROLE_TOOL_RESULT ordinal: 7 text: "{\"firstName\":\"Ron\",\"lastName\":\"Burgandy\",\"emailAddress\":null,\"organization\":\"Fixie\",\"useCase\":\"creating a talking AI news reporter\"}" tool_name: "createProfile" invocation_id: "call_D2qQVS8OQc998aMEw5PRa9cF" tool_id: "aa737e12-0989-4adb-9895-f387f40557d8"
+]
+```
+
+
 ## SDK Implementations
 
 <SDKCards />
