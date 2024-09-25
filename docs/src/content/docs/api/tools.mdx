@@ -4,9 +4,13 @@ sidebar:
   order: 30
 ---
 import { Badge, Tabs, TabItem, Steps } from '@astrojs/starlight/components';
-import APIKeyRequired from '@components/APIKeyRequired.astro';
+import CallOut from '@components/CallOut.astro';
 
-<APIKeyRequired />
+<CallOut
+  title="API Key Required"
+  text="The Ultravox API requires an API key. For more details see "
+  link={{ url: "../auth", text: "Authentication." }}
+/>
 <br />
 
 Tools in Ultravox allow you to extend the capabilities of your AI agent by giving it access to external APIs and services. With tools, your AI can perform actions like fetching real-time data, interacting with databases, or integrating with third-party services, all while maintaining a natural conversation flow.

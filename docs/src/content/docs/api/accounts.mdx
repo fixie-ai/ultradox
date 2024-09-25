@@ -4,9 +4,13 @@ sidebar:
   order: 1
 ---
 import { Badge, Tabs, TabItem, Card } from '@astrojs/starlight/components';
-import APIKeyRequired from '@components/APIKeyRequired.astro';
+import CallOut from '@components/CallOut.astro';
 
-<APIKeyRequired />
+<CallOut
+  title="API Key Required"
+  text="The Ultravox API requires an API key. For more details see "
+  link={{ url: "../auth", text: "Authentication." }}
+/>
 <br />
 Return information about your accounts. Primarily for getting a unique link for subscription management.
 

@@ -5,9 +5,13 @@ sidebar:
 tableOfContents: true
 ---
 import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
-import APIKeyRequired from '@components/APIKeyRequired.astro';
+import CallOut from '@components/CallOut.astro';
 
-<APIKeyRequired />
+<CallOut
+  title="API Key Required"
+  text="The Ultravox API requires an API key. For more details see "
+  link={{ url: "../auth", text: "Authentication." }}
+/>
 <br />
 
 Your AI can speak to your end users in different voices. At the moment we only support two voices but we have plans to build this out soon. Please let us know what types of voices you need for your apps.

@@ -4,9 +4,13 @@ sidebar:
   order: 10
 ---
 import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
-import APIKeyRequired from '@components/APIKeyRequired.astro';
+import CallOut from '@components/CallOut.astro';
 
-<APIKeyRequired />
+<CallOut
+  title="API Key Required"
+  text="The Ultravox API requires an API key. For more details see "
+  link={{ url: "../auth", text: "Authentication." }}
+/>
 <br />
 
 Calls are what drive all speech-to-speech interactions between your end users and AI. At their most basic level, calls consist of a set of instructions to instruct the LLM how to behave (i.e. the `systemPrompt`) and the selection of the voice the AI should use when speaking.

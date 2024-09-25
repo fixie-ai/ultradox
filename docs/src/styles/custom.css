@@ -27,3 +27,22 @@
 	--sl-color-gray-7: #f9f5f5;
 	--sl-color-black: #ffffff;
 }
+
+/* Wrap code text */
+.code-container {
+	width: 100%;
+	max-width: 600px; /* Adjust as needed */
+	margin: 0 auto;
+}
+
+.code-container pre {
+	white-space: pre-wrap;       /* CSS 3 */
+	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	white-space: -pre-wrap;      /* Opera 4-6 */
+	white-space: -o-pre-wrap;    /* Opera 7 */
+	word-wrap: break-word;       /* Internet Explorer 5.5+ */
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 1em;
+	background-color: #f6f8fa;
+}
