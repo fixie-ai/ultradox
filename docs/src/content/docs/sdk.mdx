@@ -196,7 +196,9 @@ Transcripts are an array of transcript objects. Each transcript has the followin
 | medium   | Medium  | Either "voice" or "text". Denotes how the message was sent.                                                               |
 
 ### Debug Messages
-<CallOut title="Subject to Change" text="The structure and content of debug messages are subject to change. Relying on the structure or content is not advised." />
+:::danger[No Guarantee]
+Debug messages from Ultravox should be treated as debug logs. They can change regularly and don't have a contract. Relying on the specific structure or content should be avoided.
+:::
 The state object also provides debug messages. Debug messages must be enabled when creating the `UltravoxSession` and then are available via an event listener similar to status and transcripts:
 
 ```javascript
