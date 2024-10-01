@@ -1,0 +1,20 @@
+{
+  "name": "twilio-outgoing-call",
+  "version": "0.0.1",
+  "description": "Makes an outgoing phone call using Ultravox and Twilio.",
+  "main": "app.ts",
+  "scripts": {
+    "dev": "npx ts-node src/app.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Fixie.ai",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^22.7.4",
+    "dotenv": "^16.4.5",
+    "ts-node": "^10.9.2",
+    "twilio": "^5.3.2",
+    "typescript": "^5.6.2"
+  }
+}
