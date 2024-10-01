@@ -12,7 +12,15 @@ const accountSid: string = process.env.TWILIO_ACCOUNT_SID || '';
 const authToken: string = process.env.TWILIO_AUTH_TOKEN || '';
 const twilioPhoneNumber: string = process.env.TWILIO_PHONE_NUMBER || '';
 
-// Check if Twilio credentials are set
+// Check if everything it set
+if (!phoneNumber) {
+  console.error('PHONE_NUMBER must be set in environment variables.');
+  process.exit(1);
+} else if (!joinUrl) {
+  console.error('UV_JOIN_URL must be set in environment variables.');
+  process.exit(1);
+}
+
 if (!accountSid || !authToken || !twilioPhoneNumber) {
   console.error('Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER environment variables');
   process.exit(1);
@@ -34,7 +42,6 @@ async function initiateCall(phoneNumber: string, joinUrl: string): Promise<strin
     throw error;
   }
 }
-
 
 initiateCall(phoneNumber, joinUrl)
   .then((callSid) => {
