@@ -98,7 +98,7 @@ Lists all calls that have been created. Account scoped.
       <tr>
         <td class="font-mono">maxDuration</td>
         <td>string</td>
-        <td>Maximum length that was set for the call. Format is `HH:MM:SS`.</td>
+        <td>Maximum length (in seconds) that was set for the call.</td>
       </tr>
       <tr>
         <td class="font-mono">timeExceededMessage</td>
@@ -149,7 +149,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
       <tr>
         <td class="font-mono">initator</td>
         <td>string</td>
-        <td>Who was responsible for staring this call. Typically set to INITIATOR_AGENT for outgoing calls and left as the default (INITIATOR_USER) otherwise.</td>
+        <td>Who was responsible for starting this call. Typically set to INITIATOR_AGENT for outgoing calls and left as the default (INITIATOR_USER) otherwise.</td>
       </tr>
       <tr>
         <td class="font-mono">languageHint</td>
@@ -159,7 +159,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
       <tr>
         <td class="font-mono">maxDuration</td>
         <td>string</td>
-        <td>Maximum length for the call in the format `HH:MM:SS`. Can be used to limit the length of the call. Optionally, set `timeExceededMessage` to have the agent say a message when the allotted time is reached.<br /><br />For the free plan, defaults to amount of free time remaining (less any calls that are currently in-progress). For paid plans, defaults to the system maximum of one hour ("01:00:00"). </td>
+        <td>Maximum length (in seconds) for the call. Must contain `s` and can be fractional. E.g. `300s` or `245.5s`. Used to limit the length of the call. Optionally, set `timeExceededMessage` to have the agent say a message when the allotted time is reached.<br /><br />For the free plan, defaults to amount of free time remaining (less any calls that are currently in-progress). For paid plans, defaults to the system maximum of one hour ("3600s"). </td>
       </tr>
       <tr>
         <td class="font-mono">medium</td>
@@ -253,7 +253,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
       <tr>
         <td class="font-mono">maxDuration</td>
         <td>string</td>
-        <td>Maximum length that was set for the call. Format is `HH:MM:SS`.</td>
+        <td>Maximum length (in seconds) that was set for the call.</td>
       </tr>
       <tr>
         <td class="font-mono">timeExceededMessage</td>
