@@ -73,7 +73,7 @@ Lists all calls that have been created. Account scoped.
       <tr>
         <td class="font-mono">model</td>
         <td>string</td>
-        <td>Name of the model used for the call. Currently only `fixie-ai/ultravox` is supported.</td>
+        <td>Name of the model used for the call.</td>
       </tr>
       <tr>
         <td class="font-mono">systemPrompt</td>
@@ -98,7 +98,7 @@ Lists all calls that have been created. Account scoped.
       <tr>
         <td class="font-mono">maxDuration</td>
         <td>string</td>
-        <td>Maximum length that was set for the call. Format is `HH:MM:SS`.</td>
+        <td>Maximum length (in seconds) that was set for the call.</td>
       </tr>
       <tr>
         <td class="font-mono">timeExceededMessage</td>
@@ -147,9 +147,9 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <th class="w-10/12"></th>
       </tr>
       <tr>
-        <td class="font-mono">systemPrompt <br /> <span class="text-sm text-red-500">required</span></td>
+        <td class="font-mono">initator</td>
         <td>string</td>
-        <td>The system prompt to use for the AI.</td>
+        <td>Who was responsible for starting this call. Typically set to INITIATOR_AGENT for outgoing calls and left as the default (INITIATOR_USER) otherwise.</td>
       </tr>
       <tr>
         <td class="font-mono">languageHint</td>
@@ -157,9 +157,19 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>A hint about the language to be used if your end users are speaking a language other than English. Must be a valid BCP47 language code. Best effort is made to select the closest supported language.  (default: "en")</td>
       </tr>
       <tr>
+        <td class="font-mono">maxDuration</td>
+        <td>string</td>
+        <td>Maximum length (in seconds) for the call. Must contain `s` and can be fractional. E.g. `300s` or `245.5s`. Used to limit the length of the call. Optionally, set `timeExceededMessage` to have the agent say a message when the allotted time is reached.<br /><br />For the free plan, defaults to amount of free time remaining (less any calls that are currently in-progress). For paid plans, defaults to the system maximum of one hour ("3600s"). </td>
+      </tr>
+      <tr>
+        <td class="font-mono">medium</td>
+        <td>object</td>
+        <td>Details about a call's protocol. By default, calls occur over WebRTC using the Ultravox client SDK. Setting a different call medium will prepare the server for a call using a different protocol. At most one call medium may be set.<br />Can be `"webRtc":{}` (default) or `"twilio":{}`.</td>
+      </tr>
+      <tr>
         <td class="font-mono">model</td>
         <td>string</td>
-        <td>The model to be used for the call. Currently only `fixie-ai/ultravox` is supported and is the default.</td>
+        <td>The model to be used for the call. If not specified, defaults to `fixie-ai/ultravox`. See [available models](../../availablemodels/).</td>
       </tr>
       <tr>
         <td class="font-mono">recordingEnabled</td>
@@ -167,19 +177,19 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>A recording will be saved for the call when set to `true`. Recording can be retrieved via `GET /calls/{call_id}/recording`. Default value of `false`.</td>
       </tr>
       <tr>
+        <td class="font-mono">selectedTools</td>
+        <td>array</td>
+        <td>Each object is a tool selected for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">systemPrompt <br /> <span class="text-sm text-red-500">required</span></td>
+        <td>string</td>
+        <td>The system prompt to use for the AI.</td>
+      </tr>
+      <tr>
         <td class="font-mono">temperature</td>
         <td>float</td>
         <td>The temperature setting for the model. Value between 0.0 and 1.0. (default: 0.0)</td>
-      </tr>
-      <tr>
-        <td class="font-mono">voice</td>
-        <td>string</td>
-        <td>The voice the AI will use for speaking. There are currently two options: `lily` (default) and `terrence`. Please contact us if you have other voice requirements.</td>
-      </tr>
-      <tr>
-        <td class="font-mono">maxDuration</td>
-        <td>string</td>
-        <td>Maximum length for the call in the format `HH:MM:SS`. Can be used to limit the length of the call. Optionally, set `timeExceededMessage` to have the agent say a message when the allotted time is reached.<br /><br />For the free plan, defaults to amount of free time remaining (less any calls that are currently in-progress). For paid plans, defaults to the system maximum of one hour ("01:00:00"). </td>
       </tr>
       <tr>
         <td class="font-mono">timeExceededMessage</td>
@@ -187,9 +197,9 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>Message that the agent will say if the call reaches the `maxDuration`.</td>
       </tr>
       <tr>
-        <td class="font-mono">joinUrl</td>
+        <td class="font-mono">voice</td>
         <td>string</td>
-        <td>URL to use with the ultravox client library to join (AKA start) the call.</td>
+        <td>The voice the AI will use for speaking. There are currently two options: `lily` (default) and `terrence`. Please contact us if you have other voice requirements.</td>
       </tr>
     </table>
   </TabItem>
@@ -218,7 +228,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
       <tr>
         <td class="font-mono">model</td>
         <td>string</td>
-        <td>Name of the model used for the call. Currently only `fixie-ai/ultravox` is supported.</td>
+        <td>Name of the model used for the call.</td>
       </tr>
       <tr>
         <td class="font-mono">systemPrompt</td>
@@ -243,7 +253,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
       <tr>
         <td class="font-mono">maxDuration</td>
         <td>string</td>
-        <td>Maximum length that was set for the call. Format is `HH:MM:SS`.</td>
+        <td>Maximum length (in seconds) that was set for the call.</td>
       </tr>
       <tr>
         <td class="font-mono">timeExceededMessage</td>
@@ -317,7 +327,7 @@ Gets details for the call with `call_id` specified in the path. Account scoped.
       <tr>
         <td class="font-mono">model</td>
         <td>string</td>
-        <td>Name of the model used for the call. Currently only `fixie-ai/ultravox` is supported.</td>
+        <td>Name of the model used for the call.</td>
       </tr>
       <tr>
         <td class="font-mono">systemPrompt</td>

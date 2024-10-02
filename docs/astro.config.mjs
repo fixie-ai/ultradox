@@ -35,6 +35,10 @@ export default defineConfig({
         link: 'guides/quickstart'
       },
       {
+        label: 'Phone Calls',
+        link: 'guides/phonecalls'
+      },
+      {
         label: 'Tools in Ultravox',
         link: '/tools'
       },
