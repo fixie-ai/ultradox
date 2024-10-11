@@ -61,7 +61,12 @@ The core of the SDK is the `UltravoxSession`. The session is used to join and le
 </Tabs>
 
 ### Methods
-The `UltravoxSession` contains methods for joining/leaving a call, for sending text messages to the model, for registering client tools, and for muting the microphone/speaker.
+The `UltravoxSession` contains methods for:
+* Joining/leaving a call
+* Sending text messages to the agent
+* Changing the output medium for how the agent replies
+* Registering client tools
+* Muting the microphone/speaker
 
 #### joinCall()
 
@@ -92,7 +97,7 @@ Registers a client tool implementation with the given name. If the call is start
 
 | parameter        | description                                 |
 |----------------- | ------------------------------------------- |
-| name | String. The name of the tool. Must match what is defined in `selectedTools` during [call creation](../api/calls/#create-call). |
+| name | String. The name of the tool. Must match what is defined in `selectedTools` during [call creation](../api/calls/#create-call). If `nameOverride` is set then must match that name. Otherwise must match `modelToolName`. |
 | implementation | `ClientToolImplementation` function that implements the tool's logic. |
 
 **`ClientToolImplementation`**
@@ -170,9 +175,9 @@ Unmutes the end user's speaker (the agent's voice output). This is scoped to the
 Ultravox has robust support for [tools](../tools). The SDK has support for client tools. Client tools will be invoked in your client code and enable you to add interactivity in your app that is driven by user interactions with your agent. For example, your agent could choose to invoke a tool that would trigger some UI change.
 
 ### Creating Client Tools
-Client tools are defined just like "server" tools with a couple of exceptions:
+Client tools are defined just like "server" tools with three exceptions:
 
-#### "client" not "http"
+#### 1. "client" not "http"
 You don't add the URL and HTTP method for client tools. Instead, you add `"client": {}` to the tool definition.
 
 import tempToolClient from '../codesnippets/temp-tool-client.txt?raw';
@@ -187,7 +192,7 @@ export const lines = [19, 20, 21, 22];
 
 <Code code={tempTool} lang="js" title={title} mark={lines} />
 
-#### Client Registration
+#### 2. Client Registration
 Your client tool must be registered in your client code. Here's a snippet that might be found in client code to register the client tool and implement the logic for the tool.
 
 See [SDK Methods](#registertoolimplementation) for more information.
@@ -196,6 +201,14 @@ import clientToolReg from '../codesnippets/client-tool-registration.txt?raw';
 export const ctTitle = "Registering a Client Tool"
 
 <Code code={clientToolReg} lang="js" title={ctTitle} />
+
+#### 3. Only Body Parameters
+Unlike server tools (which accept parameters passed by path, header, body, etc.), client tools only allow parameters to be passed in the body of the request. That means client tools will always have parameter location set like this:
+
+```js
+"location": "PARAMETER_LOCATION_BODY"
+```
+
 
 ## Ultravox Session State
 When a call is joined, an `UltravoxSessionState` is returned. This object returns the current status, can be used to get text transcripts of the call, and surfaces debug messages that are helpful when building your application.
