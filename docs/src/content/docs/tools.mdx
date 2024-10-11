@@ -284,7 +284,7 @@ The `definition` object in the tool creation and update requests follows the [Ba
 - `description` (string): A clear, concise description of what the tool does.
 - `dynamicParameters` (array, optional): List of parameters that can be set by the AI model when using the tool. Each parameter is an object containining:
   - `name` (string): The name of the parameter.
-  - `location` (string): Where the parameter is used ("PARAMETER_LOCATION_UNSPECIFIED", "PARAMETER_LOCATION_QUERY", "PARAMETER_LOCATION_PATH", "PARAMETER_LOCATION_HEADER", "PARAMETER_LOCATION_BODY").
+  - `location` (string): Where the parameter is used ("PARAMETER_LOCATION_QUERY", "PARAMETER_LOCATION_PATH", "PARAMETER_LOCATION_HEADER", "PARAMETER_LOCATION_BODY").
   - `schema` (object): JSON Schema definition of the parameter. This typically includes things like type, description, enum values, format, other restrictions, etc.
   - `required` (boolean): Whether the parameter is required.
 - `staticParameters` (array, optional): List of parameters that are always set to a known, fixed value when the tool is used. These are unconditionally added when the tool is invoked. These parameters are not exposed to or set by the model. Example: you use an API for various things but want to track which requests come from your Ultravox app so you always append `utm=ultravox` to the query parameters.
