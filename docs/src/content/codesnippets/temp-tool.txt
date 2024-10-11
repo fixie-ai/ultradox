@@ -1,0 +1,25 @@
+{
+  "model": "fixie-ai/ultravox-70B",
+  "systemPrompt": ...
+  "selectedTools": [
+    "temporaryTool": {
+      "modelToolName": "stock_price",
+      "description": "Get the current stock price for a given symbol",
+      "dynamicParameters": [
+        {
+          "name": "symbol",
+          "location": "PARAMETER_LOCATION_QUERY",
+          "schema": {
+            "type": "string",
+            "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
+          },
+          "required": true
+        }
+      ],
+      "http": {
+        "baseUrlPattern": "https://api.stockmarket.com/v1/price",
+        "httpMethod": "GET"
+      }
+    }
+  ]
+}
