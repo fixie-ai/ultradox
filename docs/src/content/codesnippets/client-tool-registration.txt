@@ -1,0 +1,16 @@
+// Start up our Ultravox Session
+UVSession = new UltravoxSession();
+
+// Register our client-side tool
+UVSession.registerToolImplementation(
+  "stock_price",
+  stock_price
+);
+
+UVSession.joinCall(joinUrl);
+
+// Function that implements tool logic
+const stock_price = (parameters) => {
+  ...  // to be implemented
+  return `Stock price is ${value}`;
+};

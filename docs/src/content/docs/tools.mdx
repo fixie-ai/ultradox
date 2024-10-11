@@ -1,10 +1,16 @@
 ---
 title: "Tools in Ultravox"
 ---
-import { Badge, Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+import { Badge, Tabs, TabItem, Steps, Code } from '@astrojs/starlight/components';
 
 :::tip[Tools in Ultravox are Different]
 Unlike using tools with single-generation LLM APIs, Ultravox actually calls your tool. This means you need to do a bit more work upfront in defining tools with the proper authentication and parameters.
+:::
+
+:::note["Server" vs. Client Tools]
+You can implement your tools as either server (the tool's logic is exposed via a URL) or client (the tool's logic is implemented in your client application) tools.
+
+See [Client Tools](../sdk#client-tools) to learn how those are registered and used with the Ultravox SDK.
 :::
 
 ### Temporary vs. Durable Tools
@@ -24,34 +30,10 @@ Iteration is faster when using temporary tools because you don't have to create/
 ### Creating & Using Temporary Tools
 Temporary tools are defined and passed in the request body of the [`Create Call`](../api/calls/#create-call) endpoint. They are available during the current call.
 
-```javascript
-// Request body for creating an Ultravox call with a tool
-{
-  "model": "fixie-ai/ultravox-70B",
-  "systemPrompt": ...
-  "selectedTools": [
-    "nameOverride": "stock_price",
-    "temporaryTool": {
-      "description": "Get the current stock price for a given symbol",
-      "dynamicParameters": [
-        {
-          "name": "symbol",
-          "location": "PARAMETER_LOCATION_QUERY",
-          "schema": {
-            "type": "string",
-            "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
-          },
-          "required": true
-        }
-      ],
-      "http": {
-        "baseUrlPattern": "https://api.stockmarket.com/v1/price",
-        "httpMethod": "GET"
-      }
-    }
-  ]
-}
-```
+import tempTool from '../codesnippets/temp-tool.txt?raw';
+export const title = "Creating an Ultravox Call with a Tool"
+
+<Code code={tempTool} lang="js" title={title} />
 
 ## Durable Tools
 In addition to temporary tools, Ultravox supports the creation of durable tools. There is no functional difference between durable and temporary tools within the context of a call.
@@ -308,9 +290,10 @@ The `definition` object in the tool creation and update requests follows the [Ba
 - `staticParameters` (array, optional): List of parameters that are always set to a known, fixed value when the tool is used. These are unconditionally added when the tool is invoked. These parameters are not exposed to or set by the model. Example: you use an API for various things but want to track which requests come from your Ultravox app so you always append `utm=ultravox` to the query parameters.
 - `automaticParameters` (array, optional): Additional parameters automatically set by the system. Used when the value is not known when the tool is created but that will be known when the tool is called. Example: you want to use the unique `call_id` from ultravox as a key in your backend and you have the tool include `call_id` in the request body when your tool's API is called.
 - `requirements` (object, optional): Any specific requirements for using the tool. Currently this is used for security (e.g. API keys or HTTP Auth).
-- `http` (object): Details for invoking the tool via HTTP.
+- `http` (object): Details for invoking the tool via HTTP. For server tools.
   - `baseUrlPattern` (string): The base URL pattern for  the tool, possibly with placeholders for path parameters.
   - `httpMethod` (string): The HTTP method for the tool (e.g., "GET", "POST").
+- `client` (object): Declares the tool as a client tool. Either `http` or `client` can be set for a tool.
 
 ### Best Practices for Creating Tools
 
