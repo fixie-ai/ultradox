@@ -2,8 +2,8 @@
   "model": "fixie-ai/ultravox-70B",
   "systemPrompt": ...
   "selectedTools": [
-    "nameOverride": "stock_price",
     "temporaryTool": {
+      "modelToolName": "stock_price",
       "description": "Get the current stock price for a given symbol",
       "dynamicParameters": [
         {
