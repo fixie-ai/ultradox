@@ -1,13 +1,13 @@
 // Start up our Ultravox Session
-UVSession = new UltravoxSession();
+uvSession = new UltravoxSession();
 
 // Register our client-side tool
-UVSession.registerToolImplementation(
+uvSession.registerToolImplementation(
   "stock_price",
   stock_price
 );
 
-UVSession.joinCall(joinUrl);
+uvSession.joinCall(joinUrl);
 
 // Function that implements tool logic
 const stock_price = (parameters) => {
