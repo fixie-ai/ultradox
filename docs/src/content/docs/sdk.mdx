@@ -82,7 +82,18 @@ Leaves the current call. Returns a promise (with no return value) that resolves 
 ```typescript
 sendText(text: string): void
 ```
-Sends a message to the model. Model replies via text transcript. Requires inputting the text message (string).
+Sends a text message to the agent. Requires inputting the text message (string).
+
+#### setOutputMedium()
+
+```ts
+setOutputMedium(medium: Medium): void
+```
+Sets the agent's output medium for future utterances. If the agent is currently speaking, this will take effect at the end of the agent's utterance. Also see [muteSpeaker](#mutespeaker) and [unmuteSpeaker](#unmutespeaker) below.
+
+| parameter        | description                                 |
+|-------------- | ------------------------------------------- |
+| medium | How replies are communicated. Must be either `'text'` or `'voice'`.
 
 #### isMicMuted()
 
