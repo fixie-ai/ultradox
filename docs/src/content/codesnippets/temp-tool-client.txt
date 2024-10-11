@@ -8,7 +8,7 @@
       "dynamicParameters": [
         {
           "name": "symbol",
-          "location": "PARAMETER_LOCATION_QUERY",
+          "location": "PARAMETER_LOCATION_BODY",
           "schema": {
             "type": "string",
             "description": "Stock symbol (e.g., AAPL for Apple Inc.)"
