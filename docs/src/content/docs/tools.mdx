@@ -293,7 +293,7 @@ The `definition` object in the tool creation and update requests follows the [Ba
 - `http` (object): Details for invoking the tool via HTTP. For server tools.
   - `baseUrlPattern` (string): The base URL pattern for  the tool, possibly with placeholders for path parameters.
   - `httpMethod` (string): The HTTP method for the tool (e.g., "GET", "POST").
-- `client` (object): Declares the tool as a client tool. Either `http` or `client` can be set for a tool.
+- `client` (object): Declares the tool as a client tool. Exactly one of `http` or `client` must be set for a tool.
 
 ### Best Practices for Creating Tools
 
