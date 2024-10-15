@@ -1,11 +1,15 @@
 ---
 title: "Call Stages"
-description: Use Ultravox API to create dynamic, multi-stage conversations with granular system prompts.
+description: Use Ultravox API to create dynamic, multi-stage conversations.
 ---
 
 import { Steps, Code } from '@astrojs/starlight/components';
 
-The Ultravox API's Call Stages functionality allows you to create dynamic, multi-stage conversations by providing granular system prompts as your agent progresses through the interaction. Stages enable more complex and nuanced agent interactions, giving you fine-grained control over the conversation flow.
+The Ultravox API's Call Stages functionality allows you to create dynamic, multi-stage conversations. Stages enable more complex and nuanced agent interactions, giving you fine-grained control over the conversation flow.
+
+Each stage can have a new system prompt, a different set of tools, a new voice, an updated conversation history, and more.
+
+
 
 ## Understanding Call Stages
 
@@ -33,35 +37,26 @@ To implement Call Stages in your Ultravox application, follow these steps:
 Determine the different phases of your conversation and what prompts or parameters should change at each stage.
 
 #### 2. Implement a Stage Change Tool
-Create a custom tool that will trigger stage changes when called. A new call stage is created when your tool responds with a header called `X-Ultravox-Response-Type` set to `new-stage` in the response.
 
-Unless overridden, stages inherit all properties of the existing call. Here is the list of all call properties that can and cannot be changed during a new stage:
+Create a custom tool that will trigger stage changes when called. This tool should:
 
-| property            | change with new stage? |
-|-------------------- | ---------------------- |
-| systemPrompt        | Yes                    |
-| temperature         | Yes                    |
-| voice               | Yes                    |
-| languageHint        | Yes                    |
-| initialMessages     | Yes                    |
-| selectedTools       | Yes                    |
-| firstSpeaker        | Yes                    |
-| model               | No                     |
-| joinTimeout         | No                     |
-| maxDuration         | No                     |
-| timeExceededMessage | No                     |
-| inactivityMessages  | No                     |
-| medium              | No                     |
-| initiator           | No                     |
-| recordingEnabled    | No                     |
+* Respond with a header called `X-Ultravox-Response-Type` set to `new-stage`. This creates the new stage.
+* Provide the updated parameters (e.g., system prompt, tools, voice) for the new stage in the response body.
+* For [client tools](../sdk#client-tools), a new stage can be started by returning an object that has `responseType="new-stage"`.
 
-The response body must contain the new values for any properties you want to change in the new stage.
+Unless overridden, stages inherit all properties of the existing call. See [Stages Call Properties](#stages-call-properties) for the list of call properties that can be changed.
 
-#### 3. Set Up Stage Transitions
-Prompt the agent to use tool calls to initiate stage changes at appropriate points in the conversation.
+#### 3. Configure Stage Transitions
 
-#### 4. Configure New Stage Parameters
-When transitioning to a new stage, provide the updated parameters (e.g., system prompt) in the tool call.
+* Prompt the agent to use the stage change tool at appropriate points in the conversation.
+* Ensure the stage change tool is part of `selectedTools` when creating the call as well as during new stages (if needed).
+* Update your system prompt as needed to instruct the agent on when/how to use the stage change tool.
+
+:::caution[Things to Remember]
+  * New stages inherit all properties from the previous stage unless explicitly overridden.
+  * Refer to [Stages Call Properties](#stages-call-properties) to understand which call properties can be changed as part of a new stage.
+  * Test your stage transitions thoroughly to ensure the conversation flows naturally.
+:::
 
 ### Example Stage Change Implementation
 
@@ -85,6 +80,50 @@ export const cstitle = "Updating our systemPrompt and selectedTools"
 :::tip[Inheritance]
 New stages inherit all properties from the previous stage. You can selectively overwrite properties as needed when defining a new stage. See the [above table](#2-implement-a-stage-change-tool) for more.
 :::
+
+## Ultravox API Implications
+
+If you are not using stages for a call, retrieving calls or call messages via the API (e.g. `GET /api/calls`) works as expected.
+
+However, if you are using call stages then you most likely want to use the stage-centric API endpoints to get stage-specific settings, messages, etc.
+
+Use `GET /api/calls/{call_id}/stages` to get all the stages for a given call.
+
+| Ultravox API                 | Description              | Stage-Centric Equivalent                           | Description               |
+|----------------------------- | ------------------------ | -------------------------------------------------- | ------------------------- |
+| `/calls/{call_id}`           | Get a call               | `/calls/{call_id}/stages/{call_stage_id}`          | Get the call stage        |
+| `/calls/{call_id}/messages`  | Get messages for a call  | `/calls/{call_id}/stages/{call_stage_id}/messages` | Get message for the stage |
+| `/calls/{call_id}/tools`     | Get tools for a call     | `/calls/{call_id}/stages/{call_stage_id}/tools`    | Get tools for the stage   |
+
+
+## Stages Call Properties
+
+:::tip
+The schema used for a Stages response body is a subset of the request body schema used when creating a new call. The response body must contain the new values for any properties you want to change in the new stage.
+:::
+
+Unless overridden, stages inherit all properties of the existing call.
+
+Here is the list of all call properties that can and cannot be changed during a new stage:
+
+| property            | change with new stage? |
+|-------------------- | ---------------------- |
+| systemPrompt        | Yes                    |
+| temperature         | Yes                    |
+| voice               | Yes                    |
+| languageHint        | Yes                    |
+| initialMessages     | Yes                    |
+| selectedTools       | Yes                    |
+| firstSpeaker        | No                     |
+| model               | No                     |
+| joinTimeout         | No                     |
+| maxDuration         | No                     |
+| timeExceededMessage | No                     |
+| inactivityMessages  | No                     |
+| medium              | No                     |
+| initiator           | No                     |
+| recordingEnabled    | No                     |
+
 
 ## Use Cases for Call Stages
 
