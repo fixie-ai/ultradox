@@ -87,6 +87,7 @@ Lists all webhooks configured for your account. Account scoped.
     </table>
   </TabItem>
   <TabItem label="Response">
+  Response contains a "results" array of webhook objects. Each object contains:
     <table>
       <tr>
         <th class="w-1/12"></th>
@@ -276,7 +277,7 @@ Retrieves details for a specific webhook configuration.
 
 <Badge text="PUT /webhooks/{webhook_id}" variant="caution" size="large" />
 
-Updates an existing webhook configuration.
+Updates an existing webhook configuration. Completely replaces the webhook. For partial modifications, see [Patch Webhook](#patch-webhook)
 
 <Tabs>
   <TabItem label="Parameters">
@@ -355,7 +356,7 @@ Updates an existing webhook configuration.
 
 <Badge text="PATCH /webhooks/{webhook_id}" variant="tip" size="large" />
 
-Updates an existing webhook configuration.
+Updates an existing webhook configuration. Allows partial modifications to the webhook.
 
 <Tabs>
   <TabItem label="Parameters">
@@ -366,7 +367,7 @@ Updates an existing webhook configuration.
       </tr>
       <tr>
         <td class="font-mono">webhookId<br /> <span class="text-sm text-red-500">required</span></td>
-        <td>Unique identifier for the webhook to update.</td>
+        <td>Unique identifier for the webhook to patch.</td>
       </tr>
     </table>
   </TabItem>
@@ -404,7 +405,7 @@ Updates an existing webhook configuration.
       <tr>
         <td class="font-mono">webhookId</td>
         <td>string</td>
-        <td>Unique identifier for the updated webhook.</td>
+        <td>Unique identifier for the patched webhook.</td>
       </tr>
       <tr>
         <td class="font-mono">created</td>
