@@ -47,7 +47,7 @@ Remember to store your webhook secret securely and never expose it in client-sid
 ### Retries
 When a destination URL fails to respond to an incoming webhook with a 200, we will retry using an exponential backoff strategy as follows:
 
-* First retry will occur 30 seconds later.
+* First retry will occur approximately 30 seconds later.
 * Subsequent retries will double the retry interval. (e.g. second retry again after 1m, third retry after 2m, etc.)
 * Total of 10 retries.
 
