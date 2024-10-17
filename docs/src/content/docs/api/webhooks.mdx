@@ -4,7 +4,7 @@ sidebar:
   order: 60
 tableOfContents: true
 ---
-import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Badge, Tabs, TabItem, Code } from '@astrojs/starlight/components';
 import CallOut from '@components/CallOut.astro';
 
 <CallOut
@@ -17,7 +17,10 @@ import CallOut from '@components/CallOut.astro';
 Webhooks allow you to receive real-time notifications about events in your Ultravox account. You can configure webhooks to send HTTP POST requests to a specified URL when certain events occur.
 
 ## Webhooks in Ultravox
-When creating a webhook, you must provide a URL that will receive the webhook notification. Your service must return an HTTP status code of 200 ("OK"). If your service fails to respond with a 200, we will retry sending again.
+When creating a webhook, you must provide a URL that will receive the webhook notification. Your service must return an acceptable HTTP status code.
+
+### HTTP Status Codes
+Your service should return a 2xx status code (we recommend 204) to confirm receipt of all webhooks. Any 4xx or 5xx response will result in a [retry](#retries).
 
 ### Securing Webhooks
 You can optionally choose to secure your webhooks with a key. When creating a webhook, a secret key is automatically generated for you or you can choose to provide your own secret. You can update or patch your webhooks to change secrets in the event of a leak or as part of regular key rotation.
@@ -36,6 +39,11 @@ Each time your server receives an incoming webhook from Ultravox here's how you 
   * Create an HMAC-SHA256 hash of this concatenated string using your webhook secret as the key.
   * Compare this hash with the provided signature.
 
+import whSecuring from '../../codesnippets/webhooks-security.txt?raw';
+export const title = "Example: Verifying Webhook Signature"
+
+<Code code={whSecuring} lang="python" title={title} />
+
 3. **Multiple Signatures**
 * `The X-Ultravox-Webhook-Signature` header may contain multiple signatures separated by commas.
 * This allows for key rotation without downtime.
@@ -43,6 +51,7 @@ Each time your server receives an incoming webhook from Ultravox here's how you 
 
 By implementing these checks, you ensure that only authentic, recent, and unmodified webhooks from Ultravox are processed by your system.
 Remember to store your webhook secret securely and never expose it in client-side code or public repositories.
+
 
 ### Retries
 When a destination URL fails to respond to an incoming webhook with a 200, we will retry using a random exponential backoff strategy as follows:
