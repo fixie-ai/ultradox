@@ -40,9 +40,10 @@ Determine the different phases of your conversation and what prompts or paramete
 
 Create a custom tool that will trigger stage changes when called. This tool should:
 
-* Respond with a header called `X-Ultravox-Response-Type` set to `new-stage`. This creates the new stage.
+* Respond with a `new-stage` response type. This creates the new stage. How you send the response depends on the tool type:
+  * For server/HTTP tools, set the `X-Ultravox-Response-Type` header to `new-stage`.
+  * For [client tools](../sdk#client-tools), set `responseType="new-stage"` on your `ClientToolResult` object.
 * Provide the updated parameters (e.g., system prompt, tools, voice) for the new stage in the response body.
-* For [client tools](../sdk#client-tools), a new stage can be started by returning an object that has `responseType="new-stage"`.
 
 Unless overridden, stages inherit all properties of the existing call. See [Stages Call Properties](#stages-call-properties) for the list of call properties that can be changed.
 
@@ -78,7 +79,10 @@ export const cstitle = "Updating our systemPrompt and selectedTools"
 
 
 :::tip[Inheritance]
-New stages inherit all properties from the previous stage. You can selectively overwrite properties as needed when defining a new stage. See the [above table](#2-implement-a-stage-change-tool) for more.
+New stages inherit all properties from the previous stage.
+You can selectively overwrite properties as needed when defining a new stage.
+
+See [Stages Call Properties](#stages-call-properties) for more.
 :::
 
 ## Ultravox API Implications
