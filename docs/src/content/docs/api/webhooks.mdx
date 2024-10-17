@@ -1,0 +1,501 @@
+---
+title: "Webhooks"
+sidebar:
+  order: 60
+tableOfContents: true
+---
+import { Badge, Tabs, TabItem, Code } from '@astrojs/starlight/components';
+import CallOut from '@components/CallOut.astro';
+
+<CallOut
+  title="API Key Required"
+  text="The Ultravox API requires an API key. For more details see "
+  link={{ url: "../auth", text: "Authentication." }}
+/>
+<br />
+
+Webhooks allow you to receive real-time notifications about events in your Ultravox account. You can configure webhooks to send HTTP POST requests to a specified URL when certain events occur.
+
+## Webhooks in Ultravox
+When creating a webhook, you must provide a URL that will receive the webhook notification. Your service must return an acceptable HTTP status code.
+
+### HTTP Status Codes
+Your service should return a 2xx status code (we recommend 204) to confirm receipt of all webhooks. Any 4xx or 5xx response will result in a [retry](#retries).
+
+### Securing Webhooks
+You can optionally choose to secure your webhooks with a key. When creating a webhook, a secret key is automatically generated for you or you can choose to provide your own secret. You can update or patch your webhooks to change secrets in the event of a leak or as part of regular key rotation.
+
+Each time your server receives an incoming webhook from Ultravox here's how you can ensure the webhook was sent by Ultravox and hasn't been tampered with:
+
+1. **Timestamp Verification**
+* Each incoming webhook request includes a `X-Ultravox-Webhook-Timestamp` header with the time the webhook was sent.
+* Verify that this timestamp is recent (e.g. within the last minute) to prevent replay attacks.
+
+2. **Signature Verification**
+* Ultravox signs each webhook using HMAC-SHA256.
+* The signature is included in the `X-Ultravox-Webhook-Signature` header.
+* To verify the signature:
+  * Concatenate the raw request body with the timestamp.
+  * Create an HMAC-SHA256 hash of this concatenated string using your webhook secret as the key.
+  * Compare this hash with the provided signature.
+
+import whSecuring from '../../codesnippets/webhooks-security.txt?raw';
+export const title = "Example: Verifying Webhook Signature"
+
+<Code code={whSecuring} lang="python" title={title} />
+
+3. **Multiple Signatures**
+* `The X-Ultravox-Webhook-Signature` header may contain multiple signatures separated by commas.
+* This allows for key rotation without downtime.
+* Your code should check if any of the provided signatures match your computed signature.
+
+By implementing these checks, you ensure that only authentic, recent, and unmodified webhooks from Ultravox are processed by your system.
+Remember to store your webhook secret securely and never expose it in client-side code or public repositories.
+
+
+### Retries
+When a destination URL fails to respond to an incoming webhook with a 200, we will retry using a random exponential backoff strategy as follows:
+
+* First retry will occur approximately 30 seconds later.
+* Subsequent retries will double the retry interval. (e.g. second retry again after 1m, third retry after 2m, etc.)
+* Total of 10 retries.
+
+If your receiving service is still down, you can use the API to retrieve information about any calls that occurred.
+
+## List Webhooks
+
+<Badge text="GET /webhooks" variant="note" size="large" />
+
+Lists all webhooks configured for your account. Account scoped.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">cursor</td>
+        <td>(Optional) Pagination cursor.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+  Response contains a "results" array of webhook objects. Each object contains:
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId</td>
+        <td>string</td>
+        <td>Unique identifier for the webhook.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the webhook was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">url</td>
+        <td>string</td>
+        <td>The URL where webhook events will be sent.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">secrets</td>
+        <td>array</td>
+        <td>Array of secret strings used for webhook authentication.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">events</td>
+        <td>array</td>
+        <td>Array of event types this webhook is subscribed to.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Create Webhook
+
+<Badge text="POST /webhooks" variant="success" size="large" />
+
+Creates a new webhook configuration for your account.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">url<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>string</td>
+        <td>The URL where webhook events will be sent. Must be a valid URI and maximum 200 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">secrets</td>
+        <td>array</td>
+        <td>Array of secret strings used for webhook authentication. Each string must be maximum 120 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">events<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>array</td>
+        <td>Array of event types to subscribe to. Valid values are "call.started" and "call.ended".</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId</td>
+        <td>string</td>
+        <td>Unique identifier for the created webhook.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the webhook was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">url</td>
+        <td>string</td>
+        <td>The URL where webhook events will be sent.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">secrets</td>
+        <td>array</td>
+        <td>Array of secret strings used for webhook authentication.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">events</td>
+        <td>array</td>
+        <td>Array of event types this webhook is subscribed to.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Get Webhook
+
+<Badge text="GET /webhooks/{webhook_id}" variant="note" size="large" />
+
+Retrieves details for a specific webhook configuration.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier for the webhook to retrieve.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">None</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId</td>
+        <td>string</td>
+        <td>Unique identifier for the webhook.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the webhook was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">url</td>
+        <td>string</td>
+        <td>The URL where webhook events will be sent.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">secrets</td>
+        <td>array</td>
+        <td>Array of secret strings used for webhook authentication.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">events</td>
+        <td>array</td>
+        <td>Array of event types this webhook is subscribed to.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Update Webhook
+
+<Badge text="PUT /webhooks/{webhook_id}" variant="caution" size="large" />
+
+Updates an existing webhook configuration. Completely replaces the webhook. For partial modifications, see [Patch Webhook](#patch-webhook)
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier for the webhook to update.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">url<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>string</td>
+        <td>The new URL where webhook events will be sent. Must be a valid URI and maximum 200 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">secrets</td>
+        <td>array</td>
+        <td>New array of secret strings used for webhook authentication. Each string must be maximum 120 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">events<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>array</td>
+        <td>New array of event types to subscribe to. Valid values are "call.started" and "call.ended".</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId</td>
+        <td>string</td>
+        <td>Unique identifier for the updated webhook.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the webhook was originally created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">url</td>
+        <td>string</td>
+        <td>The updated URL where webhook events will be sent.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">secrets</td>
+        <td>array</td>
+        <td>Updated array of secret strings used for webhook authentication.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">events</td>
+        <td>array</td>
+        <td>Updated array of event types this webhook is subscribed to.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Patch Webhook
+
+<Badge text="PATCH /webhooks/{webhook_id}" variant="tip" size="large" />
+
+Updates an existing webhook configuration. Allows partial modifications to the webhook.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier for the webhook to patch.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">url<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>string</td>
+        <td>The new URL where webhook events will be sent. Must be a valid URI and maximum 200 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">secrets</td>
+        <td>array</td>
+        <td>New array of secret strings used for webhook authentication. Each string must be maximum 120 characters.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">events<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>array</td>
+        <td>New array of event types to subscribe to. Valid values are "call.started" and "call.ended".</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId</td>
+        <td>string</td>
+        <td>Unique identifier for the patched webhook.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the webhook was originally created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">url</td>
+        <td>string</td>
+        <td>The updated URL where webhook events will be sent.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">secrets</td>
+        <td>array</td>
+        <td>Updated array of secret strings used for webhook authentication.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">events</td>
+        <td>array</td>
+        <td>Updated array of event types this webhook is subscribed to.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Delete Webhook
+
+<Badge text="DELETE /webhooks/{webhook_id}" variant="danger" size="large" />
+
+Deletes an existing webhook configuration.
+
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">webhookId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier for the webhook to delete.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Request Body">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-12/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">No request body</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-12/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">No response body (204 No Content)</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Available Events
+The following events are available and can be specified when creating or updating a webhoook.
+
+| event        | description                |
+|------------- | -------------------------- |
+| call.started | Fired when a call starts.  |
+| call.ended   | Fired when a call ends.    |
+
+## Webhook Payloads
+The payloads that are sent with each webhook are passed in the request body as follows:
+
+```js
+{
+  "call": {call_object}
+}
+```
+
+The `{call_object}` matches what is returned from the [Get Call](../calls/#get-call) endpoint.
