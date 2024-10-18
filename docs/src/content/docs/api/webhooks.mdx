@@ -16,6 +16,25 @@ import CallOut from '@components/CallOut.astro';
 
 Webhooks allow you to receive real-time notifications about events in your Ultravox account. You can configure webhooks to send HTTP POST requests to a specified URL when certain events occur.
 
+## Available Events
+The following events are available and can be specified when creating or updating a webhoook.
+
+| event        | description                |
+|------------- | -------------------------- |
+| call.started | Fired when a call starts.  |
+| call.ended   | Fired when a call ends.    |
+
+### Event Payloads
+The payloads that are sent with each webhook are passed in the request body as follows:
+
+```js
+{
+  "call": {call_object}
+}
+```
+
+The `{call_object}` matches what is returned from the [Get Call](../calls/#get-call) endpoint.
+
 ## Webhooks in Ultravox
 When creating a webhook, you must provide a URL that will receive the webhook notification. Your service must return an acceptable HTTP status code.
 
@@ -481,21 +500,3 @@ Deletes an existing webhook configuration.
   </TabItem>
 </Tabs>
 
-## Available Events
-The following events are available and can be specified when creating or updating a webhoook.
-
-| event        | description                |
-|------------- | -------------------------- |
-| call.started | Fired when a call starts.  |
-| call.ended   | Fired when a call ends.    |
-
-## Webhook Payloads
-The payloads that are sent with each webhook are passed in the request body as follows:
-
-```js
-{
-  "call": {call_object}
-}
-```
-
-The `{call_object}` matches what is returned from the [Get Call](../calls/#get-call) endpoint.
