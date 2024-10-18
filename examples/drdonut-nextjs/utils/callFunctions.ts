@@ -1,5 +1,5 @@
 'use client';
-import { UltravoxSession, UltravoxSessionStatus, Transcript, UltravoxSessionStateChangeEvent, UltravoxSessionState } from 'ultravox-client';
+import { UltravoxSession, UltravoxSessionStatus, Transcript } from 'ultravox-client';
 let UVSession: UltravoxSession | null = null;
 
 interface JoinUrlResponse {
@@ -13,8 +13,8 @@ interface JoinUrlResponse {
 }
 
 interface CallCallbacks {
-  onStatusChange: (status: UltravoxSessionStatus) => void;
-  onTranscriptChange: (transcripts: Transcript[]) => void;
+  onStatusChange: (status: UltravoxSessionStatus | undefined) => void;
+  onTranscriptChange: (transcripts: Transcript[] | undefined) => void;
 }
 
 const initUVSession = async () => {
@@ -53,33 +53,31 @@ export async function startCall(callbacks: CallCallbacks): Promise<() => void> {
 
     await initUVSession();
 
-    let state: UltravoxSessionState;
     if (UVSession) {
-      state = UVSession.joinCall(joinUrl);
-      console.log('Session status:', state.getStatus());
+      UVSession.joinCall(joinUrl);
+      console.log('Session status:', UVSession.status);
     } else {
       return () => {};
     }
 
     const statusChangeListener = (event: any) => {
-      callbacks.onStatusChange(event.state);
+      callbacks.onStatusChange(UVSession?.status);
     };
 
     const transcriptChangeListener = (event: any) => {
-      let te: UltravoxSessionStateChangeEvent = event;
-      console.log(te.transcripts);
-      callbacks.onTranscriptChange(te.transcripts);
+      console.log(UVSession?.transcripts);
+      callbacks.onTranscriptChange(UVSession?.transcripts);
     };
 
-    state.addEventListener('ultravoxSessionStatusChanged', statusChangeListener);
-    state.addEventListener('ultravoxTranscriptsChanged', transcriptChangeListener);
+    UVSession.addEventListener('status', statusChangeListener);
+    UVSession.addEventListener('transcripts', transcriptChangeListener);
 
     console.log('Call started!');
 
     // For cleaning up when calls end
     return () => {
-      state.removeEventListener('ultravoxSessionStatusChanged', statusChangeListener);
-      state.removeEventListener('ultravoxTranscriptsChanged', transcriptChangeListener);
+      UVSession?.removeEventListener('status', statusChangeListener);
+      UVSession?.removeEventListener('transcripts', transcriptChangeListener);
     };
   }
 }

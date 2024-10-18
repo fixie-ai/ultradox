@@ -18,8 +18,8 @@ importers:
         specifier: ^18
         version: 18.3.1(react@18.3.1)
       ultravox-client:
-        specifier: ^0.2.9
-        version: 0.2.9
+        specifier: ^0.3.2
+        version: 0.3.2
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -346,8 +346,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@livekit/protocol@1.19.1':
-    resolution: {integrity: sha512-PQYIuqRv++fRik9tKulJ0C0tT5O4cNviBA7OxwLTCBFDxJpve8ua8/JZ+nK+7r4j2KbLfVjsJYop9wcTCgRn7Q==}
+  '@livekit/protocol@1.24.0':
+    resolution: {integrity: sha512-9dCsqnkMn7lvbI4NGh18zhLDsrXyUcpS++TEFgEk5Xv1WM3R2kT3EzqgL1P/mr3jaabM6rJ8wZA/KJLuQNpF5w==}
 
   '@next/env@14.2.5':
     resolution: {integrity: sha512-/zZGkrTOsraVfYjGP8uM0p6r0BDT6xWpkjdVbcz66PJVSpwXX3yNiRycxAuDfBKGWBrZBXRuK/YVlkNgxHGwmA==}
@@ -1380,8 +1380,8 @@ packages:
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
-  livekit-client@2.4.2:
-    resolution: {integrity: sha512-6iEeDiaon9TvH0L0t34wSApGk6In8Rpl538Dgh9hrxts2kq0scuxMTz2ipagFVIVGYOKceKBA2dnv/XOL+1ACw==}
+  livekit-client@2.5.9:
+    resolution: {integrity: sha512-oDpK6SKYB1F+mNO+25DA0bF0cD2XoOJeD8ji4YQpzDBQv2IxeyKrQhoqXAqrYgIKuiMNkImSf+yg2v7EHSl4Og==}
 
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
@@ -1898,6 +1898,9 @@ packages:
   tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
 
+  tslib@2.7.0:
+    resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -1930,8 +1933,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  ultravox-client@0.2.9:
-    resolution: {integrity: sha512-4bASHuKvD81NwpGB5cuR3JQONGQZHt1oEUeNYNycsLm1ayQ/AFiUuYW+rpa6qpefgPMqozRntwr9CnDgeY1KKw==}
+  ultravox-client@0.3.2:
+    resolution: {integrity: sha512-Z+j1efzyIxOVbjqo8ZcaQTKLoYbPRDa5EIwCcqK6r2CfP5xtKe3fBsiOs81mF0Eq4wyMtvOp8mapT+3S44z+5g==}
     engines: {pnpm: '>=6.0.0'}
 
   unbox-primitive@1.0.2:
@@ -2307,7 +2310,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@livekit/protocol@1.19.1':
+  '@livekit/protocol@1.24.0':
     dependencies:
       '@bufbuild/protobuf': 1.10.0
 
@@ -3519,14 +3522,14 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  livekit-client@2.4.2:
+  livekit-client@2.5.9:
     dependencies:
-      '@livekit/protocol': 1.19.1
+      '@livekit/protocol': 1.24.0
       events: 3.3.0
       loglevel: 1.9.1
       sdp-transform: 2.14.2
       ts-debounce: 4.0.0
-      tslib: 2.6.3
+      tslib: 2.7.0
       typed-emitter: 2.1.0
       webrtc-adapter: 9.0.1
 
@@ -3855,7 +3858,7 @@ snapshots:
 
   rxjs@7.8.1:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.7.0
     optional: true
 
   safe-array-concat@1.1.2:
@@ -4085,6 +4088,8 @@ snapshots:
 
   tslib@2.6.3: {}
 
+  tslib@2.7.0: {}
+
   type-check@0.4.0:
     dependencies:
       prelude-ls: 1.2.1
@@ -4129,9 +4134,9 @@ snapshots:
 
   typescript@5.5.4: {}
 
-  ultravox-client@0.2.9:
+  ultravox-client@0.3.2:
     dependencies:
-      livekit-client: 2.4.2
+      livekit-client: 2.5.9
 
   unbox-primitive@1.0.2:
     dependencies:

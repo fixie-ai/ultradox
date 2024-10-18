@@ -83,9 +83,8 @@
 </div>
 
 <script type="module">
-  import { UltravoxSession } from 'https://esm.sh/ultravox-client@0.2.12';
+  import { UltravoxSession } from 'https://esm.sh/ultravox-client@0.3.1';
   let UVSession = new UltravoxSession();
-  let state;
 
   function appendUpdate(target, message) {
     const updateTarget = document.getElementById(target);
@@ -111,15 +110,15 @@
       return;
     } else {
       appendUpdate('callStatus', 'Starting call');
-      state = await UVSession.joinCall(joinUrl);
-      appendUpdate('callStatus', `Joining call: ${state.getStatus()}`);
+      UVSession.joinCall(joinUrl);
+      appendUpdate('callStatus', `Joining call: ${UVSession.status}`);
 
-      state.addEventListener('ultravoxSessionStatusChanged', (event) => {
-        appendUpdate('callStatus', `Session status changed: ${event.state}`);
+      UVSession.addEventListener('status', (event) => {
+        appendUpdate('callStatus', `Session status changed: ${UVSession.status}`);
       });
 
-      state.addEventListener('ultravoxTranscriptsChanged', (event) => {
-        appendUpdate('callTranscript', event.transcripts);
+      UVSession.addEventListener('transcripts', (event) => {
+        appendUpdate('callTranscript', UVSession.transcripts);
       });
     }
   };

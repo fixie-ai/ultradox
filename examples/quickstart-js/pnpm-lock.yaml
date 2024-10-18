@@ -24,8 +24,8 @@ importers:
         specifier: ^4.19.2
         version: 4.19.2
       ultravox-client:
-        specifier: ^0.2.15
-        version: 0.2.15
+        specifier: ^0.3.2
+        version: 0.3.2
     devDependencies:
       vite:
         specifier: ^5.3.4
@@ -178,8 +178,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@livekit/protocol@1.19.1':
-    resolution: {integrity: sha512-PQYIuqRv++fRik9tKulJ0C0tT5O4cNviBA7OxwLTCBFDxJpve8ua8/JZ+nK+7r4j2KbLfVjsJYop9wcTCgRn7Q==}
+  '@livekit/protocol@1.24.0':
+    resolution: {integrity: sha512-9dCsqnkMn7lvbI4NGh18zhLDsrXyUcpS++TEFgEk5Xv1WM3R2kT3EzqgL1P/mr3jaabM6rJ8wZA/KJLuQNpF5w==}
 
   '@rollup/rollup-android-arm-eabi@4.20.0':
     resolution: {integrity: sha512-TSpWzflCc4VGAUJZlPpgAJE1+V60MePDQnBd7PPkpuEmOy8i87aL6tinFGKBFKuEDikYpig72QzdT3QPYIi+oA==}
@@ -496,8 +496,8 @@ packages:
     resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==}
     engines: {node: '>=8'}
 
-  livekit-client@2.4.2:
-    resolution: {integrity: sha512-6iEeDiaon9TvH0L0t34wSApGk6In8Rpl538Dgh9hrxts2kq0scuxMTz2ipagFVIVGYOKceKBA2dnv/XOL+1ACw==}
+  livekit-client@2.5.9:
+    resolution: {integrity: sha512-oDpK6SKYB1F+mNO+25DA0bF0cD2XoOJeD8ji4YQpzDBQv2IxeyKrQhoqXAqrYgIKuiMNkImSf+yg2v7EHSl4Og==}
 
   lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
@@ -681,6 +681,9 @@ packages:
   tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
 
+  tslib@2.7.0:
+    resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
+
   type-is@1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
     engines: {node: '>= 0.6'}
@@ -688,8 +691,8 @@ packages:
   typed-emitter@2.1.0:
     resolution: {integrity: sha512-g/KzbYKbH5C2vPkaXGu8DJlHrGKHLsM25Zg9WuC9pMGfuvT+X25tZQWo5fK1BjBm8+UrVE9LDCvaY0CQk+fXDA==}
 
-  ultravox-client@0.2.15:
-    resolution: {integrity: sha512-rhklBYZHvtBlpXuvVD7mJycWdeJLfrujqzsyuq45uIjskZMjsUW6GPgxIYNi3egD3QfIGt8UMDmnPfepvBL7YA==}
+  ultravox-client@0.3.2:
+    resolution: {integrity: sha512-Z+j1efzyIxOVbjqo8ZcaQTKLoYbPRDa5EIwCcqK6r2CfP5xtKe3fBsiOs81mF0Eq4wyMtvOp8mapT+3S44z+5g==}
     engines: {pnpm: '>=6.0.0'}
 
   unpipe@1.0.0:
@@ -829,7 +832,7 @@ snapshots:
   '@esbuild/win32-x64@0.21.5':
     optional: true
 
-  '@livekit/protocol@1.19.1':
+  '@livekit/protocol@1.24.0':
     dependencies:
       '@bufbuild/protobuf': 1.10.0
 
@@ -1160,14 +1163,14 @@ snapshots:
 
   is-fullwidth-code-point@3.0.0: {}
 
-  livekit-client@2.4.2:
+  livekit-client@2.5.9:
     dependencies:
-      '@livekit/protocol': 1.19.1
+      '@livekit/protocol': 1.24.0
       events: 3.3.0
       loglevel: 1.9.1
       sdp-transform: 2.14.2
       ts-debounce: 4.0.0
-      tslib: 2.6.3
+      tslib: 2.7.0
       typed-emitter: 2.1.0
       webrtc-adapter: 9.0.1
 
@@ -1354,6 +1357,8 @@ snapshots:
 
   tslib@2.6.3: {}
 
+  tslib@2.7.0: {}
+
   type-is@1.6.18:
     dependencies:
       media-typer: 0.3.0
@@ -1363,9 +1368,9 @@ snapshots:
     optionalDependencies:
       rxjs: 7.8.1
 
-  ultravox-client@0.2.15:
+  ultravox-client@0.3.2:
     dependencies:
-      livekit-client: 2.4.2
+      livekit-client: 2.5.9
 
   unpipe@1.0.0: {}
 

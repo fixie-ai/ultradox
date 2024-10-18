@@ -8,55 +8,32 @@ import { Tabs, TabItem, Code, Steps } from '@astrojs/starlight/components';
 import SDKCards from '@components/SDKCards.astro';
 import CallOut from '@components/CallOut.astro';
 
+
 The Ultravox [REST API](../api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page primarily uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
 
 ## Ultravox Session
 The core of the SDK is the `UltravoxSession`. The session is used to join and leave calls.
 
+import quickstartdart from '../codesnippets/sdk/quickstart-dart.txt?raw';
+import quickstartjs from '../codesnippets/sdk/quickstart-js.txt?raw';
+import quickstartkotlin from '../codesnippets/sdk/quickstart-kotlin.txt?raw';
+import quickstartpython from '../codesnippets/sdk/quickstart-python.txt?raw';
+
 <Tabs syncKey="example-language">
   <TabItem label="JavaScript">
-    ```js
-    import { UltravoxSession } from 'ultravox-client';
-
-    const session = new UltravoxSession();
-    const state = await session.joinCall('wss://your-call-join-url');
-
-    session.leaveCall();
-    ```
+    <Code code={quickstartjs} lang="js" />
   </TabItem>
 
   <TabItem label="Flutter">
-    ```dart
-    import 'package:ultravox_client/ultravox_client.dart';
-
-    UltravoxSession session = UltravoxSession.create();
-    UltravoxSessionState state = await _session.joinCall('wss://your-call-join-url');
-
-    await session.leaveCall();
-    ```
+    <Code code={quickstartdart} lang="dart" />
   </TabItem>
 
   <TabItem label="Kotlin">
-    ```kotlin
-    import ai.ultravox.UltravoxSession
-
-    val session = UltravoxSession()
-    val state = session.joinCall("wss://your-call-join-url")
-
-    session.leaveCall()
-    ```
+    <Code code={quickstartkotlin} lang="kotlin" />
   </TabItem>
 
   <TabItem label="Python">
-    ```python
-    import asyncio
-    import ultravox_client as uv
-
-    session = uv.UltravoxSession()
-    state = await session.join_call("wss://your-call-join-url")
-
-    await session.leave_call()
-    ```
+    <Code code={quickstartpython} lang="python" />
   </TabItem>
 </Tabs>
 

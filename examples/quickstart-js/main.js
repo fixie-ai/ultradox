@@ -1,4 +1,4 @@
-import { UltravoxSession, UltravoxSessionStatus } from 'ultravox-client';
+import { UltravoxSession } from 'ultravox-client';
 const apiUrl = 'http://localhost:3000/startCall';
 const expMessages = new Set(["debug"]);
 let UVSession = new UltravoxSession({ experimentalMessages: expMessages });
@@ -37,21 +37,21 @@ export async function startCall() {
   } else {
     console.log('Joining call:', joinUrl);
 
-    const state = UVSession.joinCall(joinUrl);
-    appendToConversation(`Joining call: ${state.getStatus()}`);
-    console.log('Session status:', state.getStatus());
+    UVSession.joinCall(joinUrl);
+    appendToConversation(`Joining call: ${UVSession.status}`);
+    console.log('Session status:', UVSession.status);
 
-    state.addEventListener('ultravoxSessionStatusChanged', (event) => {
-      console.log('Session status changed:', event.state);
-      appendToConversation(`Session status changed: ${event.state}`);
+    UVSession.addEventListener('status', (event) => {
+      console.log('Session status changed:', UVSession.status);
+      appendToConversation(`Session status changed: ${UVSession.status}`);
     });
 
-    state.addEventListener('ultravoxTranscriptsChanged', (event) => {
-      console.log('Transcripts changed:', event.transcripts);
-      appendToConversation(`Transcripts changed: ${JSON.stringify(event.transcripts)}`);
+    UVSession.addEventListener('transcripts', (event) => {
+      console.log('Transcripts changed:', UVSession.transcripts);
+      appendToConversation(`Transcripts changed: ${JSON.stringify(UVSession.transcripts)}`);
     });
 
-    state.addEventListener('ultravoxExperimentalMessage', (event) => {
+    UVSession.addEventListener('experimental_message', (event) => {
       console.log('Exp Message:', event);
     });
   }
