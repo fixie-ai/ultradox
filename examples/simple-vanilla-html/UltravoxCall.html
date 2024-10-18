@@ -83,9 +83,8 @@
 </div>
 
 <script type="module">
-  import { UltravoxSession } from 'https://esm.sh/ultravox-client@0.2.12';
-  let UVSession = new UltravoxSession();
-  let state;
+  import { UltravoxSession } from 'https://esm.sh/ultravox-client@0.3.1';
+  let uvSession = new UltravoxSession();
 
   function appendUpdate(target, message) {
     const updateTarget = document.getElementById(target);
@@ -111,22 +110,23 @@
       return;
     } else {
       appendUpdate('callStatus', 'Starting call');
-      state = await UVSession.joinCall(joinUrl);
-      appendUpdate('callStatus', `Joining call: ${state.getStatus()}`);
 
-      state.addEventListener('ultravoxSessionStatusChanged', (event) => {
-        appendUpdate('callStatus', `Session status changed: ${event.state}`);
+      uvSession.addEventListener('status', (event) => {
+        appendUpdate('callStatus', `Session status changed: ${uvSession.status}`);
       });
 
-      state.addEventListener('ultravoxTranscriptsChanged', (event) => {
-        appendUpdate('callTranscript', event.transcripts);
+      uvSession.addEventListener('transcripts', (event) => {
+        appendUpdate('callTranscript', uvSession.transcripts);
       });
+
+      uvSession.joinCall(joinUrl);
+      appendUpdate('callStatus', `Joining call: ${uvSession.status}`);
     }
   };
 
   // End Call button click event handler
   document.getElementById('endCall').onclick = async function() {
     appendUpdate('callStatus', 'Ending call');
-    UVSession.leaveCall();
+    uvSession.leaveCall();
   };
 </script>

@@ -1,7 +1,7 @@
-import { UltravoxSession, UltravoxSessionStatus } from 'ultravox-client';
+import { UltravoxSession } from 'ultravox-client';
 const apiUrl = 'http://localhost:3000/startCall';
 const expMessages = new Set(["debug"]);
-let UVSession = new UltravoxSession({ experimentalMessages: expMessages });
+let uvSession = new UltravoxSession({ experimentalMessages: expMessages });
 
 async function getJoinUrl(systemPrompt) {
   console.log('getJoinUrl called');
@@ -37,23 +37,25 @@ export async function startCall() {
   } else {
     console.log('Joining call:', joinUrl);
 
-    const state = UVSession.joinCall(joinUrl);
-    appendToConversation(`Joining call: ${state.getStatus()}`);
-    console.log('Session status:', state.getStatus());
-
-    state.addEventListener('ultravoxSessionStatusChanged', (event) => {
-      console.log('Session status changed:', event.state);
-      appendToConversation(`Session status changed: ${event.state}`);
+    uvSession.addEventListener('status', (event) => {
+      console.log('Session status changed:', uvSession.status);
+      appendToConversation(`Session status changed: ${uvSession.status}`);
     });
 
-    state.addEventListener('ultravoxTranscriptsChanged', (event) => {
-      console.log('Transcripts changed:', event.transcripts);
-      appendToConversation(`Transcripts changed: ${JSON.stringify(event.transcripts)}`);
+    uvSession.addEventListener('transcripts', (event) => {
+      console.log('Transcripts changed:', uvSession.transcripts);
+      appendToConversation(`Transcripts changed: ${JSON.stringify(uvSession.transcripts)}`);
     });
 
-    state.addEventListener('ultravoxExperimentalMessage', (event) => {
+    uvSession.addEventListener('experimental_message', (event) => {
       console.log('Exp Message:', event);
     });
+
+    uvSession.joinCall(joinUrl);
+    appendToConversation(`Joining call: ${uvSession.status}`);
+    console.log('Session status:', uvSession.status);
+
+    
   }
 
 }
@@ -66,5 +68,5 @@ function appendToConversation(message) {
 
 export function endCall() {
   appendToConversation('Leaving call...');
-  UVSession.leaveCall();
+  uvSession.leaveCall();
 }

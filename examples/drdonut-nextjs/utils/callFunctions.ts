@@ -1,6 +1,6 @@
 'use client';
-import { UltravoxSession, UltravoxSessionStatus, Transcript, UltravoxSessionStateChangeEvent, UltravoxSessionState } from 'ultravox-client';
-let UVSession: UltravoxSession | null = null;
+import { UltravoxSession, UltravoxSessionStatus, Transcript } from 'ultravox-client';
+let uvSession: UltravoxSession | null = null;
 
 interface JoinUrlResponse {
   uuid: string;
@@ -13,13 +13,13 @@ interface JoinUrlResponse {
 }
 
 interface CallCallbacks {
-  onStatusChange: (status: UltravoxSessionStatus) => void;
-  onTranscriptChange: (transcripts: Transcript[]) => void;
+  onStatusChange: (status: UltravoxSessionStatus | undefined) => void;
+  onTranscriptChange: (transcripts: Transcript[] | undefined) => void;
 }
 
 const initUVSession = async () => {
-  if (!UVSession) {
-    UVSession = new UltravoxSession();
+  if (!uvSession) {
+    uvSession = new UltravoxSession();
   }
 };
 
@@ -53,33 +53,33 @@ export async function startCall(callbacks: CallCallbacks): Promise<() => void> {
 
     await initUVSession();
 
-    let state: UltravoxSessionState;
-    if (UVSession) {
-      state = UVSession.joinCall(joinUrl);
-      console.log('Session status:', state.getStatus());
-    } else {
-      return () => {};
-    }
-
     const statusChangeListener = (event: any) => {
-      callbacks.onStatusChange(event.state);
+      callbacks.onStatusChange(uvSession?.status);
     };
 
     const transcriptChangeListener = (event: any) => {
-      let te: UltravoxSessionStateChangeEvent = event;
-      console.log(te.transcripts);
-      callbacks.onTranscriptChange(te.transcripts);
+      console.log(uvSession?.transcripts);
+      callbacks.onTranscriptChange(uvSession?.transcripts);
     };
 
-    state.addEventListener('ultravoxSessionStatusChanged', statusChangeListener);
-    state.addEventListener('ultravoxTranscriptsChanged', transcriptChangeListener);
+    if (uvSession) {
+      
+  
+      uvSession.addEventListener('status', statusChangeListener);
+      uvSession.addEventListener('transcripts', transcriptChangeListener);
+
+      uvSession.joinCall(joinUrl);
+      console.log('Session status:', uvSession.status);
+    } else {
+      return () => {};
+    }
 
     console.log('Call started!');
 
     // For cleaning up when calls end
     return () => {
-      state.removeEventListener('ultravoxSessionStatusChanged', statusChangeListener);
-      state.removeEventListener('ultravoxTranscriptsChanged', transcriptChangeListener);
+      uvSession?.removeEventListener('status', statusChangeListener);
+      uvSession?.removeEventListener('transcripts', transcriptChangeListener);
     };
   }
 }
@@ -87,8 +87,8 @@ export async function startCall(callbacks: CallCallbacks): Promise<() => void> {
 export async function endCall(): Promise<void> {
   console.log('Call ended.');
 
-  if (UVSession) {
-    UVSession.leaveCall();
-    UVSession = null;
+  if (uvSession) {
+    uvSession.leaveCall();
+    uvSession = null;
   }
 }

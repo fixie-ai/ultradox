@@ -1,0 +1,6 @@
+import 'package:ultravox_client/ultravox_client.dart';
+
+UltravoxSession session = UltravoxSession.create();
+await _session.joinCall('wss://your-call-join-url');
+
+await session.leaveCall();

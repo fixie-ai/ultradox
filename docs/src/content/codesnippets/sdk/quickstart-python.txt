@@ -1,0 +1,7 @@
+import asyncio
+import ultravox_client as uv
+
+session = await uv.UltravoxSession()
+session.join_call("wss://your-call-join-url")
+
+await session.leave_call()
