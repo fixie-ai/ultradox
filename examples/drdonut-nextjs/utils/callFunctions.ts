@@ -1,6 +1,6 @@
 'use client';
 import { UltravoxSession, UltravoxSessionStatus, Transcript } from 'ultravox-client';
-let UVSession: UltravoxSession | null = null;
+let uvSession: UltravoxSession | null = null;
 
 interface JoinUrlResponse {
   uuid: string;
@@ -18,8 +18,8 @@ interface CallCallbacks {
 }
 
 const initUVSession = async () => {
-  if (!UVSession) {
-    UVSession = new UltravoxSession();
+  if (!uvSession) {
+    uvSession = new UltravoxSession();
   }
 };
 
@@ -53,31 +53,33 @@ export async function startCall(callbacks: CallCallbacks): Promise<() => void> {
 
     await initUVSession();
 
-    if (UVSession) {
-      UVSession.joinCall(joinUrl);
-      console.log('Session status:', UVSession.status);
-    } else {
-      return () => {};
-    }
-
     const statusChangeListener = (event: any) => {
-      callbacks.onStatusChange(UVSession?.status);
+      callbacks.onStatusChange(uvSession?.status);
     };
 
     const transcriptChangeListener = (event: any) => {
-      console.log(UVSession?.transcripts);
-      callbacks.onTranscriptChange(UVSession?.transcripts);
+      console.log(uvSession?.transcripts);
+      callbacks.onTranscriptChange(uvSession?.transcripts);
     };
 
-    UVSession.addEventListener('status', statusChangeListener);
-    UVSession.addEventListener('transcripts', transcriptChangeListener);
+    if (uvSession) {
+      
+  
+      uvSession.addEventListener('status', statusChangeListener);
+      uvSession.addEventListener('transcripts', transcriptChangeListener);
+
+      uvSession.joinCall(joinUrl);
+      console.log('Session status:', uvSession.status);
+    } else {
+      return () => {};
+    }
 
     console.log('Call started!');
 
     // For cleaning up when calls end
     return () => {
-      UVSession?.removeEventListener('status', statusChangeListener);
-      UVSession?.removeEventListener('transcripts', transcriptChangeListener);
+      uvSession?.removeEventListener('status', statusChangeListener);
+      uvSession?.removeEventListener('transcripts', transcriptChangeListener);
     };
   }
 }
@@ -85,8 +87,8 @@ export async function startCall(callbacks: CallCallbacks): Promise<() => void> {
 export async function endCall(): Promise<void> {
   console.log('Call ended.');
 
-  if (UVSession) {
-    UVSession.leaveCall();
-    UVSession = null;
+  if (uvSession) {
+    uvSession.leaveCall();
+    uvSession = null;
   }
 }
