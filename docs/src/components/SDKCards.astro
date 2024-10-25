@@ -5,6 +5,7 @@ import flutterLogo from "@assets/logos/flutter.svg";
 import jsLogo from "@assets/logos/js.svg";
 import kotlinLogo from "@assets/logos/kotlin.svg";
 import pythonLogo from "@assets/logos/python.svg";
+import swiftLogo from "@assets/logos/swift.svg";
 import ghLogo from "@assets/logos/github-mark.svg";
 
 const wordForNum: { [key: number]: string } = {
@@ -63,7 +64,18 @@ const sdks = [
     linkUrl: "https://pypi.org/project/ultravox-client/",
     repo: "https://github.com/fixie-ai/ultravox-client-sdk-python",
   },
+  {
+    title: "iOS/Swift",
+    logo: swiftLogo,
+    logoAlt: "Swift logo",
+    introLinkText: "Find it on ",
+    linkText: "Swift Package Index",
+    linkUrl: "https://swiftpackageindex.com/fixie-ai/ultravox-client-sdk-ios",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-ios",
+  },
 ];
+
+const sortedSDKs = sdks.sort((a, b) => a.title.localeCompare(b.title));
 ---
 
 <div class="sdk-cards">
@@ -71,7 +83,7 @@ const sdks = [
   <br />
   <CardGrid>
     {
-      sdks.map((lang) => (
+      sortedSDKs.map((lang) => (
         <Card title={lang.title}>
           <div class="flex flex-row items-end h-6 mb-4">
             <Image
