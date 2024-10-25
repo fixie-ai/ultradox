@@ -24,17 +24,7 @@ function numToWord(num: number): string {
 }
 
 const sdks = [
-  {
-    title: "Flutter",
-    logo: flutterLogo,
-    logoAlt: "Flutter logo",
-    installCommand: "flutter add ultravox_client",
-    introLinkText: "Get it on ",
-    linkText: "pub.dev",
-    linkUrl: "https://pub.dev/packages/ultravox_client",
-    repo: "https://github.com/fixie-ai/ultravox-client-sdk-flutter",
-  },
-  {
+{
     title: "JavaScript",
     logo: jsLogo,
     logoAlt: "JavaScript logo",
@@ -45,14 +35,14 @@ const sdks = [
     repo: "https://github.com/fixie-ai/ultravox-client-sdk-js",
   },
   {
-    title: "Kotlin",
-    logo: kotlinLogo,
-    logoAlt: "Kotlin logo",
-    introLinkText: "Find it on ",
-    linkText: "Maven Central",
-    linkUrl:
-      "https://central.sonatype.com/artifact/ai.fixie/ultravox-client-sdk",
-    repo: "https://github.com/fixie-ai/ultravox-client-sdk-android",
+    title: "Flutter",
+    logo: flutterLogo,
+    logoAlt: "Flutter logo",
+    installCommand: "flutter add ultravox_client",
+    introLinkText: "Get it on ",
+    linkText: "pub.dev",
+    linkUrl: "https://pub.dev/packages/ultravox_client",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-flutter",
   },
   {
     title: "Python",
@@ -65,7 +55,17 @@ const sdks = [
     repo: "https://github.com/fixie-ai/ultravox-client-sdk-python",
   },
   {
-    title: "iOS/Swift",
+    title: "Kotlin (Android)",
+    logo: kotlinLogo,
+    logoAlt: "Kotlin logo",
+    introLinkText: "Find it on ",
+    linkText: "Maven Central",
+    linkUrl:
+      "https://central.sonatype.com/artifact/ai.fixie/ultravox-client-sdk",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-android",
+  },
+  {
+    title: "Swift (iOS) [alpha]",
     logo: swiftLogo,
     logoAlt: "Swift logo",
     introLinkText: "Find it on ",
@@ -74,8 +74,6 @@ const sdks = [
     repo: "https://github.com/fixie-ai/ultravox-client-sdk-ios",
   },
 ];
-
-const sortedSDKs = sdks.sort((a, b) => a.title.localeCompare(b.title));
 ---
 
 <div class="sdk-cards">
@@ -83,7 +81,7 @@ const sortedSDKs = sdks.sort((a, b) => a.title.localeCompare(b.title));
   <br />
   <CardGrid>
     {
-      sortedSDKs.map((lang) => (
+      sdks.map((lang) => (
         <Card title={lang.title}>
           <div class="flex flex-row items-end h-6 mb-4">
             <Image
