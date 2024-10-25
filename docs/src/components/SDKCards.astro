@@ -5,6 +5,7 @@ import flutterLogo from "@assets/logos/flutter.svg";
 import jsLogo from "@assets/logos/js.svg";
 import kotlinLogo from "@assets/logos/kotlin.svg";
 import pythonLogo from "@assets/logos/python.svg";
+import swiftLogo from "@assets/logos/swift.svg";
 import ghLogo from "@assets/logos/github-mark.svg";
 
 const wordForNum: { [key: number]: string } = {
@@ -23,6 +24,16 @@ function numToWord(num: number): string {
 }
 
 const sdks = [
+{
+    title: "JavaScript",
+    logo: jsLogo,
+    logoAlt: "JavaScript logo",
+    installCommand: "npm install ultravox-client",
+    introLinkText: "Available in the ",
+    linkText: "npm registry",
+    linkUrl: "https://www.npmjs.com/package/ultravox-client",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-js",
+  },
   {
     title: "Flutter",
     logo: flutterLogo,
@@ -34,17 +45,17 @@ const sdks = [
     repo: "https://github.com/fixie-ai/ultravox-client-sdk-flutter",
   },
   {
-    title: "JavaScript",
-    logo: jsLogo,
-    logoAlt: "JavaScript logo",
-    installCommand: "npm install ultravox-client",
-    introLinkText: "Available in the ",
-    linkText: "npm registry",
-    linkUrl: "https://www.npmjs.com/package/ultravox-client",
-    repo: "https://github.com/fixie-ai/ultravox-client-sdk-js",
+    title: "Python",
+    logo: pythonLogo,
+    logoAlt: "Python logo",
+    installCommand: "pip install ultravox-client",
+    introLinkText: "More info on ",
+    linkText: "PyPi",
+    linkUrl: "https://pypi.org/project/ultravox-client/",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-python",
   },
   {
-    title: "Kotlin",
+    title: "Kotlin (Android)",
     logo: kotlinLogo,
     logoAlt: "Kotlin logo",
     introLinkText: "Find it on ",
@@ -54,14 +65,13 @@ const sdks = [
     repo: "https://github.com/fixie-ai/ultravox-client-sdk-android",
   },
   {
-    title: "Python",
-    logo: pythonLogo,
-    logoAlt: "Python logo",
-    installCommand: "pip install ultravox-client",
-    introLinkText: "More info on ",
-    linkText: "PyPi",
-    linkUrl: "https://pypi.org/project/ultravox-client/",
-    repo: "https://github.com/fixie-ai/ultravox-client-sdk-python",
+    title: "Swift (iOS) [alpha]",
+    logo: swiftLogo,
+    logoAlt: "Swift logo",
+    introLinkText: "Find it on ",
+    linkText: "Swift Package Index",
+    linkUrl: "https://swiftpackageindex.com/fixie-ai/ultravox-client-sdk-ios",
+    repo: "https://github.com/fixie-ai/ultravox-client-sdk-ios",
   },
 ];
 ---
