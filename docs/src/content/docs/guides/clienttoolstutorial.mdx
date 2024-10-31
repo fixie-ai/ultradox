@@ -1,0 +1,429 @@
+---
+title: "Tutorial: Building Interactive UI with Client Tools"
+description: Learn how to implement client-side tools in Ultravox to create dynamic, interactive user interfaces.
+---
+import { Steps, Code } from '@astrojs/starlight/components';
+
+This tutorial walks you through implementing client-side tools in Ultravox to create real-time, interactive UI elements. You'll build a drive-thru order display screen that updates dynamically as customers place orders through an AI agent.
+
+**What you'll learn:**
+- How to define and implement client tools
+- Real-time UI updates using custom events
+- State management with React components
+- Integration with Ultravox's AI agent system
+
+**Time to complete:** 30 minutes
+
+## Prerequisites
+
+Before starting this tutorial, make sure you have:
+- Basic knowledge of TypeScript and React
+- The starter code from our [tutorial repository](https://github.com/fixie-ai/ultravox-tutorial-client-tools)
+- Node.js 16+ installed on your machine
+
+## Understanding Client Tools
+
+Client tools in Ultravox enable direct interaction between AI agents and your frontend application. Unlike [server-side tools](../tools) that handle backend operations, client tools are specifically designed for:
+
+- **UI Updates** → Modify interface elements in real-time
+- **State Management** → Handle application state changes
+- **User Interaction** → Respond to and process user actions
+- **Event Handling** → Dispatch and manage custom events
+
+## Project Overview: Dr Donut Drive-Thru
+
+We'll build a drive-thru order display for a fictional restaurant called "Dr. Donut". The display will update in real-time as customers place orders through our AI agent.
+
+### Implementation Steps
+<Steps>
+1. **Define the Tool** → Create a schema for order updates
+1. **Implement Logic** → Build the tool's functionality
+1. **Register the Tool** → Connect it to the Ultravox system
+1. **Create the UI** → Build the order display component
+</Steps>
+
+:::tip[Stuck?]
+If at any point you get lost, you can refer to the `/final` folder in the repo to get final versions of the various files you will create or edit.
+:::
+
+## Step 1: Define the Tool
+
+First, we'll define our `updateOrder` tool that the AI agent will use to modify the order display.
+
+Modify `.demo-config.ts`:
+
+```ts
+const selectedTools: SelectedTool[] = [
+  {
+    "temporaryTool": {
+      "modelToolName": "updateOrder",
+      "description": "Update order details. Used any time items are added or removed or when the order is finalized. Call this any time the user updates their order.",      
+      "dynamicParameters": [
+        {
+          "name": "orderDetailsData",
+          "location": ParameterLocation.BODY,
+          "schema": {
+            "description": "An array of objects contain order items.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "description": "The name of the item to be added to the order." },
+                "quantity": { "type": "number", "description": "The quantity of the item for the order." },
+                "specialInstructions": { "type": "string", "description": "Any special instructions that pertain to the item." },
+                "price": { "type": "number", "description": "The unit price for the item." },
+              },
+              "required": ["name", "quantity", "price"]
+            }
+          },
+          "required": true
+        },
+      ],
+      "client": {}
+    }
+  },
+];
+```
+
+Here's what this is doing:
+* Defines a client tool called `updateOrder` and describes what it does and how to use it.
+* Defines a single, required parameter called `orderDetailsData` that:
+    * Is passed in the request body
+    * Is an array of objects where each object can contain `name`, `quantity`, `specialInstructions`, and `price`. Only `specialInstructions` is optional.
+
+#### Update System Prompt
+Now, we need to update the system prompt to tell the agent how to use the tool. 
+
+Update the `sysPrompt` variable:
+
+```ts
+sysPrompt = `
+  # Drive-Thru Order System Configuration
+
+  ## Agent Role
+  - Name: Dr. Donut Drive-Thru Assistant
+  - Context: Voice-based order taking system with TTS output
+  - Current time: ${new Date()}
+
+  ## Menu Items
+    # DONUTS
+    PUMPKIN SPICE ICED DOUGHNUT $1.29
+    PUMPKIN SPICE CAKE DOUGHNUT $1.29
+    OLD FASHIONED DOUGHNUT $1.29
+    CHOCOLATE ICED DOUGHNUT $1.09
+    CHOCOLATE ICED DOUGHNUT WITH SPRINKLES $1.09
+    RASPBERRY FILLED DOUGHNUT $1.09
+    BLUEBERRY CAKE DOUGHNUT $1.09
+    STRAWBERRY ICED DOUGHNUT WITH SPRINKLES $1.09
+    LEMON FILLED DOUGHNUT $1.09
+    DOUGHNUT HOLES $3.99
+
+    # COFFEE & DRINKS
+    PUMPKIN SPICE COFFEE $2.59
+    PUMPKIN SPICE LATTE $4.59
+    REGULAR BREWED COFFEE $1.79
+    DECAF BREWED COFFEE $1.79
+    LATTE $3.49
+    CAPPUCINO $3.49
+    CARAMEL MACCHIATO $3.49
+    MOCHA LATTE $3.49
+    CARAMEL MOCHA LATTE $3.49
+
+  ## Conversation Flow
+  1. Greeting -> Order Taking -> Call "updateOrder" Tool -> Order Confirmation -> Payment Direction
+
+  ## Tool Usage Rules
+  - You must call the tool "updateOrder" immediately when:
+    - User confirms an item
+    - User requests item removal
+    - User modifies quantity
+  - Do not emit text during tool calls
+  - Validate menu items before calling updateOrder
+
+  ## Response Guidelines
+  1. Voice-Optimized Format
+    - Use spoken numbers ("one twenty-nine" vs "$1.29")
+    - Avoid special characters and formatting
+    - Use natural speech patterns
+
+  2. Conversation Management
+    - Keep responses brief (1-2 sentences)
+    - Use clarifying questions for ambiguity
+    - Maintain conversation flow without explicit endings
+    - Allow for casual conversation
+
+  3. Order Processing
+    - Validate items against menu
+    - Suggest similar items for unavailable requests
+    - Cross-sell based on order composition:
+      - Donuts -> Suggest drinks
+      - Drinks -> Suggest donuts
+      - Both -> No additional suggestions
+
+  4. Standard Responses
+    - Off-topic: "Um... this is a Dr. Donut."
+    - Thanks: "My pleasure."
+    - Menu inquiries: Provide 2-3 relevant suggestions
+
+  5. Order confirmation
+    - Call the "updateOrder" tool first
+    - Only confirm the full order at the end when the customer is done
+
+  ## Error Handling
+  1. Menu Mismatches
+    - Suggest closest available item
+    - Explain unavailability briefly
+  2. Unclear Input
+    - Request clarification
+    - Offer specific options
+  3. Invalid Tool Calls
+    - Validate before calling
+    - Handle failures gracefully
+
+  ## State Management
+  - Track order contents
+  - Monitor order type distribution (drinks vs donuts)
+  - Maintain conversation context
+  - Remember previous clarifications    
+  `;
+```
+
+#### Update Configuration + Import
+Now we need to add the `selectedTools` to our call definition and update our import statement.
+
+Add the tool to your demo configuration:
+
+```ts
+export const demoConfig: DemoConfig = {
+  title: "Dr. Donut",
+  overview: "This agent has been prompted to facilitate orders at a fictional drive-thru called Dr. Donut.",
+  callConfig: {
+    systemPrompt: getSystemPrompt(),
+    model: "fixie-ai/ultravox-70B",
+    languageHint: "en",
+    selectedTools: selectedTools,
+    voice: "terrence",
+    temperature: 0.4
+  }
+};
+```
+
+Add `ParameterLocation` and `SelectedTool` to our import:
+
+```ts
+import { DemoConfig, ParameterLocation, SelectedTool } from "@/lib/types";
+```
+
+
+
+## Step 2: Implement Tool Logic
+Now that we've defined the `updateOrder` tool, we need to implement the logic for it.
+
+Create `/lib/clientTools.ts` to handle the tool's functionality:
+
+```ts
+import { ClientToolImplementation } from 'ultravox-client';
+
+export const updateOrderTool: ClientToolImplementation = (parameters) => {
+  const { ...orderData } = parameters;
+  
+  if (typeof window !== "undefined") {
+    const event = new CustomEvent("orderDetailsUpdated", {
+      detail: orderData.orderDetailsData,
+    });
+    window.dispatchEvent(event);
+  }
+
+  return "Updated the order details.";
+};
+```
+
+We will do most of the heavy lifting in the UI component that we'll build in [step 4](#4-build-the-ui).
+
+## Step 3: Register the Tool
+
+Next, we are going to register the client tool with the Ultravox client SDK. 
+
+Update `/lib/callFunctions.ts`:
+
+```ts
+import { updateOrderTool } from '@/lib/clientTools';
+
+// Initialize Ultravox session
+uvSession = new UltravoxSession({ experimentalMessages: debugMessages });
+
+// Register tool
+uvSession.registerToolImplementation(
+    "updateOrder",
+    updateOrderTool
+);
+
+// Handle call ending -- This allows clearing the order details screen
+export async function endCall(): Promise<void> {
+  if (uvSession) {
+    uvSession.leaveCall();
+    uvSession = null;
+    
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('callEnded'));
+    }
+  }
+}
+```
+
+## Step 4: Build the UI
+
+Create a new React component to display order details. This component will:
+- Listen for order updates
+- Format currency and order items
+- Handle order clearing when calls end
+
+Create `/components/OrderDetails.tsx`:
+
+```ts
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { OrderDetailsData, OrderItem } from '@/lib/types';
+
+// Function to calculate order total
+function prepOrderDetails(orderDetailsData: string): OrderDetailsData {
+  try {
+    const parsedItems: OrderItem[] = JSON.parse(orderDetailsData);
+    const totalAmount = parsedItems.reduce((sum, item) => {
+      return sum + (item.price * item.quantity);
+    }, 0);
+
+    // Construct the final order details object with total amount
+    const orderDetails: OrderDetailsData = {
+      items: parsedItems,
+      totalAmount: Number(totalAmount.toFixed(2))
+    };
+
+    return orderDetails;
+  } catch (error) {
+    throw new Error(`Failed to parse order details: ${error}`);
+  }
+}
+
+const OrderDetails: React.FC = () => {
+  const [orderDetails, setOrderDetails] = useState<OrderDetailsData>({
+    items: [],
+    totalAmount: 0
+  });
+
+  useEffect(() => {
+    // Update order details as things change
+    const handleOrderUpdate = (event: CustomEvent<string>) => {
+      console.log(`got event: ${JSON.stringify(event.detail)}`);
+
+      const formattedData: OrderDetailsData = prepOrderDetails(event.detail);
+      setOrderDetails(formattedData);
+    };
+
+    // Clear out order details when the call ends so it's empty for the next call
+    const handleCallEnded = () => {
+      setOrderDetails({
+        items: [],
+        totalAmount: 0
+      });
+    };
+
+    window.addEventListener('orderDetailsUpdated', handleOrderUpdate as EventListener);
+    window.addEventListener('callEnded', handleCallEnded as EventListener);
+
+    return () => {
+      window.removeEventListener('orderDetailsUpdated', handleOrderUpdate as EventListener);
+      window.removeEventListener('callEnded', handleCallEnded as EventListener);
+    };
+  }, []);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const formatOrderItem = (item: OrderItem, index: number) => (
+    <div key={index} className="mb-2 pl-4 border-l-2 border-gray-200">
+      <div className="flex justify-between items-center">
+        <span className="font-medium">{item.quantity}x {item.name}</span>
+        <span className="text-gray-600">{formatCurrency(item.price * item.quantity)}</span>
+      </div>
+      {item.specialInstructions && (
+        <div className="text-sm text-gray-500 italic mt-1">
+          Note: {item.specialInstructions}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="mt-10">
+      <h1 className="text-xl font-bold mb-4">Order Details</h1>
+      <div className="shadow-md rounded p-4">
+        <div className="mb-4">
+          <span className="text-gray-400 font-mono mb-2 block">Items:</span>
+          {orderDetails.items.length > 0 ? (
+            orderDetails.items.map((item, index) => formatOrderItem(item, index))
+          ) : (
+            <span className="text-gray-500 text-base font-mono">No items</span>
+          )}
+        </div>
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="flex justify-between items-center font-bold">
+            <span className="text-gray-400 font-mono">Total:</span>
+            <span>{formatCurrency(orderDetails.totalAmount)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OrderDetails;
+```
+
+
+#### Add to Main Page
+
+Update the main page (`page.tsx`) to include the new component:
+
+```tsx
+import OrderDetails from '@/components/OrderDetails';
+
+// In the JSX:
+{/* Call Status */}
+<CallStatus status={agentStatus}>
+    <OrderDetails />
+</CallStatus>
+```
+
+## Testing Your Implementation
+
+1. Start the development server:
+   ```bash
+   pnpm run dev
+   ```
+
+1. Navigate to `http://localhost:3000`
+
+1. Start a call and place an order. You should see:
+   - Real-time updates to the order display
+   - Formatted prices and item details
+   - Special instructions when provided
+   - Order clearing when calls end
+
+## Next Steps
+
+Now that you've implemented basic client tools, you can:
+- Add additional UI features like order modification or nutritional information
+- Add animations for updates
+- Enhance the display with customer and/or vehicle information
+
+## Resources
+
+- [Ultravox Documentation](https://docs.ultravox.ai)
+- [Tools Reference](https://docs.ultravox.ai/tools)
+- [Tutorial Source Code](https://github.com/fixie-ai/ultravox-tutorial-client-tools)
