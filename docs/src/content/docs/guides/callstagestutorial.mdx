@@ -1,0 +1,291 @@
+---
+title: "Tutorial: Customer Escalation with Call Stages"
+description: Learn how to implement customer service escalation in Ultravox using call stages to handle customer complaints by transferring them to a manager.
+---
+import { Steps } from '@astrojs/starlight/components';
+
+Learn how to implement customer service escalation in Ultravox using call stages to handle customer complaints by transferring them to a manager.
+
+**What you'll learn:**
+- How to implement an escalation tool
+- How to use call stages to switch conversation context
+- How to handle manager takeover with a new system prompt
+- Testing escalation scenarios
+
+**Time to complete:** 25 minutes
+
+## Prerequisites
+
+Before starting this tutorial, make sure you have:
+- Basic knowledge of TypeScript and React
+- The starter code from our [tutorial repository](https://github.com/fixie-ai/ultravox-tutorial-call-stages)
+- Node.js 16+ installed on your machine
+- [ngrok](https://ngrok.com/docs/getting-started/) installed on your machine
+
+## Understanding Call Stages
+
+Call stages in Ultravox enable dynamic changes to an ongoing conversation by:
+- Switching system prompts mid-conversation
+- Changing voice personalities
+- Maintaining conversation context
+- Handling role transitions seamlessly
+
+In this tutorial, we'll use call stages to transfer angry customers to a manager who can better handle their complaints.
+
+## Project Overview: Dr. Donut Manager Escalation
+
+We'll build an escalation system for our Dr. Donut drive-thru that allows the AI agent to transfer difficult situations to a manager. The system will:
+1. Recognize when a customer needs manager assistance
+2. Collect complaint details
+3. Switch to a manager persona with authority to resolve issues
+
+### Implementation Steps
+<Steps>
+1. **Set Up ngrok** → Enable external access to our escalation endpoint
+1. **Define the Tool** → Create a schema for escalation requests
+1. **Create Manager Handler** → Build the API route for manager takeover
+1. **Update System Prompt** → Add escalation rules to the base prompt
+1. **Test the System** → Verify escalation flows
+</Steps>
+
+:::tip[Stuck?]
+If at any point you get lost, you can refer to the `/final` folder in the repo to get final versions of the various files you will create or edit.
+:::
+
+:::tip[Debugging]
+During testing, watch your terminal for ngrok request logs to verify the escalation endpoint is being called correctly.
+:::
+
+## Step 1: Set Up ngrok
+
+First, we need to make our escalation endpoint accessible to Ultravox.
+
+1. Start your development server:
+```bash
+pnpm run dev
+```
+
+2. In a new terminal, start ngrok:
+```bash
+ngrok http 3000
+```
+
+3. Copy the HTTPS URL from ngrok (it will look like `https://1234-56-78-910-11.ngrok-free.app`)
+   
+4. Update `toolsBaseUrl` in `demo-config.ts`:
+```ts
+const toolsBaseUrl = 'https://your-ngrok-url-here';
+```
+
+## Step 2: Define the Escalation Tool
+
+We'll define an `escalateToManager` tool that the AI agent will use to transfer difficult customers.
+
+Update the `selectedTools` array in `demo-config.ts` and add to our call definition:
+
+```ts
+const selectedTools: SelectedTool[] = [
+  {
+    "temporaryTool": {
+      "modelToolName": "escalateToManager",
+      "description": "Escalate to the manager in charge. Use this tool if a customer becomes irate, asks for a refund, or complains about the food.",
+      "dynamicParameters": [
+        {
+          "name": "complaintDetails",
+          "location": ParameterLocation.BODY,
+          "schema": {
+            "description": "An object containing details about the nature of the complaint or issue.",
+            "type": "object",
+            "properties": {
+              "complaintType": {
+                "type": "string",
+                "enum": ["refund", "food", "price", "other"],
+                "description": "The type of complaint."
+              },
+              "complaintDetails": {
+                "type": "string",
+                "description": "The details of the complaint."
+              },
+              "desiredResolution": {
+                "type": "string",
+                "description": "The resolution the customer is seeking."
+              },
+              "firstName": {
+                "type": "string",
+                "description": "Customer first name."
+              },
+              "lastName": {
+                "type": "string",
+                "description": "Customer last name."
+              }
+            },
+            "required": ["complaintType", "complaintDetails"]
+          },
+          "required": true
+        }
+      ],
+      "http": {
+        "baseUrlPattern": `${toolsBaseUrl}/api/managerEscalation`,
+        "httpMethod": "POST"
+      }
+    }
+  }
+];
+
+// Update call definition to add selectedTools
+export const demoConfig: DemoConfig = {
+  title: "Dr. Donut",
+  overview: "This agent has been prompted to facilitate orders at a fictional drive-thru called Dr. Donut.",
+  callConfig: {
+    systemPrompt: getSystemPrompt(),
+    model: "fixie-ai/ultravox-70B",
+    languageHint: "en",
+    voice: "Mark",
+    temperature: 0.4,
+    selectedTools: selectedTools
+  }
+};
+```
+
+## Step 3: Create Manager Handler
+
+Create a new file at `app/api/managerEscalation/route.ts` to handle the escalation:
+
+```ts
+import { NextRequest, NextResponse } from 'next/server';
+
+const managerPrompt: string = `
+  # Drive-Thru Order System Configuration
+
+  ## Agent Role
+  - Name: Dr. Donut Drive-Thru Manager
+  - Context: Voice-based order taking system with TTS output
+  - Current time: ${new Date()}
+
+  ## Menu Items
+    [Menu items section - same as base prompt]
+
+  ## Conversation Flow
+  1. Greeting -> Apologize for Situation -> Offer Resolution -> Order Confirmation -> End
+
+  ## Response Guidelines
+  1. Voice-Optimized Format
+    - Use spoken numbers ("one twenty-nine" vs "$1.29")
+    - Avoid special characters and formatting
+    - Use natural speech patterns
+
+  2. Conversation Management
+    - Keep responses brief (1-2 sentences)
+    - Use clarifying questions for ambiguity
+    - Maintain conversation flow without explicit endings
+    - Allow for casual conversation
+
+  3. Greeting
+    - Tell the customer that you are the manager
+    - Inform the customer you were just informed of the issue
+    - Then move to the apology
+
+  4. Apology
+    - Acknowledge customer concern
+    - Apologize and reaffirm Dr. Donut's commitment to quality and customer happiness
+
+  5. Resolving Customer Concern
+    - Offer reasonable remedy
+    - Maximum refund amount equal to purchase amount
+    - Offer $10 or $20 gift cards for more extreme issues
+
+  [Rest of guidelines section]
+`;
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  console.log(`Got escalation!`);
+
+  // Set-up escalation
+  const responseBody = {
+    systemPrompt: managerPrompt,
+    voice: 'Jessica'  // Different voice for manager
+  };
+  const response = NextResponse.json(responseBody);
+  // Set our custom header for starting a new call stage
+  response.headers.set('X-Ultravox-Response-Type', 'new-stage');
+
+  return response;
+}
+```
+
+## Step 4: Update System Prompt
+
+Add escalation rules to your base system prompt in `demo-config.ts`:
+
+```ts
+## Response Guidelines
+  [Previous guidelines...]
+
+  6. Angry Customers or Complaints
+    - You must escalate to your manager for angry customers, refunds, or big problems
+    - Before you escalate, ask the customer if they would like to talk to your manager
+    - If the customer wants the manager, you MUST call the tool "escalateToManager"
+
+  ## State Management
+    [Previous instructions...]
+  - Use the "escalateToManager" tool for any complaints or angry customers
+```
+
+## Testing Your Implementation
+
+Here are three scenarios to test the escalation system:
+
+### Scenario 1: Food Quality Issue
+```
+Customer: "I just found hair in my donuts! This is disgusting!"
+Expected: Agent should offer manager assistance and escalate with complaint type "food"
+```
+
+### Scenario 2: Out of Stock Frustration
+```
+Customer: "You don't have the Magic Rainbow donuts in stock and this is the third time I drove down here this week for them! This is ridiculous!"
+Expected: Agent should offer manager assistance and escalate with complaint type "other"
+```
+
+### Scenario 3: Product and Refund
+```
+Customer: "This coffee is cold and I want a refund right now!"
+Expected: Agent should offer manager assistance and escalate with complaint type "refund"
+```
+
+For each scenario, verify:
+1. The agent offers manager assistance
+2. The escalation tool is called with appropriate details
+3. The manager persona takes over with the new voice
+4. The manager follows the resolution guidelines
+
+## Common Issues
+
+1. **ngrok URL Not Working**
+   - Make sure ngrok is running
+   - Check the URL is correctly copied to `demo-config.ts`
+   - Verify no trailing slash in the URL
+
+2. **Escalation Not Triggering**
+   - Check the system prompt includes escalation guidelines
+   - Verify the complaint is clearly expressed
+   - Try using keywords like "manager", "refund", or "complaint"
+
+3. **Manager Voice Not Changing**
+   - Verify the `X-Ultravox-Response-Type` header is set
+   - Check the voice parameter in the response body
+
+## Next Steps
+
+Now that you've implemented basic escalation, you can:
+- Implement different manager personalities for different situations
+- Create a complaint logging system
+- Add resolution tracking and follow-up mechanisms
+
+## Resources
+
+- [Ultravox Documentation](https://docs.ultravox.ai)
+- [Call Stages Reference](../stages)
+- [Tutorial Source Code](https://github.com/fixie-ai/ultravox-tutorial-call-stages)
+- [Client Tools Tutorial](../clienttoolstutorial)
