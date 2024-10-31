@@ -15,7 +15,6 @@ export default defineConfig({
     ],
     customCss: [
       './src/tailwind.css',
-      // './src/styles/custom.css'
     ],
     logo: {
       dark: './src/assets/logos/UVMarkWhite.svg',
@@ -35,16 +34,15 @@ export default defineConfig({
         link: 'guides/quickstart'
       },
       {
-        label: 'Call Stages',
-        link: 'guides/stages'
-      },
-      {
-        label: 'Ultravox + Telephony',
-        link: 'guides/telephony'
-      },
-      {
-        label: 'Tools in Ultravox',
-        link: '/tools'
+        label: 'Guides',
+        collapsed: false,
+        items: [
+          'tools',
+          'guides/stages',
+          'guides/telephony',
+          'guides/clienttoolstutorial',
+          // 'guides/callstagestutorial',
+        ]
       },
       {
         label: 'API',
