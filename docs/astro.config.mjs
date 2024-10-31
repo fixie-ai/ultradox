@@ -41,7 +41,7 @@ export default defineConfig({
           'guides/stages',
           'guides/telephony',
           'guides/clienttoolstutorial',
-          // 'guides/callstagestutorial',
+          'guides/callstagestutorial',
         ]
       },
       {
