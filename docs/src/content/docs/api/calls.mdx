@@ -204,7 +204,7 @@ An optional query parameter called `priorCallId` can be provided to continue a p
       <tr>
         <td class="font-mono">transcriptOptional</td>
         <td>boolean</td>
-        <td>Defaults to `true`. Setting to `false` (not recommended) enables live, user transcripts which may not match what the model hears. Instead, we recommend using [List Call Message](#list-call-messages) to get accurate user transcripts after the call completes. </td>
+        <td>Defaults to `true`. Setting to `false` (not recommended) enables live user transcripts at the expense of latency. Furthermore, these transcripts may not match what the model actually hears.</td>
       </tr>
       <tr>
         <td class="font-mono">voice</td>
