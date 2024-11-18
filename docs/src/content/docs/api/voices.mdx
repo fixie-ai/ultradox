@@ -20,7 +20,7 @@ Your AI can speak to your end users in different voices. At the moment we only s
 
 <Badge text="GET /voices" variant="note" size="large" />
 
-Lists all available voices. Currently only two voices are available: `lily` and `terrence`. Account scoped.
+Lists all available voices. Includes voices that are provided by the Ultravox service along with any voices you have created.
 
 <Tabs>
   <TabItem label="Parameters">
@@ -188,15 +188,18 @@ Uses multipart/form-data encoding to provide the name of the voice along with an
     "previous": null,
     "results": [
       {
-        "name": "lily",
-        "description": "Default Female",
-        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/lily_preview.wav"
+          "voiceId": "8b79b46f-3b1c-4280-9521-2cac1b6eabd5",
+          "name": "Maya-Chinese",
+          "description": "",
+          "previewUrl": "https://storage.googleapis.com/eleven-public-prod/database/user/9axODppOpDadFfxEDFYygFROdkh2/voices/GgmlugwQ4LYXBbEXENWm/AP0YhlW1zVxV5sXFTGF3.mp3"
       },
       {
-        "name": "terrence",
-        "description": "Default Male",
-        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/terrence_preview.wav"
-      }
+          "voiceId": "91fa9bcf-93c8-467c-8b29-973720e3f167",
+          "name": "Mark",
+          "description": "",
+          "previewUrl": "https://storage.googleapis.com/eleven-public-prod/database/user/y7Wmp2r8nCeGkLiXiwMOVWktro13/voices/UgBBYS2sOqTuMpoF3BR0/0Oc7jiXwWN9kRTXfQsmw.mp3"
+      },
+      ...
     ]
   }
   ```
@@ -208,15 +211,18 @@ Uses multipart/form-data encoding to provide the name of the voice along with an
     "previous": null,
     "results": [
       {
-        "name": "lily",
-        "description": "Default Female",
-        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/lily_preview.wav"
+          "voiceId": "8b79b46f-3b1c-4280-9521-2cac1b6eabd5",
+          "name": "Maya-Chinese",
+          "description": "",
+          "previewUrl": "https://storage.googleapis.com/eleven-public-prod/database/user/9axODppOpDadFfxEDFYygFROdkh2/voices/GgmlugwQ4LYXBbEXENWm/AP0YhlW1zVxV5sXFTGF3.mp3"
       },
       {
-        "name": "terrence",
-        "description": "Default Male",
-        "previewUrl": "https://zfmrfvimiaqahezndsse.supabase.co/storage/v1/object/public/ultravox-voice-previews/terrence_preview.wav"
-      }
+          "voiceId": "91fa9bcf-93c8-467c-8b29-973720e3f167",
+          "name": "Mark",
+          "description": "",
+          "previewUrl": "https://storage.googleapis.com/eleven-public-prod/database/user/y7Wmp2r8nCeGkLiXiwMOVWktro13/voices/UgBBYS2sOqTuMpoF3BR0/0Oc7jiXwWN9kRTXfQsmw.mp3"
+      },
+      ...
     ]
   }
   ```
