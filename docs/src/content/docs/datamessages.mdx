@@ -1,0 +1,90 @@
+---
+title: "Data Messages"
+description: Protocol documentation for messages exchanged between client and server during Ultravox calls.
+---
+
+Data messages are used to communicate state, transcripts, and control information between the client and server during Ultravox calls. These messages work across WebRTC data channels and WebSocket connections.
+
+## Message Structure
+
+All messages are JSON objects containing:
+- A required `type` field identifying the message type
+- Additional fields specific to each message type
+- Messages follow camelCase naming convention
+
+## Client Messages
+
+Messages sent from client to server:
+
+### Input Messages
+- **InputTextMessage**
+  - `type: "input_text_message"`
+  - `text`: Text content from user
+
+### Control Messages
+- **Ping**
+  - `type: "ping"` 
+  - `timestamp`: Client timestamp for latency measurement
+
+- **SetOutputMedium**
+  - `type: "set_output_medium"`
+  - `medium`: Either "voice" or "text"
+
+### Tool Messages
+- **ClientToolResult**
+  - `type: "client_tool_result"`
+  - `invocation_id`: Matches corresponding invocation
+  - `result`: Tool execution result (optional)
+  - `response_type`: Defaults to "tool-response"
+  - `error_type`: "undefined" or "implementation-error" (optional)
+  - `error_message`: Error details if failed (optional)
+
+## Server Messages
+
+Messages sent from server to client:
+
+### Transcript Messages
+- **Transcript**
+  - `type: "transcript"`
+  - `role`: "user" or "agent"
+  - `medium`: "text" or "voice" 
+  - `text`: Full transcript text (exclusive with delta)
+  - `delta`: Incremental transcript update (exclusive with text)
+  - `final`: Whether more updates expected
+
+### State & Control
+- **State**
+  - `type: "state"`
+  - `state`: Current session state
+
+- **Pong**
+  - `type: "pong"`
+  - `timestamp`: Matching ping timestamp
+
+### Tool Messages
+- **ClientToolInvocation**
+  - `type: "client_tool_invocation"`
+  - `tool_name`: Tool to invoke
+  - `invocation_id`: Unique invocation ID
+  - `parameters`: Tool parameters
+
+### WebSocket-Specific
+- **PlaybackClearBuffer**
+  - `type: "playback_clear_buffer"`
+  - WebSocket connections only
+  - Signals client to clear unplayed audio
+
+### Debug & Metrics
+- **Debug**
+  - `type: "debug"`
+  - `message`: Debug information
+  - Disabled by default
+
+- **Latency**
+  - `type: "latency"`
+  - `kind`: Metric type
+  - `value`: Measurement in milliseconds
+
+:::note[Message Size Limit]
+Messages larger than 15-16KB may cause timeouts. Keep payload sizes within this limit.
+:::
