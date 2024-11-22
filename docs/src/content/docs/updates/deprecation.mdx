@@ -1,0 +1,78 @@
+---
+title: "Deprecation Guide"
+description: Track upcoming breaking changes, migration timelines, and deprecation notices for the Ultravox platform.
+sidebar:
+  order: 50
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CallOut from '@components/CallOut.astro';
+
+<CallOut
+  title="Breaking Changes"
+  text="Review current deprecation notices and prepare for upcoming changes."
+/>
+
+## Active Deprecations
+
+### Currently Scheduled Changes
+
+| Feature/API | Deprecation Date | Removal Date | Migration Guide | Status |
+|------------|------------------|--------------|-----------------|---------|
+| `old_endpoint` | 2024-01-15 | 2024-07-15 | [Guide](/migration/old_endpoint) | ⚠️ 90 days until removal |
+| `legacy_auth` | 2023-11-01 | 2024-08-01 | [Guide](/migration/legacy_auth) | ⚠️ In deprecation period |
+
+## Deprecation Process
+
+### Lifecycle Stages
+
+<Tabs>
+  <TabItem label="1. Announcement">
+    - Feature marked as deprecated in documentation
+    - Migration guide published
+    - Warning headers added to API responses
+  </TabItem>
+  <TabItem label="2. Deprecation Period">
+    - Minimum 6-month window for stable features
+    - Minimum 3-month window for beta features
+    - Runtime warnings in SDKs
+    - Regular reminders in changelog
+  </TabItem>
+  <TabItem label="3. Sunset Phase">
+    - Final 30-day notification period
+    - Direct communications to affected users
+    - Increased warning visibility
+    - Migration assistance offered
+  </TabItem>
+  <TabItem label="4. Removal">
+    - Feature removed in specified version
+    - Fallback behavior documented if applicable
+    - Emergency support contacts provided
+  </TabItem>
+</Tabs>
+
+## Deprecation Policy
+
+### Standard Timeline
+- Stable features: 6-month minimum deprecation period
+- Beta features: 3-month minimum deprecation period
+- Breaking changes require migration guide publication
+
+### Security Exceptions
+Critical security updates may bypass the standard deprecation timeline. These will be:
+- Clearly marked and documented
+- Communicated directly to affected users
+- Accompanied by immediate mitigation steps
+
+## Migration Guides
+
+### Current Migrations
+- [Migrating from old_endpoint](/migration/old_endpoint)
+- [Updating legacy authentication](/migration/legacy_auth)
+
+### Completed Migrations
+- [Archive of previous migrations](/migration/archive)
+
+:::note[Need Help?]
+If you need assistance with a migration, please [contact our support team](#) or visit our [community forums](#).
+:::

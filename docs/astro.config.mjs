@@ -54,6 +54,13 @@ export default defineConfig({
         label: 'SDK',
         link: 'sdk'
       },
+      {
+        label: 'Updates & Roadmap',
+        collapsed: true,
+        autogenerate: {
+          directory: 'updates'
+        }
+      },
     ],
     components: {}
   }), 
