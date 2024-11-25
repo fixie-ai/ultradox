@@ -157,6 +157,7 @@ Creating a WebSocket-based call with Ultravox requires setting `medium` to `serv
 ```
 
 ### Example: Joining a Call with Websockets
+See [Data Messages](../datamessages) for more information on all available messages.
 ```python
 import websockets
 
@@ -166,7 +167,7 @@ async for message in socket:
     if isinstance(message, bytes):
         # Handle agent audio data
     else:
-        # Handle data message. See *insert link to /datamessages*.
+        # Handle data message. See "Data Messages"
 
 ...
 
