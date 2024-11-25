@@ -156,7 +156,7 @@ Creating a WebSocket-based call with Ultravox requires setting `medium` to `serv
 
 - **inputSampleRate** (required): Sample rate for input (user) audio (e.g., 48000).
 - **outputSampleRate** (optional): Sample rate for output (agent) audio (defaults to inputSampleRate).
-- **clientBufferSizeMs** (optional): Size of the client-side audio buffer in milliseconds. Smaller buffers allow for faster interruptions but may cause audio underflow if network latency fluctuates too greatly. For the best of both worlds, set this to some large value (e.g. 30000) and implement support for [PlaybackClearBuffer](../datamessages#websocket-specific) messages. (defaults to 60).
+- **clientBufferSizeMs** (optional): Size of the client-side audio buffer in milliseconds. Smaller buffers allow for faster interruptions but may cause audio underflow if network latency fluctuates too greatly. For the best of both worlds, set this to some large value (e.g. 30000) and implement support for [PlaybackClearBuffer](../datamessages#websocket-specific) messages. (Defaults to 60).
 
 ### Example: Creating an Ultravox Call with WebSockets
 ```javascript
