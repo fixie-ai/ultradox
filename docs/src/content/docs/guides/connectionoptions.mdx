@@ -50,9 +50,9 @@ Creating an Ultravox call that works with Twilio is just like creating a WebRTC 
         <td>Tells Ultravox which protocol to use. <br />For Twilio, must be set to `{"twilio": {}}` and sets the call to use Twilio [Media Streams](https://www.twilio.com/docs/voice/media-streams). Defaults to `{"webRtc": {}}` which sets the protocol to WebRTC.</td>
     </tr>
     <tr>
-        <td class="font-mono">initiator</td>
+        <td class="font-mono">firstSpeaker</td>
         <td>string</td>
-        <td>Tells Ultravox who started the call. For outgoing calls, typically set to `"INITIATOR_AGENT"`. Default is `"INITIATOR_USER"`.</td>
+        <td>Tells Ultravox who should speak first. For outgoing calls, typically set to `"FIRST_SPEAKER_USER"`. The defaul is `"FIRST_SPEAKER_AGENT"`.</td>
     </tr>
 </table>
 
@@ -65,7 +65,7 @@ Adding these to the request body when creating the call would look like this:
   "medium": {
     "twilio": {}
   },
-  "initiator": "INITIATOR_AGENT"
+  "firstSpeaker": "FIRST_SPEAKER_AGENT"
 }
 ```
 
@@ -101,12 +101,12 @@ This example shows one of the many options Twilio provides for making outgoing c
 Incoming calls require essentially the same two steps as outgoing calls:
 
 <Steps>
-1. **Create an Ultravox Call** → Create a new call (see [above](#creating-a-phone-call-with-twilio)), and get a `joinUrl`. *Note: for incoming calls you will want to keep `initiator` set to the default ("user").*
+1. **Create an Ultravox Call** → Create a new call (see [above](#creating-a-phone-call-with-twilio)), and get a `joinUrl`. *Note: for incoming calls you will want to keep `firstSpeaker` set to the default ("FIRST_SPEAKER_AGENT").*
 
 1. **Receive Inbound Twilio Phone call** → Use the `joinUrl` with a Twilio [`<Stream>`](https://www.twilio.com/docs/voice/twiml/stream).
 
     ```xml
-    <!-- Example using a TwiML Bin -->
+    <!-- Example TwiML Response -->
     <?xml version="1.0" encoding="UTF-8"?>
     <Response>
         <Connect>
@@ -119,24 +119,11 @@ Incoming calls require essentially the same two steps as outgoing calls:
 
 The above shows how to create a TwiML Bin and use that for handling the inbound call. Consult the [Twilio docs](https://www.twilio.com/docs) for more on all the options Twilio provides for handling phone calls.
 
-
-
-
-
-
-
-
-
-
-
-
-
 ## WebSocket Integration
 
 :::caution[Server-to-Server Only]
 WebSocket connections are designed for server-to-server communication. For browser or mobile applications, use our client SDKs with WebRTC for optimal performance. WebSocket connections over TCP can experience audio blocking and ordering constraints that make them unsuitable for direct client use.
 :::
-
 
 ### Creating a WebSocket Call
 
@@ -169,7 +156,27 @@ Creating a WebSocket-based call with Ultravox requires setting `medium` to `serv
     });
 
     const { joinUrl } = await response.json();
-    ```
+```
+
+### Example: Joining a Call with Websockets
+```python
+import websockets
+
+socket = await websockets.connect(join_url)
+audio_send_task = asyncio.create_task(_send_audio(socket))
+async for message in socket:
+    if isinstance(message, bytes):
+        # Handle agent audio data
+    else:
+        # Handle data message. See *insert link to /datamessages*.
+
+...
+
+async def _send_audio(socket: websockets.WebSocketClientProtocol):
+    async for chunk in some_audio_source:
+        # chunk should be a bytes object containing s16le PCM audio from the user
+        self._socket.send(chunk)
+```
 
 :::note[Data Messages]
 WebSocket connections use the same message format as WebRTC data channels. See our [Data Messages](../datamessages) documentation for detailed message specifications.

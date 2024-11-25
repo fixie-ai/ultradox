@@ -162,6 +162,10 @@ Unmutes the end user's speaker (the agent's voice output). This is scoped to the
 ## Client Tools
 Ultravox has robust support for [tools](../tools). The SDK has support for client tools. Client tools will be invoked in your client code and enable you to add interactivity in your app that is driven by user interactions with your agent. For example, your agent could choose to invoke a tool that would trigger some UI change.
 
+:::note[Message Size Limit]
+Messages larger than 15-16KB may cause timeouts. Keep payload sizes within this limit.
+:::
+
 ### Creating Client Tools
 Client tools are defined just like "server" tools with three exceptions:
 
