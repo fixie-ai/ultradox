@@ -71,7 +71,7 @@ Sent by the server to ask the client to invoke a client-implemented tool with th
 Contains the result of a client-implemented tool invocation.
 - `type: "client_tool_result"`
 - `invocation_id`: String. Matches corresponding invocation.
-- `result`: String. Tool execution result (optional).
+- `result`: String. Tool execution result. Often a JSON string. May be omitted for errors.
 - `response_type`: String. Defaults to "tool-response".
 - `error_type`: "undefined" or "implementation-error" (optional).
 - `error_message`: String. Error details if failed (optional).
