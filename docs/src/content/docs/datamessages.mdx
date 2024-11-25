@@ -47,7 +47,8 @@ A message containing text transcripts of user and agent utterances.
 - `medium`: "text" or "voice". The medium through which the utterance was emitted.
 - `text`: String. Full transcript text (exclusive with delta). The full text of the transcript so far. Either this or delta will be set.
 - `delta`: String. Incremental transcript update (exclusive with text). The additional transcript text added since the last agent transcript message.
-- `final`: Boolean. Whether more updates expected. Whether to expect additional transcript messages for this conversation round.
+- `final`: Boolean. Whether more updates are expected for this utterance.
+- `ordinal`: int. Used for ordering transcripts within a call.
 
 ## InputTextMessage
 A user message sent via text.
