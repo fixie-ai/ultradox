@@ -14,7 +14,7 @@ The Ultravox API allows you to create AI-powered voice applications that can int
 ## Choosing a Protocol
 Choose your integration method based on your needs:
 
-- **WebRTC**: Best for most integrations, especially for any client deployment (for example, browsers or mobile clients). This is the default. Get started with the Ultravox client [SDK](../sdk).
+- **WebRTC**: Best for most integrations, especially for any client deployment (for example, browsers or mobile clients). This is the default. Get started with the Ultravox client [SDK](/sdk).
 - **Twilio**: For traditional phone network integration.
 - **WebSocket**: For server-to-server integration, especially when you already have high-bandwidth connections between your server and clients.
 
@@ -129,7 +129,7 @@ Creating a WebSocket-based call with Ultravox requires setting `medium` to `serv
 
 - **inputSampleRate** (required): Sample rate for input (user) audio (e.g., 48000).
 - **outputSampleRate** (optional): Sample rate for output (agent) audio (defaults to inputSampleRate).
-- **clientBufferSizeMs** (optional): Size of the client-side audio buffer in milliseconds. Smaller buffers allow for faster interruptions but may cause audio underflow if network latency fluctuates too greatly. For the best of both worlds, set this to some large value (e.g. 30000) and implement support for [PlaybackClearBuffer](../datamessages#websocket-specific) messages. (Defaults to 60).
+- **clientBufferSizeMs** (optional): Size of the client-side audio buffer in milliseconds. Smaller buffers allow for faster interruptions but may cause audio underflow if network latency fluctuates too greatly. For the best of both worlds, set this to some large value (e.g. 30000) and implement support for [PlaybackClearBuffer](/datamessages#websocket-specific) messages. (Defaults to 60).
 
 ### Example: Creating an Ultravox Call with WebSockets
 ```javascript
@@ -157,7 +157,7 @@ Creating a WebSocket-based call with Ultravox requires setting `medium` to `serv
 ```
 
 ### Example: Joining a Call with Websockets
-See [Data Messages](../datamessage/) for more information on all available messages.
+See [Data Messages](/datamessages) for more information on all available messages.
 ```python
 import websockets
 
@@ -178,5 +178,5 @@ async def _send_audio(socket: websockets.WebSocketClientProtocol):
 ```
 
 :::note[Data Messages]
-WebSocket connections use the same message format as WebRTC data channels. See our [Data Messages](../datamessages/) documentation for detailed message specifications.
+WebSocket connections use the same message format as WebRTC data channels. See our [Data Messages](/datamessages) documentation for detailed message specifications.
 :::
