@@ -73,7 +73,7 @@ Contains the result of a client-implemented tool invocation.
 - `invocation_id`: String. Matches corresponding invocation.
 - `result`: String. Tool execution result. Often a JSON string. May be omitted for errors.
 - `response_type`: String. Defaults to "tool-response".
-- `error_type`: "undefined" or "implementation-error" (optional).
+- `error_type`: Optional string. Should be omitted when result is set. Otherwise, should be "undefined" if the a tool with the given name does not exist or "implementation-error" otherwise.
 - `error_message`: String. Error details if failed (optional).
 
 ## Debug
