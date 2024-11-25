@@ -137,18 +137,6 @@ The above shows how to create a TwiML Bin and use that for handling the inbound 
 WebSocket connections are designed for server-to-server communication. For browser or mobile applications, use our client SDKs with WebRTC for optimal performance. WebSocket connections over TCP can experience audio blocking and ordering constraints that make them unsuitable for direct client use.
 :::
 
-### Use Cases and Limitations
-#### Ideal Use Cases:
-
-* Server-to-server integrations where you already maintain client connections
-* Scenarios requiring simpler connection handling without WebRTC complexity
-* Applications that need to keep AI generations on your server
-
-#### Limitations:
-
-* Not suitable for browser or mobile clients due to TCP constraints
-* Audio blocking can occur as all data shares a single TCP pipe
-* Packets must arrive in order, causing potential delays
 
 ### Creating a WebSocket Call
 
