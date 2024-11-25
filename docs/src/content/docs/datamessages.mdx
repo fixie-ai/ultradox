@@ -3,14 +3,11 @@ title: "Data Messages"
 description: Protocol documentation for messages exchanged between client and server during Ultravox calls.
 ---
 
-Data messages are used to communicate state, transcripts, and control information between the client and server during Ultravox calls. These messages work across WebRTC data channels and WebSocket connections.
+Data messages are used to communicate non-audio information between your client and an Ultravox server during calls. These messages work across WebRTC data channels and WebSocket connections.
 
-## Message Structure
-
-All messages are JSON objects containing:
+All messages are JSON objects with camelCase keys containing:
 - A required `type` field identifying the message type
 - Additional fields specific to each message type
-- Messages follow camelCase naming convention
 
 ## Client Messages
 
