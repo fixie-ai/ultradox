@@ -58,7 +58,13 @@ export default defineConfig({
           'datamessages'
         ]
       },
-
+      {
+        label: 'Updates & Roadmap',
+        collapsed: true,
+        autogenerate: {
+          directory: 'updates'
+        }
+      },
     ],
     components: {}
   }), 

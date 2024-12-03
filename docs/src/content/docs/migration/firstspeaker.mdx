@@ -1,0 +1,24 @@
+---
+title: "Migrating to firstSpeaker (from initiator)"
+description: How to migrate to firstSpeaker as part of the deprecation of initiator.
+sidebar:
+  hidden: true
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`initiator` is being removed as an option when [creating a call](/api/calls/#create-call).
+
+It has been replaced with `firstSpeaker`.
+
+## Why Change?
+`initiator` was confusing as it was used to indicate who was responsible for starting the call (`INITIATOR_USER` or `INITIATOR_AGENT`). It was set to agent for any outgoing calls or left as the default (user) for in-bound calls.
+
+`firstSpeaker` more clearly indicates who speaks first during the call. For inbound calls, the default (`FIRST_SPEAKER_AGENT`) will have the agent answer the call. For outgoing calls, setting it to `FIRST_SPEAKER_USER` indicates the expectation that most people answer a phone call with "Hello?".
+
+## How to Migrate
+* If you previously set `initiator` to `INITIATOR_AGENT`, set `firstSpeaker` to `FIRST_SPEAKER_USER` instead to maintain the same behavior.
+* If you previously set `initiator` to `INITIATOR_USER`, set `firstSpeaker` to `FIRST_SPEAKER_AGENT` instead to maintain the same behavior.
+* If you weren't setting `initiator`, you can continue not setting `firstSpeaker`.
+
+Note: If you use `FIRST_SPEAKER_AGENT` for outbound calls, the first part of the agent's utterance might be clipped due to delays in the phone network.

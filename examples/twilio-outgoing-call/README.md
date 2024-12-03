@@ -15,7 +15,7 @@ This project uses `pnpm`.
 ```javascript
 {
   ...
-  "initiator": "agent",
+  "firstSpeaker": "FIRST_SPEAKER_USER",
   "medium": { "twilio": {} }
 }
 ```
