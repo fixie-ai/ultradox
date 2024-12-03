@@ -37,9 +37,9 @@ export default defineConfig({
         label: 'Guides',
         collapsed: false,
         items: [
+          'guides/connectionoptions',
           'tools',
           'guides/stages',
-          'guides/telephony',
           'guides/clienttoolstutorial',
           'guides/callstagestutorial',
         ]
@@ -52,7 +52,11 @@ export default defineConfig({
       },
       {
         label: 'SDK',
-        link: 'sdk'
+        collapsed: false,
+        items: [
+          'sdk',
+          'datamessages'
+        ]
       },
       {
         label: 'Updates & Roadmap',
