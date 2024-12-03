@@ -543,7 +543,7 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
 This section contains additional details for some properties.
 
 ### initialMessages
-When creating a new call or a new call stage, you can provide messages to the agent via `initialMessages`. By default, new calls don't have initial messages and call stages inherit the prior stage's messages.
+When creating a new call or a new call stage, you can provide messages to the agent via `initialMessages`. By default, new calls don't have initial messages and call stages inherit the prior stage's messages. New calls will inherit messages if `priorCallId` is set.
 
 These messages can serve the purpose of giving the agent call history or to give examples for few-shotting (e.g. if you want the agent to learn how to respond in a specific way to user input).
 
@@ -567,6 +567,7 @@ These messages can serve the purpose of giving the agent call history or to give
 If you are using `fixie-ai/ultravox-mistral-nemo-12B` as your model, you need to do the following when creating the call:
 1. **Empty System Prompt** → Set `systemPrompt` to an empty string.
 1. **Prompt in Initial Messages** → Add a single user message to `initialMessages` that contains the system prompt.
+1. **Proper Turns** → Make sure that you follow Mistral's strict, alternating, user > agent > user message ordering.
 
 Here's an example of what the request body for creating the call might look like:
 
