@@ -562,3 +562,24 @@ These messages can serve the purpose of giving the agent call history or to give
   },
 ]
 ```
+
+#### Using Mistral
+If you are using `fixie-ai/ultravox-mistral-nemo-12B` as your model, you need to do the following when creating the call:
+1. **Empty System Prompt** → Set `systemPrompt` to an empty string.
+1. **Prompt in Initial Messages** → Add a single user message to `initialMessages` that contains the system prompt.
+
+Here's an example of what the request body for creating the call might look like:
+
+```js
+{
+  "systemPrompt": "",
+  "model": "fixie-ai/ultravox-mistral-nemo-12B",
+  "initialMessages": [
+    {
+      "role": "MESSAGE_ROLE_USER",
+      "text": "You are a helpful assistant."
+    }
+  ],
+  "temperature": 0.4
+}
+```
