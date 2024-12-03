@@ -17,8 +17,8 @@ It has been replaced with `firstSpeaker`.
 `firstSpeaker` more clearly indicates who speaks first during the call. For inbound calls, the default (`FIRST_SPEAKER_AGENT`) will have the agent answer the call. For outgoing calls, setting it to `FIRST_SPEAKER_USER` indicates the expectation that most people answer a phone call with "Hello?".
 
 ## How to Migrate
-* Stop using `initiator` when creating any new calls with Ultravox.
-* For in-bound calls, you don't need to do anything else unless you expect the user to speak first.
-* For out-bound calls, set `firstSpeaker` to `FIRST_SPEAKER_USER`.
+* If you previously set `initiator` to `INITIATOR_AGENT`, set `firstSpeaker` to `FIRST_SPEAKER_USER` instead to maintain the same behavior.
+* If you previously set `initiator` to `INITIATOR_USER`, set `firstSpeaker` to `FIRST_SPEAKER_AGENT` instead to maintain the same behavior.
+* If you weren't setting `initiator`, you can continue not setting `firstSpeaker`.
 
 Note: If you use `FIRST_SPEAKER_AGENT` for outbound calls, the first part of the agent's utterance might be clipped due to delays in the phone network.
