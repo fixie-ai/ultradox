@@ -6,57 +6,45 @@ sidebar:
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
-import CallOut from '@components/CallOut.astro';
-
-<CallOut
-  title="Breaking Changes"
-  text="Review current deprecation notices and prepare for upcoming changes."
-/>
 
 ## Active Deprecations
 
 ### Currently Scheduled Changes
 
-| Feature/API | Deprecation Date | Removal Date | Migration Guide | Status |
-|------------|------------------|--------------|-----------------|---------|
-| `old_endpoint` | 2024-01-15 | 2024-07-15 | [Guide](/migration/old_endpoint) | ⚠️ 90 days until removal |
-| `legacy_auth` | 2023-11-01 | 2024-08-01 | [Guide](/migration/legacy_auth) | ⚠️ In deprecation period |
+| Feature/API | Status       | Deprecation Date | Removal Date | Migration Guidance               |
+| ----------- | ------------ | ---------------- | ------------ |----------------------------------|
+| `initiator` | ⚠️ < 30 days  | 2024-10-01       | 2024-12-31   | [Guide](/migration/firstspeaker) |
 
 ## Deprecation Process
+We recognize that breaking changes and deprecation notices are not fun and we try to avoid them when possible.
+
+However, the Ultravox APIs have not yet reached v1 and we are committed to having our APIs and SDKs work better and be as clear as possible. This means we will inevitably need to revisit some choices early on.
+
+This process will evolve as the APIs mature. Please share your feedback with us if you'd like to see any changes to the process or policy.
 
 ### Lifecycle Stages
 
 <Tabs>
   <TabItem label="1. Announcement">
     - Feature marked as deprecated in documentation
-    - Migration guide published
-    - Warning headers added to API responses
+    - Migration guidance published
   </TabItem>
   <TabItem label="2. Deprecation Period">
-    - Minimum 6-month window for stable features
-    - Minimum 3-month window for beta features
-    - Runtime warnings in SDKs
-    - Regular reminders in changelog
-  </TabItem>
-  <TabItem label="3. Sunset Phase">
-    - Final 30-day notification period
+    - Minimum 30-day window 
+    - Reminders in changelog and community updates
     - Direct communications to affected users
-    - Increased warning visibility
-    - Migration assistance offered
   </TabItem>
-  <TabItem label="4. Removal">
-    - Feature removed in specified version
+  <TabItem label="3. Removal">
+    - Feature removed
     - Fallback behavior documented if applicable
-    - Emergency support contacts provided
   </TabItem>
 </Tabs>
 
 ## Deprecation Policy
 
 ### Standard Timeline
-- Stable features: 6-month minimum deprecation period
-- Beta features: 3-month minimum deprecation period
-- Breaking changes require migration guide publication
+- Pre-release features: 30-day minimum deprecation period
+- Breaking changes require publication of migration guidance
 
 ### Security Exceptions
 Critical security updates may bypass the standard deprecation timeline. These will be:
@@ -67,12 +55,8 @@ Critical security updates may bypass the standard deprecation timeline. These wi
 ## Migration Guides
 
 ### Current Migrations
-- [Migrating from old_endpoint](/migration/old_endpoint)
-- [Updating legacy authentication](/migration/legacy_auth)
-
-### Completed Migrations
-- [Archive of previous migrations](/migration/archive)
+- [Migrating from Call `initiator`](/migration/firstspeaker)
 
 :::note[Need Help?]
-If you need assistance with a migration, please [contact our support team](#) or visit our [community forums](#).
+If you need assistance with a migration, please visit our [Discord community ](https://discord.gg/Qw6KHxv8YB).
 :::
