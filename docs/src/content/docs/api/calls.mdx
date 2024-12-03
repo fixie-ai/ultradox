@@ -471,14 +471,9 @@ Lists all messages generated during the given call.
         <td>Array of message objects. Each message object contains:</td>
       </tr>
       <tr>
-        <td class="font-mono text-sm">ordinal</td>
-        <td>number</td>
-        <td>Ordinal position of the message. Used to determine sequence.</td>
-      </tr>
-      <tr>
         <td class="font-mono text-sm">role</td>
         <td>string</td>
-        <td>Role that generated the message. Corresponds to one of the following: `USER` or `AGENT`.</td>
+        <td>Role that generated the message. Corresponds to one of the following: `MESSAGE_ROLE_USER` or `MESSAGE_ROLE_AGENT`.</td>
       </tr>
       <tr>
         <td class="font-mono text-sm">text</td>
@@ -548,7 +543,9 @@ When creating a new call or a new call stage, you can provide messages to the ag
 These messages can serve the purpose of giving the agent call history or to give examples for few-shotting (e.g. if you want the agent to learn how to respond in a specific way to user input).
 
 #### Message Format
-`initialMessages` must be an array of message objects where each message contains a `role` and `text`. `role` must be either `MESSAGE_ROLE_USER` or `MESSAGE_ROLE_AGENT`. Here's an example:
+`initialMessages` must be an array of message objects where each message contains a `role` and `text`. See "Response" under [List Call Messages](#list-call-messages) above for more details.
+
+Here's an example:
 
 ```js
 [
