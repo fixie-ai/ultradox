@@ -151,6 +151,11 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>string</td>
         <td>Who was responsible for starting this call. Typically set to INITIATOR_AGENT for outgoing calls and left as the default (INITIATOR_USER) otherwise.</td>
       </tr>
+      <tr>
+        <td class="font-mono">initialMessages</td>
+        <td>array</td>
+        <td>The conversation history to start from for this call. See [below](#more-info) for more information.</td>
+      </tr>
        <tr>
         <td class="font-mono">initialOutputMedium</td>
         <td>string</td>
@@ -532,3 +537,28 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
     </table>
   </TabItem>
 </Tabs>
+
+## More Info
+
+This section contains additional details for some properties.
+
+### initialMessages
+When creating a new call or a new call stage, you can provide messages to the agent via `initialMessages`. By default, new calls don't have initial messages and call stages inherit the prior stage's messages.
+
+These messages can serve the purpose of giving the agent call history or to give examples for few-shotting (e.g. if you want the agent to learn how to respond in a specific way to user input).
+
+#### Message Format
+`initialMessages` must be an array of message objects where each message contains a `role` and `text`. `role` must be either `MESSAGE_ROLE_USER` or `MESSAGE_ROLE_AGENT`. Here's an example:
+
+```js
+[
+  {
+    "role": "MESSAGE_ROLE_USER",
+    "text": "My name is Steve"
+  },
+  {
+    "role": "MESSAGE_ROLE_AGENT",
+    "text": "Great to meet you, Steve! How can I help?"
+  },
+]
+```
