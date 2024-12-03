@@ -151,6 +151,11 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>string</td>
         <td>Who was responsible for starting this call. Typically set to INITIATOR_AGENT for outgoing calls and left as the default (INITIATOR_USER) otherwise.</td>
       </tr>
+      <tr>
+        <td class="font-mono">initialMessages</td>
+        <td>array</td>
+        <td>The conversation history to start from for this call. See [below](#more-info) for more information.</td>
+      </tr>
        <tr>
         <td class="font-mono">initialOutputMedium</td>
         <td>string</td>
@@ -466,14 +471,9 @@ Lists all messages generated during the given call.
         <td>Array of message objects. Each message object contains:</td>
       </tr>
       <tr>
-        <td class="font-mono text-sm">ordinal</td>
-        <td>number</td>
-        <td>Ordinal position of the message. Used to determine sequence.</td>
-      </tr>
-      <tr>
         <td class="font-mono text-sm">role</td>
         <td>string</td>
-        <td>Role that generated the message. Corresponds to one of the following: `USER` or `AGENT`.</td>
+        <td>Role that generated the message. Corresponds to one of the following: `MESSAGE_ROLE_USER` or `MESSAGE_ROLE_AGENT`.</td>
       </tr>
       <tr>
         <td class="font-mono text-sm">text</td>
@@ -532,3 +532,52 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
     </table>
   </TabItem>
 </Tabs>
+
+## More Info
+
+This section contains additional details for some properties.
+
+### initialMessages
+When creating a new call or a new call stage, you can provide messages to the agent via `initialMessages`. By default, new calls don't have initial messages and call stages inherit the prior stage's messages. New calls will inherit messages if `priorCallId` is set.
+
+These messages can serve the purpose of giving the agent call history or to give examples for few-shotting (e.g. if you want the agent to learn how to respond in a specific way to user input).
+
+#### Message Format
+`initialMessages` must be an array of message objects where each message contains a `role` and `text`. See "Response" under [List Call Messages](#list-call-messages) above for more details.
+
+Here's an example:
+
+```js
+[
+  {
+    "role": "MESSAGE_ROLE_USER",
+    "text": "My name is Steve"
+  },
+  {
+    "role": "MESSAGE_ROLE_AGENT",
+    "text": "Great to meet you, Steve! How can I help?"
+  },
+]
+```
+
+#### Using Mistral
+If you are using `fixie-ai/ultravox-mistral-nemo-12B` as your model, you need to do the following when creating the call:
+1. **Empty System Prompt** → Set `systemPrompt` to an empty string.
+1. **Prompt in Initial Messages** → Add a single user message to `initialMessages` that contains the system prompt.
+1. **Proper Turns** → Make sure that you follow Mistral's strict, alternating, user > agent > user message ordering.
+
+Here's an example of what the request body for creating the call might look like:
+
+```js
+{
+  "systemPrompt": "",
+  "model": "fixie-ai/ultravox-mistral-nemo-12B",
+  "initialMessages": [
+    {
+      "role": "MESSAGE_ROLE_USER",
+      "text": "You are a helpful assistant."
+    }
+  ],
+  "temperature": 0.4
+}
+```
