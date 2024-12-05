@@ -612,9 +612,9 @@ Here's what would happen based on the example above:
 
 <Steps>
 1. Call starts.
-1. After 5 seconds of no user interaction, agent says "Hello, are you still there?".
-1. If user interacts, call continues. If no user interaction occurs for 10 seconds, agent says "If there's nothing else, may I end the call?".
-1. If no user interaction occurs for another 5 seconds, agent says the provided message and the call ends.
+1. After 30 seconds of no user interaction, agent says "Are you still there?".
+1. If user interacts, call continues. If no user interaction occurs for another 30 seconds, agent says "If there's nothing else, may I end the call?".
+1. If no user interaction occurs for another 45 seconds, agent says the provided message and the call ends unless the agent is interrupted during this final message.
 </Steps>
 
 
