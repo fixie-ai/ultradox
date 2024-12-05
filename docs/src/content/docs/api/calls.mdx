@@ -592,17 +592,17 @@ When creating a new call, `inactivityMessages` are an array of message objects. 
   "systemPrompt": "You are a helpful assistant.",
   "inactivityMessages": [
     {
-      "duration": "5s",
-      "message": "Hello, are you still there?"
+      "duration": "30s",
+      "message": "Are you still there?"
     },
     {
-      "duration": "10s",
+      "duration": "30s",
       "message": "If there's nothing else, may I end the call?"
     },
     {
-      "duration": "5s",
+      "duration": "45s",
       "message": "Thank you for calling. Have a great day. Goodbye.",
-      "endBehavior": "END_BEHAVIOR_HANG_UP_STRICT"
+      "endBehavior": "END_BEHAVIOR_HANG_UP_SOFT"
     }
   ]
 }
