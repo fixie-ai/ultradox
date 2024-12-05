@@ -3,7 +3,7 @@ title: "Calls"
 sidebar:
   order: 10
 ---
-import { Badge, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Badge, Tabs, TabItem, Steps } from '@astrojs/starlight/components';
 import CallOut from '@components/CallOut.astro';
 
 <CallOut
@@ -152,9 +152,14 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>Who should talk first when the call starts. Typically set to FIRST_SPEAKER_USER for outgoing calls and left as the default (FIRST_SPEAKER_AGENT) otherwise.</td>
       </tr>
       <tr>
+        <td class="font-mono">inactivityMessages</td>
+        <td>array</td>
+        <td>Messages spoken by the agent when the user is inactive for the specified duration. See [below](#inactivitymessages) for more information.</td>
+      </tr>
+      <tr>
         <td class="font-mono">initialMessages</td>
         <td>array</td>
-        <td>The conversation history to start from for this call. See [below](#more-info) for more information.</td>
+        <td>The conversation history to start from for this call. See [below](#initialmessages) for more information.</td>
       </tr>
        <tr>
         <td class="font-mono">initialOutputMedium</td>
@@ -537,6 +542,74 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
 
 This section contains additional details for some properties.
 
+### inactivityMessages
+If the caller becomes silent or stops interacting, the agent will use these messages to see if the caller is still there. If the caller ultimately never responds, the agent can hang up the call. The agent will use the messages in order and are delivered by the agent after the specified duration elapses.
+
+Messages are delivered after the user fails to interact for the specified duration. Messages are delivered in order. If the user interacts at any point during inactivity messages being delivered by the agent, the first message will be delivered again after the next period of user inactivity.
+
+##### Format
+When creating a new call, `inactivityMessages` are an array of message objects. Each message must provide the following:
+
+<dl class="space-y-4">
+  <div>
+    <dt class="font-mono">duration</dt>
+    <dd class="ml-4"><span class="text-gray-600">string</span> - The duration (in seconds) after which the message should be spoken.</dd>
+    <dd class="ml-4"><span class="text-gray-600">pattern</span> - `^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$`</dd>
+    <dd class="ml-4"><span class="text-gray-600">examples</span> - "60s", "5.5s"</dd>
+  </div>
+  <div>
+    <dt class="font-mono">message</dt>
+    <dd class="ml-4"><span class="text-gray-600">string</span> - The message to speak.</dd>
+    <dd class="ml-4"><span class="text-gray-600">examples</span> - "Are you still there?", "If there's nothing else, I will end the call now."</dd>
+  </div>
+  <div>
+    <dt class="font-mono">endBehavior</dt>
+    <dd class="ml-4"><span class="text-gray-600">string</span> - The behavior to exhibit when the message is finished being spoken. Must be one of the enumerated values.</dd>
+    <dd class="ml-4"><span class="text-gray-600">enum</span></dd>
+    <dd class="ml-8">
+      <ul class="list-disc space-y-2">
+        <li><code>END_BEHAVIOR_UNSPECIFIED</code> - Default. The system will continue to wait for user input.</li>
+        <li><code>END_BEHAVIOR_HANG_UP_SOFT</code> - Will end the call unless the user interacts while the agent is delivering the message.</li>
+        <li><code>END_BEHAVIOR_HANG_UP_STRICT</code> - Immediately terminates the call after speaking the message, without waiting for any additional user interaction.</li>
+      </ul>
+    </dd>
+  </div>
+</dl>
+
+##### Example
+
+```js
+{
+  "systemPrompt": "You are a helpful assistant.",
+  "inactivityMessages": [
+    {
+      "duration": "5s",
+      "message": "Hello, are you still there?"
+    },
+    {
+      "duration": "10s",
+      "message": "If there's nothing else, may I end the call?"
+    },
+    {
+      "duration": "5s",
+      "message": "Thank you for calling. Have a great day. Goodbye.",
+      "endBehavior": "END_BEHAVIOR_HANG_UP_STRICT"
+    }
+  ]
+}
+```
+
+Here's what would happen based on the example above:
+
+<Steps>
+1. Call starts.
+1. After 5 seconds of no user interaction, agent says "Hello, are you still there?".
+1. If user interacts, call continues. If no user interaction occurs for 10 seconds, agent says "If there's nothing else, may I end the call?".
+1. If no user interaction occurs for another 5 seconds, agent says the provided message and the call ends.
+</Steps>
+
+
+
 ### initialMessages
 When creating a new call or a new call stage, you can provide messages to the agent via `initialMessages`. By default, new calls don't have initial messages and call stages inherit the prior stage's messages. New calls will inherit messages if `priorCallId` is set.
 
@@ -561,10 +634,14 @@ Here's an example:
 ```
 
 #### Using Mistral
-If you are using `fixie-ai/ultravox-mistral-nemo-12B` as your model, you need to do the following when creating the call:
-1. **Empty System Prompt** → Set `systemPrompt` to an empty string.
-1. **Prompt in Initial Messages** → Add a single user message to `initialMessages` that contains the system prompt.
-1. **Proper Turns** → Make sure that you follow Mistral's strict, alternating, user > agent > user message ordering.
+:::caution[Important Note]
+Mistral uses a simplified prompt structure.
+:::
+
+When using `fixie-ai/ultravox-mistral-nemo-12B`:
+1. **Empty System Prompt** → Set `systemPrompt` to an empty string (`""`).
+1. **Prompt in Initial Messages** → Add system prompt instructions as the first user message in `initialMessages`.
+1. **Proper Turns** → Maintain strict user > agent > user message alternation.
 
 Here's an example of what the request body for creating the call might look like:
 
