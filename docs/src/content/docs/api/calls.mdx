@@ -546,7 +546,7 @@ This section contains additional details for some properties.
 Inactivity messages  allow your agent to gracefully handle periods of user silence and end the call after a period of user inactivity. This feature helps maintain engagement and ensures calls don't remain open indefinitely when users have disconnected or finished their interaction.
 
 * **Messages are Ordered** → Messages are delivered by the agent in the order provided.
-* **Messages are Cumulative** → Each duration is added to prior message durations.
+* **Message Durations are Cumulative** → The first message is delivered when the user has been inactive for its duration. Each subsequent message m is delivered its duration after message m-1 (provided the user remains inactive).
 * **User Interactions Reset** → Any activity from the user will reset the message sequence.
 * **Different Behaviors** → Messages can have different end behaviors and can terminate the call.
 
