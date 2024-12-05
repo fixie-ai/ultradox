@@ -579,7 +579,7 @@ When creating a new call, `inactivityMessages` are an array of message objects. 
       <ul class="list-disc space-y-2">
         <li><code>END_BEHAVIOR_UNSPECIFIED</code> - Default. The system will continue to wait for user input.</li>
         <li><code>END_BEHAVIOR_HANG_UP_SOFT</code> - Will end the call unless the user interacts while the agent is delivering the message.</li>
-        <li><code>END_BEHAVIOR_HANG_UP_STRICT</code> - Immediately terminates the call after speaking the message, without waiting for any additional user interaction.</li>
+        <li><code>END_BEHAVIOR_HANG_UP_STRICT</code> - Will end the call after speaking the message, regardless of whether the user interrupts.</li>
       </ul>
     </dd>
   </div>
