@@ -161,15 +161,20 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>array</td>
         <td>The conversation history to start from for this call. See [below](#initialmessages) for more information.</td>
       </tr>
-       <tr>
+      <tr>
         <td class="font-mono">initialOutputMedium</td>
         <td>string</td>
         <td>The initial medium (MESSAGE_MEDIUM_VOICE or MESSAGE_MEDIUM_TEXT) to use for the call. Defaults to MESSAGE_MEDIUM_VOICE. Once the call has started, the output medium can be changed by the client using [`setOutputMedium`](../../sdk#setoutputmedium).</td>
       </tr>
       <tr>
+        <td class="font-mono">joinTimeout</td>
+        <td>string</td>
+        <td>A timeout for joining the call. Specified in seconds. Defaults to "60s" (1 minute).</td>
+      </tr>
+      <tr>
         <td class="font-mono">languageHint</td>
         <td>string</td>
-        <td>A hint about the language to be used if your end users are speaking a language other than English. Must be a valid BCP47 language code. Best effort is made to select the closest supported language.  (default: "en")</td>
+        <td>A BCP47 language code that may be used to guide speech recognition and synthesis. Best effort is made to select the closest supported language.</td>
       </tr>
       <tr>
         <td class="font-mono">maxDuration</td>
@@ -236,6 +241,11 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>Unique identifier for the call.</td>
       </tr>
       <tr>
+        <td class="font-mono">clientVersion</td>
+        <td>string</td>
+        <td>The version of the client that joined this call.</td>
+      </tr>
+      <tr>
         <td class="font-mono">created</td>
         <td>string</td>
         <td>Datetime in UTC when the call was created.</td>
@@ -244,6 +254,46 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td class="font-mono">ended</td>
         <td>string</td>
         <td>Datetime in UTC when the call was ended. Will be null upon call creation and while call is underway.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">endReason</td>
+        <td>string</td>
+        <td>The reason the call ended.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">firstSpeaker</td>
+        <td>string</td>
+        <td>Who was supposed to talk first when the call started. Typically set to FIRST_SPEAKER_USER for outgoing calls and left as the default (FIRST_SPEAKER_AGENT) otherwise.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">inactivityMessages</td>
+        <td>array</td>
+        <td>Messages spoken by the agent when the user is inactive for the specified duration. See [below](#inactivitymessages) for more information.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">initialOutputMedium</td>
+        <td>string</td>
+        <td>The initial medium (MESSAGE_MEDIUM_VOICE or MESSAGE_MEDIUM_TEXT) to use for the call. Defaults to MESSAGE_MEDIUM_VOICE. Once the call has started, the output medium can be changed by the client using [`setOutputMedium`](../../sdk#setoutputmedium).</td>
+      </tr>
+      <tr>
+        <td class="font-mono">joinTimeout</td>
+        <td>string</td>
+        <td>A timeout for joining the call. Specified in seconds. Defaults to "0s" (5 minutes).</td>
+      </tr>
+      <tr>
+        <td class="font-mono">joinUrl</td>
+        <td>string</td>
+        <td>URL to use with the ultravox client library to join (AKA start) the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">languageHint</td>
+        <td>string</td>
+        <td>BCP47 identifier used as a hint to indentify the user's spoken language.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">maxDuration</td>
+        <td>string</td>
+        <td>Maximum length (in seconds) that was set for the call.</td>
       </tr>
       <tr>
         <td class="font-mono">model</td>
@@ -261,29 +311,19 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td>The temperature setting used for the model in this call.</td>
       </tr>
       <tr>
-        <td class="font-mono">voice</td>
-        <td>string</td>
-        <td>The name of the AI voice used for the call.</td>
-      </tr>
-      <tr>
-        <td class="font-mono">languageHint</td>
-        <td>string</td>
-        <td>BCP47 identifier used as a hint to indentify the user's spoken language.</td>
-      </tr>
-      <tr>
-        <td class="font-mono">maxDuration</td>
-        <td>string</td>
-        <td>Maximum length (in seconds) that was set for the call.</td>
-      </tr>
-      <tr>
         <td class="font-mono">timeExceededMessage</td>
         <td>string</td>
         <td>Message that the agent will say if the call reaches the `maxDuration`.</td>
       </tr>
       <tr>
-        <td class="font-mono">joinUrl</td>
+        <td class="font-mono">transcriptOptional</td>
+        <td>boolean</td>
+        <td>Defaults to `true`. Setting to `false` (not recommended) enables live user transcripts at the expense of latency. Furthermore, these transcripts may not match what the model actually hears.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">voice</td>
         <td>string</td>
-        <td>URL to use with the ultravox client library to join (AKA start) the call.</td>
+        <td>The name of the AI voice used for the call.</td>
       </tr>
     </table>
   </TabItem>
@@ -379,46 +419,6 @@ Gets details for the call with `call_id` specified in the path. Account scoped.
 </Tabs>
 
 
-## Delete Call
-<Badge text="DELETE /calls/{call_id}" variant="danger" size="large" />
-
-Deletes the specified call.
-
-#### Parameters
-<Tabs>
-  <TabItem label="Parameters">
-    <table class="w-full">
-      <tr class="w-full">
-        <th class="w-1/12"></th>
-        <th class="w-11/12"></th>
-      </tr>
-      <tr>
-        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
-        <td>Unique identifier for the call to delete.</td>
-      </tr>
-    </table>
-  </TabItem>
-  <TabItem label="Request Body">
-    <table class="w-full">
-      <tr class="w-full">
-        <th class="w-12/12"></th>
-      </tr>
-      <tr>
-        <td class="font-mono">No request body</td>
-      </tr>
-    </table>
-  </TabItem>
-  <TabItem label="Response">
-    <table class="w-full">
-      <tr class="w-full">
-        <th class="w-12/12"></th>
-      </tr>
-      <tr>
-        <td class="font-mono">None</td>
-      </tr>
-    </table>
-  </TabItem>
-</Tabs>
 
 ## List Call Messages
 <Badge text="GET /calls/{call_id}/messages" variant="note" size="large" />
@@ -533,6 +533,351 @@ Call recordings are only generated if you add `"recordingEnabled": true` to the 
         <td class="font-mono">detail</td>
         <td>string</td>
         <td>Only returned if call recording was not enabled. If a recording was enabled, there is no response body and the call recording location is provided via a 302 redirect.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## List Call Stages
+<Badge text="GET /calls/{call_id}/stages" variant="note" size="large" />
+Lists all stages that occurred during the specified call. Stages represent distinct segments of the conversation where different parameters (e.g. system prompt or tools) may have been used.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the call for which stages are being retrieved.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">cursor</td>
+        <td>Pagination cursor.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callId</td>
+        <td>string</td>
+        <td>Unique identifier for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">callStageId</td>
+        <td>string</td>
+        <td>Unique identifier for this stage of the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the stage was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">inactivityMessages</td>
+        <td>array</td>
+        <td>Inactiviy messages used for this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">languageHint</td>
+        <td>string</td>
+        <td>BCP47 language code used during this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">model</td>
+        <td>string</td>
+        <td>Name of the model used for this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">systemPrompt</td>
+        <td>string</td>
+        <td>The system prompt used during this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">temperature</td>
+        <td>float</td>
+        <td>The temperature setting used during this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">timeExceededMessage</td>
+        <td>string</td>
+        <td>The time exceeded message used for this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">voice</td>
+        <td>string</td>
+        <td>The voice used during this stage.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## Get Call Stage
+<Badge text="GET /calls/{call_id}/stages/{call_stage_id}" variant="note" size="large" />
+Retrieves details for a specific stage of a call.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">callStageId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the stage to retrieve.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callId</td>
+        <td>string</td>
+        <td>Unique identifier for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">callStageId</td>
+        <td>string</td>
+        <td>Unique identifier for this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">created</td>
+        <td>string</td>
+        <td>Datetime in UTC when the stage was created.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">inactivityMessages</td>
+        <td>array</td>
+        <td>Inactiviy messages used for this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">languageHint</td>
+        <td>string</td>
+        <td>BCP47 language code used during this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">model</td>
+        <td>string</td>
+        <td>Name of the model used for this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">systemPrompt</td>
+        <td>string</td>
+        <td>The system prompt used during this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">temperature</td>
+        <td>float</td>
+        <td>The temperature setting used during this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">timeExceededMessage</td>
+        <td>string</td>
+        <td>The time exceeded message used for this stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">voice</td>
+        <td>string</td>
+        <td>The voice used during this stage.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## List Call Stage Messages
+<Badge text="GET /calls/{call_id}/stages/{call_stage_id}/messages" variant="note" size="large" />
+Lists all messages that were exchanged during a specific stage of a call.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">callStageId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the stage.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">cursor</td>
+        <td>Pagination cursor.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">next</td>
+        <td>string</td>
+        <td>URL with the cursor value for the next page of results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">previous</td>
+        <td>string</td>
+        <td>URL with the cursor value for the previous page of results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">results</td>
+        <td>array</td>
+        <td>Array of message objects containing:</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">role</td>
+        <td>string</td>
+        <td>Role that generated the message. One of: `MESSAGE_ROLE_USER`, `MESSAGE_ROLE_AGENT`, `MESSAGE_ROLE_TOOL_CALL`, or `MESSAGE_ROLE_TOOL_RESULT`.</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">text</td>
+        <td>string</td>
+        <td>The message text, tool arguments for tool_call messages, or tool results for tool_result messages.</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">invocationId</td>
+        <td>string</td>
+        <td>For tool messages, the invocation ID used to pair tool calls with their results.</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">toolName</td>
+        <td>string</td>
+        <td>For tool messages, the name of the tool being called.</td>
+      </tr>
+      <tr>
+        <td class="font-mono text-sm">errorDetails</td>
+        <td>string</td>
+        <td>For failed tool calls, additional debugging information.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## List Call Stage Tools
+<Badge text="GET /calls/{call_id}/stages/{call_stage_id}/tools" variant="note" size="large" />
+Lists all tools that were available during a specific stage of a call.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">callStageId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the stage.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callToolId</td>
+        <td>string</td>
+        <td>Unique identifier for this tool instance.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">toolId</td>
+        <td>string</td>
+        <td>Reference to the original tool definition.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">name</td>
+        <td>string</td>
+        <td>The possibly overridden name of the tool.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">definition</td>
+        <td>object</td>
+        <td>The tool definition containing parameters and implementation details.</td>
+      </tr>
+    </table>
+  </TabItem>
+</Tabs>
+
+## List Call Tools
+<Badge text="GET /calls/{call_id}/tools" variant="note" size="large" />
+Lists all tools that were available at any point during the call.
+
+#### Parameters
+<Tabs>
+  <TabItem label="Parameters">
+    <table class="w-full">
+      <tr class="w-full">
+        <th class="w-1/12"></th>
+        <th class="w-11/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callId<br /> <span class="text-sm text-red-500">required</span></td>
+        <td>Unique identifier of the call.</td>
+      </tr>
+    </table>
+  </TabItem>
+  <TabItem label="Response">
+    <table>
+      <tr>
+        <th class="w-1/12"></th>
+        <th class="w-1/12"></th>
+        <th class="w-10/12"></th>
+      </tr>
+      <tr>
+        <td class="font-mono">callToolId</td>
+        <td>string</td>
+        <td>Unique identifier for this tool instance.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">toolId</td>
+        <td>string</td>
+        <td>Reference to the original tool definition.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">name</td>
+        <td>string</td>
+        <td>The possibly overridden name of the tool.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">definition</td>
+        <td>object</td>
+        <td>The tool definition containing parameters and implementation details.</td>
       </tr>
     </table>
   </TabItem>
