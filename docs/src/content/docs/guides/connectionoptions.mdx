@@ -176,10 +176,11 @@ For more details, see the [Twilio documentation](https://www.twilio.com/docs).
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <Response>
-        <Stream url="${joinUrl}" 
-                audioTrack="both" 
-                contentType="audio/x-l16;rate=8000" 
-                bidirectional="true" />
+        <Stream keepCallAlive="true" 
+                contentType="audio/x-l16;rate=16000"
+                bidirectional="true">
+            ${joinUrl}
+        </Stream>
     </Response>
     ```
 </Steps>
