@@ -164,6 +164,7 @@ For more details, see the [Twilio documentation](https://www.twilio.com/docs).
 
     ```javascript
     // Example using the plivo node library
+    // This assumes our server exposes an endpoint at `answerUrl`
     const call = await plivo.calls.create({
       to: phoneNumber,
       from: plivoPhoneNumber,
