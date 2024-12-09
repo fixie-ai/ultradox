@@ -275,6 +275,36 @@ Automatic parameters are used when you don't want the model to specify the value
 
 ## Additional Information
 
+### Custom Tool Responses
+For most tools, the response will include data you want the model to use (e.g. the results of a lookup). However, Ultravox has support for special tool actions that can end the call or change the call stage.
+
+These tool actions require setting a special response type.
+
+<table>
+  <tr>
+    <th class="w-3/12">Response Type</th>
+    <th class="w-9/12">Tool Action</th>
+  </tr>
+  <tr>
+    <td class="font-mono">hang-up</td>
+    <td>Terminates the call. In addition to having Ultravox end the call after [periods of user inactivity](/api/calls/#inactivitymessages), your custom tool can end the call.</td>
+  </tr>
+  <tr>
+    <td class="font-mono">new-stage</td>
+    <td>Creates a new call stage. See [here](/guides/stages) for more.</td>
+  </tr>
+</table>
+
+How you set the response type depends on if you are using a server/HTTP or a client tool:
+
+**Server/HTTP Tools**
+
+Server tools must respond with the `X-Ultravox-Response-Type` header set to either `hang-up` or `new-stage`
+
+**Client Tools**
+
+For client tools, set `responseType="hang-up"` or `responseType="new-stage"` on your `ClientToolResult` object.
+
 ### Debugging
 The Ultravox SDK enables viewing [debug messages](../sdk#debug-messages) for any active call. These messages include tool calls. You can see a live [demo](https://demo.ultravox.ai/) of this on our website (make sure to toggle "Debug View" on at the bottom).
 
