@@ -61,6 +61,11 @@ Lists all calls that have been created. Account scoped.
         <td>Unique identifier for the call.</td>
       </tr>
       <tr>
+        <td class="font-mono">clientVersion</td>
+        <td>string</td>
+        <td>The version of the client that was used to join the call. Optionally can contain additional string defined during [`joinCall`](/sdk/#joincall)</td>
+      </tr>
+      <tr>
         <td class="font-mono">created</td>
         <td>string</td>
         <td>Datetime in UTC when the call was created.</td>
@@ -239,6 +244,11 @@ An optional query parameter called `priorCallId` can be provided to continue a p
         <td class="font-mono">callId</td>
         <td>string</td>
         <td>Unique identifier for the call.</td>
+      </tr>
+      <tr>
+        <td class="font-mono">clientVersion</td>
+        <td>string</td>
+        <td>The version of the client that was used to join the call. Optionally can contain additional string defined during [`joinCall`](/sdk/#joincall)</td>
       </tr>
       <tr>
         <td class="font-mono">clientVersion</td>
