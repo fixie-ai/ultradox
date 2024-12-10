@@ -48,9 +48,11 @@ The `UltravoxSession` contains methods for:
 #### joinCall()
 
 ```typescript
-joinCall(joinUrl: string): UltravoxSessionState
+joinCall(joinUrl: string, clientVersion?: string): void
 ```
-Joins a call. Requires a joinUrl (string). Returns an [`UltravoxSessionState`](#ultravox-session-state).
+Joins a call. Requires a joinUrl (string).
+
+Optionally, a second string parameter for clientVersion can be passed in. If provided, this will be appended to the call and be available in the `clientVersion` field when retrieving call information via the REST API.
 
 #### leaveCall()
 
