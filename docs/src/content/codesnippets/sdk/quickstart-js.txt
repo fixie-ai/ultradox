@@ -1,6 +1,0 @@
-import { UltravoxSession } from 'ultravox-client';
-
-const session = new UltravoxSession();
-session.joinCall('wss://your-call-join-url');
-
-session.leaveCall();

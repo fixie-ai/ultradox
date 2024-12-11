@@ -1,0 +1,145 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Ultradox",
+  "logo": {
+    "dark": "/logo/UVMarkColor.svg",
+    "light": "/logo/UVMarkColor.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#ff936f",
+    "light": "#ff936f",
+    "dark": "#ff936f",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#07C983"
+    }
+  },
+  "layout": "sidenav",
+  "sidebar": { "items":"border"},
+  "background": {"style":"gradient"},
+  "topbarLinks": [
+    {
+      "name": "Community",
+      "url": "https://discord.gg/Qw6KHxv8YB"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://app.ultravox.ai"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference",
+      "openapi": "/api-reference/openapi.json"
+    },
+    {
+      "name": "SDK Reference",
+      "url": "sdk-reference"
+    },
+    {
+      "name": "Integrations",
+      "url": "integrations"
+    },
+    {
+      "name": "Changelog",
+      "url": "changelog"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "News & Updates",
+      "icon": "circle-info",
+      "url": "TODO"
+    },
+    {
+
+      "name": "Deprecation Guide",
+      "icon": "triangle-exclamation",
+      "url": "TODO"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "guides/fivethings",
+        "guides/allprompting",
+        {
+          "group": "Quickstart",
+          "icon": "forward-fast",
+          "pages": [
+            "guides/quickstart-phone",
+            "guides/quickstart-web"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Essentials",
+      "pages": [
+        "essentials/es1",
+        "essentials/es2",
+        "essentials/es3",
+        "essentials/es4"
+      ]
+    },
+    {
+      "group": "Use Cases",
+      "pages": [
+        "usecases/uc1",
+        "usecases/uc2",
+        "usecases/uc3"
+      ]
+    },
+    {
+      "group": "Advanced Guides",
+      "pages": [
+        "guides/guide1",
+        "guides/guide2",
+        "guides/guide3",
+        "guides/guide4",
+        "guides/guide5",
+        "guides/guide6",
+        "guides/guide7",
+        {
+          "group": "Porting Your Voice Agent",
+          "icon": "swap",
+          "pages": [
+            "guides/porting-bland",
+            "guides/porting-oairt",
+            "guides/porting-retell",
+            "guides/porting-vapi"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "SDK",
+      "pages": [
+        "sdk-reference/introduction"
+      ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "integrations/introduction"
+      ]
+    },
+    {
+      "group": "Changelog",
+      "pages": [
+        "changelog/introduction"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "x": "https://x.com/fixieai",
+    "github": "https://github.com/fixie-ai/ultravox",
+    "discord": "https://discord.gg/Qw6KHxv8YB"
+  }
+}
+
+
