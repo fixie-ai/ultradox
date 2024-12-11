@@ -9,6 +9,44 @@ import { Card } from '@astrojs/starlight/components';
 
 ## Latest Update
 
+### 2024-12-10 - WebSockets, Mistral NeMo, and More
+We're excited to announce several new features and improvements to the Ultravox platform, including new integration options, model support, and infrastructure updates.
+
+#### What's Hot
+1. New Features: WebSockets, Mistral NeMo, Telnyx, and Plivo
+1. SDK and Other Improvements
+1. Docs Updates (Including "News" and "Deprecation" pages)
+
+##### New Features: WebSockets, Mistral NeMo, Telnyx, and Plivo
+* **Mistral NeMo:** Added support for NeMo 12B. See the [docs](/availablemodels/) for more.
+* **WebSockets:** You can now integrate on the server side via [WebSockets](/guides/connectionoptions/#websocket-integration).
+* **Telnyx & Plivo:** New telephony integrations for Telnyx and Plivo are now available in addition to our existing support for Twilio. Check the [docs](/guides/connectionoptions/#phone-integration).
+
+##### SDK and Other Improvements
+* **SDK Updates:** New [client version](/sdk/#joincall) tracking allows you to set an arbitrary value that is tied to calls (retrieve with GET on /calls endpoint).
+* **Enhanced Call Transcripts:** For more accurate transcripts, you can now pass in the `languageHint` at call creation time to help guide the model.
+* **Bug Fix:** Fixed an issue where errant connections could affect proper call termination.
+
+##### Docs Updates
+* Introduced new pages for [News](/updates/news/) and [Deprecations](/updates/deprecation/) to help you stay informed.
+* Added comprehensive documentation for [initialMessages](/api/calls/#initialmessages) and [inactivityMessages](/api/calls/#inactivitymessages).
+
+#### What's Not
+We have one active deprecation: `initiator` will be deleted at the end of the month. This has been replaced with `firstSpeaker`. Not using `initiator`? You can ignore this. Otherwise, check out the [migration guide](/migration/firstspeaker/).
+
+#### What's Next
+We're actively working on several exciting features and improvements:
+
+**Language and Voice Expansion:** Finnish language support is up next. We welcome your input on additional language requirements. Pop into [#feature-requests](https://discord.com/channels/1240071833798184990/1315065334058713198) to let us know which voices you'd like to see added to our roadmap!
+
+**Infrastructure and Compliance:** EU datacenter planning in progress and GDPR compliance implementation is underway. If these initiatives are important to your operations, please schedule a meeting using my calendar link to discuss your specific requirements.
+
+**Platform Enhancements:** Enhanced call visibility in the dashboard to help you more easily monitor usage and debug issues. We are working on adding a low latency RAG service and are continuing to work on additional optimizations for transcripts and function calling.
+
+**Holiday Schedule Update:** Our team will be operating on a reduced schedule between Christmas and New Year's. While we'll maintain system health and provide emergency support, response times on Discord and email may be longer than usual during this period. Rest assured that all critical systems will remain fully monitored and supported by our on-call team.
+
+## Prior Updates
+
 ### 2024-11-14 - Ultravox v0.4.1 Release
 We're excited to announce the release of Ultravox v0.4.1, which brings significant improvements to the model you're already using. We've also added a new web console and have enabled your agents to start conversations via text.
 
@@ -48,8 +86,6 @@ We're already working on the next major release of Ultravox with even more excit
 <Card title="Be in the Know">
   All Ultravox customers automatically receive email updates. Create a [free account](https://app.ultravox.ai) to start building with the the best voice AI and to stay in the loop.
 </Card>
-
-## Prior Updates
 
 ### 2024-10-18 - Call Stages and Client-Implemented Tools
 We're thrilled to share the latest updates we've made to the Ultravox APIs. All of these enhancements have been made due to feedback from our community. Please keep the feedback coming! If there's anything we can do to make things work better for you, don't hesitate to get in touch!
