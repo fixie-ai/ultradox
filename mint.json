@@ -8,16 +8,23 @@
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#ff936f",
-    "light": "#ff936f",
-    "dark": "#ff936f",
-    "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
-    }
+    "light": "#0077be",
+    "dark": "#0077be"
   },
   "layout": "sidenav",
   "sidebar": { "items":"border"},
   "background": {"style":"gradient"},
+  "api": {
+    "baseUrl": "https://api.ultravox.ai/api/",
+    "auth": {
+      "method": "key",
+      "name": "X-API-Key"
+    },
+    "playground": {
+      "mode": "show"
+    }
+  },
+  "openapi": "/api-reference/Ultravox.yaml",
   "topbarLinks": [
     {
       "name": "Community",
@@ -199,7 +206,8 @@
     {
       "group": "Changelog",
       "pages": [
-        "changelog/introduction"
+        "changelog/news",
+        "changelog/deprecation"
       ]
     }
   ],
