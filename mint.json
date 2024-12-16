@@ -103,13 +103,13 @@
     {
       "group": "Advanced Guides",
       "pages": [
-        "guides/guide1",
-        "guides/guide2",
-        "guides/guide3",
-        "guides/guide4",
-        "guides/guide5",
-        "guides/guide6",
-        "guides/guide7",
+        "guides/voicecloning",
+        "guides/callstages",
+        "guides/debugging",
+        "guides/advancedprompting",
+        "guides/webhooks",
+        "guides/building-interactiveui",
+        "guides/building-escalationpath",
         {
           "group": "Porting Your Voice Agent",
           "icon": "swap",
