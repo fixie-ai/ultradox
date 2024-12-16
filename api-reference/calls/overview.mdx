@@ -1,0 +1,126 @@
+---
+title: "Calls Overview"
+description: "Understanding Calls in Ultravox"
+---
+
+This section of the API reference covers the APIs for managing voice calls. The APIs provide methods to create and manage calls, retrieve recordings, handle user inactivity, and access conversation history through stages and messages. The system supports features like call recording, language hints, and maximum duration limits to help manage the conversation flow.
+
+**Calls** → At the core are Calls, which represent complete conversations between users and AI agents, configured with parameters like system prompts, voice settings, and language preferences.
+
+**Stages** → Calls can be broken down into Stages, which represent distinct segments of conversation where different parameters (like prompts or tools) may be used.
+
+**Messages** → Within each stage, Messages capture the back-and-forth dialogue between users and agents.
+
+
+## More Info
+
+This section contains additional details for some properties.
+
+### inactivityMessages
+Inactivity messages  allow your agent to gracefully handle periods of user silence and end the call after a period of user inactivity. This feature helps maintain engagement and ensures calls don't remain open indefinitely when users have disconnected or finished their interaction.
+
+* **Messages are Ordered** → Messages are delivered by the agent in the order provided.
+* **Message Durations are Cumulative** → The first message is delivered when the user has been inactive for its duration. Each subsequent message m is delivered its duration after message m-1 (provided the user remains inactive).
+* **User Interactions Reset** → Any activity from the user will reset the message sequence.
+* **Different Behaviors** → Messages can have different end behaviors and can terminate the call.
+
+<b>Best Practices</b>
+* Keep messages concise and natural-sounding.
+* Start with friendly check-in messages before moving to call termination.
+* Provide clear context in messages if the call will be terminated.
+
+
+<b>Message Format</b>
+
+When creating a new call, `inactivityMessages` are an array of message objects.
+
+<ResponseField name="message" type="Message Object">
+  <Expandable title="properties" defaultOpen>
+    <ResponseField name="duration" type="string" required>
+      The duration (in seconds) after which the message should be spoken.
+
+      Pattern: `^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$`
+
+      Examples: "60s", "5.5s"
+    </ResponseField>
+    <ResponseField name="message" type="string" required>
+      The message to speak.
+
+      Examples: "Are you still there?", "If there's nothing else, I will end the call now."
+    </ResponseField>
+    <ResponseField name="endBehavior" type="string">
+      The behavior to exhibit when the message is finished being spoken. Must be one of the enumerated values.
+
+      Possible values:
+
+      `END_BEHAVIOR_UNSPECIFIED` - Default. The system will continue to wait for user input.
+      
+      `END_BEHAVIOR_HANG_UP_SOFT` - Will end the call unless the user interacts while the agent is delivering the message.
+
+      `END_BEHAVIOR_HANG_UP_STRICT` - Will end the call after speaking the message, regardless of whether the user interrupts.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+#### Example: Adding Inactivity Messages
+Let's look at how we could add inactivity messages to a call.
+
+```js Example: Adding Inactivity Messages
+{
+  "systemPrompt": "You are a helpful assistant.",
+  "inactivityMessages": [
+    {
+      "duration": "30s",
+      "message": "Are you still there?"
+    },
+    {
+      "duration": "15s",
+      "message": "If there's nothing else, may I end the call?"
+    },
+    {
+      "duration": "10s",
+      "message": "Thank you for calling. Have a great day. Goodbye.",
+      "endBehavior": "END_BEHAVIOR_HANG_UP_SOFT"
+    }
+  ]
+}
+```
+
+<Steps>
+  <Step title="Call Starts">Using the `inactivityMessages` above, the call is created and joined.</Step>
+  <Step title="User Stops Interacting - First Message">
+    After 30 seconds of no user interaction, agent says "Are you still there?".
+  
+    If user interacts, call continues.
+  </Step>
+  <Step title="Inactivity Continues - Second Message">If no user interaction occurs for another 15 seconds, agent says "If there's nothing else, may I end the call?".</Step>
+  <Step title="Inactivity Continues - Call Ends">If no user interaction occurs for another 10 seconds, agent says the provided message and the call ends unless the agent is interrupted during this final message.</Step>
+</Steps>
+
+
+
+### initialMessages
+When creating a new call or a new call stage, you can provide messages to the agent via `initialMessages`. By default, new calls don't have initial messages and call stages inherit the prior stage's messages. New calls will inherit messages if `priorCallId` is set.
+
+These messages can serve the purpose of giving the agent call history or to give examples for few-shotting (e.g. if you want the agent to learn how to respond in a specific way to user input).
+
+#### Message Format
+`initialMessages` must be an array of message objects where each message contains a `role` and `text`.
+
+See "Response" under [List Call Messages](/api-reference/calls/calls-messages-list) for more details.
+
+```js Example: Providing Initial Messages
+{
+  "systemPrompt": "You are a helpful assistant.",
+  "initialMessages": [
+    {
+      "role": "MESSAGE_ROLE_USER",
+      "text": "My name is Steve"
+    },
+    {
+      "role": "MESSAGE_ROLE_AGENT",
+      "text": "Great to meet you, Steve! How can I help?"
+    },
+  ]
+}
+```
