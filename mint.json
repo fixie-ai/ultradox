@@ -24,7 +24,7 @@
       "mode": "show"
     }
   },
-  "openapi": "/api-reference/Ultravox.yaml",
+  "openapi": "https://api.ultravox.ai/api/schema/",
   "topbarLinks": [
     {
       "name": "Community",
@@ -95,9 +95,9 @@
     {
       "group": "Use Cases",
       "pages": [
-        "usecases/uc1",
-        "usecases/uc2",
-        "usecases/uc3"
+        "usecases/customersuccess",
+        "usecases/customeracquisition",
+        "usecases/operations"
       ]
     },
     {
