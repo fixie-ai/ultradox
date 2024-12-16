@@ -5,7 +5,7 @@ description: ''
 
 import { SDKCards } from '/snippets/sdkcards.mdx'
 
-The Ultravox [REST API](../api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page primarily uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
+The Ultravox [REST API](/api-reference/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page primarily uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
 
 ## Methods
 The core of the SDK is the `UltravoxSession`. The session is used to join and leave calls. The `UltravoxSession` contains methods for:
@@ -15,54 +15,62 @@ The core of the SDK is the `UltravoxSession`. The session is used to join and le
 * Registering client tools
 * Muting the microphone/speaker
 
-#### joinCall()
+### joinCall()
+Joins a call.
 
-```typescript
+```ts
 joinCall(joinUrl: string, clientVersion?: string): void
 ```
-Joins a call. Requires a joinUrl (string).
 
-Optionally, a second string parameter for clientVersion can be passed in. If provided, this will be appended to the call and be available in the `clientVersion` field when retrieving call information via the REST API.
+<ParamField body="joinUrl" type="string" required>
+  The joinUrl that was returned from the [`Create Call`](/api-reference/calls/calls-post) request.
+</ParamField>
+<ParamField body="clientVersion" type="string">
+  Optional string that can be used for application version tracking. Will be appended to the call and be available in the `clientVersion` field in the [`Get Call`](/api-reference/calls/calls-get) response.
+</ParamField>
 
-#### leaveCall()
-
-```typescript
-async leaveCall(): Promise<void>
-```
+### leaveCall()
 Leaves the current call. Returns a promise (with no return value) that resolves when the call has successfully been left.
 
-#### sendText()
+```ts
+async leaveCall(): Promise<void>
+```
 
-```typescript
+### sendText()
+Sends a text message to the agent.
+
+```ts
 sendText(text: string): void
 ```
-Sends a text message to the agent. Requires inputting the text message (string).
+<ParamField body="text" type="string" required>
+  The message to send to the agent.
+</ParamField>
 
-#### setOutputMedium()
+### setOutputMedium()
+Sets the agent's output medium for future utterances. If the agent is currently speaking, this will take effect at the end of the agent's utterance. 
 
 ```ts
 setOutputMedium(medium: Medium): void
 ```
-Sets the agent's output medium for future utterances. If the agent is currently speaking, this will take effect at the end of the agent's utterance. Also see [muteSpeaker](#mutespeaker) and [unmuteSpeaker](#unmutespeaker) below.
 
-| parameter        | description                                 |
-|-------------- | ------------------------------------------- |
-| medium | How replies are communicated. Must be either `'text'` or `'voice'`. |
+<ParamField body="medium" type="Medium" required>
+  How replies are communicated. Must be either `'text'` or `'voice'`.
+</ParamField>
 
-#### registerToolImplementation()
+Also see [muteSpeaker](#mutespeaker) and [unmuteSpeaker](#unmutespeaker) below.
+
+### registerToolImplementation()
+Registers a client tool implementation with the given name. If the call is started with a client-implemented tool, this implementation will be invoked when the model calls the tool.
+
 ```ts
 registerToolImplementation(name: string, implementation: ClientToolImplementation): void
 ```
-Registers a client tool implementation with the given name. If the call is started with a client-implemented tool, this implementation will be invoked when the model calls the tool.
 
-| parameter        | description                                 |
-|----------------- | ------------------------------------------- |
-| name | String. The name of the tool. Must match what is defined in `selectedTools` during [call creation](../api/calls/#create-call). If `nameOverride` is set then must match that name. Otherwise must match `modelToolName`. |
-| implementation | `ClientToolImplementation` function that implements the tool's logic. |
-
-**`ClientToolImplementation`**
-
-This is a function that:
+<ParamField body="name" type="string" required>
+  The name of the tool. Must match what is defined in `selectedTools` during [`Create Call`](/api-reference//calls/calls-post).<br /><br />If `nameOverride` is set then must match that name. Otherwise must match `modelToolName`.
+</ParamField>
+<ParamField body="implementation" type="ClientToolImplementation" required>
+  The function that implements the tool's logic. This is a function that:
 
 **Accepts `parameters`** → An object containing key-value pairs for the tool's parameters. The keys will be strings.
 
@@ -76,63 +84,64 @@ For example:
     return `Stock price is ${value}`;
   };
 ```
+</ParamField>
 
-#### registerToolImplementations()
+### registerToolImplementations()
+Convenience batch wrapper for [`registerToolImplementation`](#registertoolimplementation).
+
 ```ts
 registerToolImplementations(implementationMap: { [name: string]: ClientToolImplementation }): void 
 ```
-Convenience batch wrapper for registerToolImplementation.
 
-**`implementationMap`** → An object where each key (a string) represents the name of the tool and each value is a `ClientToolImplementation` function.
+<ParamField body="implementationMap" type="Object" required>
+  An object where each key (a string) represents the name of the tool and each value is a `ClientToolImplementation` function.
+</ParamField>
 
-#### isMicMuted()
-
-```typescript
-isMicMuted(): boolean
-```
+### isMicMuted()
 Returns a boolen indicating if the end user's microphone is muted. This is scoped to the Ultravox SDK and does not detect muting done by the user outside of your application.
 
-#### isSpeakerMuted()
-
-```typescript
-isSpeakerMuted(): boolean
+```ts
+isMicMuted(): boolean
 ```
+
+### isSpeakerMuted()
 Returns a boolen indicating if the speaker (the agent's voice output) is muted. This is scoped to the Ultravox SDK and does not detect muting done by the user outside of your application.
 
-
-#### muteMic()
-
-```typescript
-muteMic(): void
+```ts
+isSpeakerMuted(): boolean
 ```
+
+### muteMic()
 Mutes the end user's microphone. This is scoped to the Ultravox SDK.
 
-#### unmuteMic()
-
-```typescript
-unmuteMic(): void
+```ts
+muteMic(): void
 ```
+
+### unmuteMic()
 Unmutes the end user's microphone. This is scoped to the Ultravox SDK.
 
-
-#### muteSpeaker()
-
-```typescript
-muteSpeaker(): void
+```ts
+unmuteMic(): void
 ```
+
+### muteSpeaker()
 Mutes the end user's speaker (the agent's voice output). This is scoped to the Ultravox SDK.
 
-
-#### unmuteSpeaker()
-
-```typescript
-unmuteSpeaker(): void
+```ts
+muteSpeaker(): void
 ```
+
+
+### unmuteSpeaker()
 Unmutes the end user's speaker (the agent's voice output). This is scoped to the Ultravox SDK.
 
+```ts
+unmuteSpeaker(): void
+```
 
 ## Client Tools
-Ultravox has robust support for [tools](../tools). The SDK has support for client tools. Client tools will be invoked in your client code and enable you to add interactivity in your app that is driven by user interactions with your agent. For example, your agent could choose to invoke a tool that would trigger some UI change.
+Ultravox has robust support for [tools](/essentials/tools). The SDK has support for client tools. Client tools will be invoked in your client code and enable you to add interactivity in your app that is driven by user interactions with your agent. For example, your agent could choose to invoke a tool that would trigger some UI change.
 
 <Note>
   <b>Message Size Limit</b>
@@ -140,77 +149,42 @@ Ultravox has robust support for [tools](../tools). The SDK has support for clien
   Messages larger than 15-16KB may cause timeouts. Keep payload sizes within this limit.
 </Note>
 
-### Creating Client Tools
+<br />
+<b>Creating Client Tools</b>
+
+import clientTool from '/snippets/code/temp-tool-client.mdx'
+import serverTool from '/snippets/code/temp-tool.mdx'
+import toolReg from '/snippets/code/client-tool-registration.mdx'
 
 Client tools are defined just like "server" tools with three exceptions:
+
 <Steps>
   <Step title="'client' not 'http'">
-    You don't add the URL and HTTP method for client tools. Instead, you add `"client": {}` to the tool definition.
-
+    You don't add the URL and HTTP method for client tools.
+    
+    Instead, you add `"client": {}` to the tool definition.
     <CodeGroup>
+      <clientTool />
+      <serverTool />
+    </CodeGroup>
+  </Step>
+  <Step title="Register Tool with Client">
+    Your client tool must be registered in your client code. Here's a snippet that might be found in client code to register the client tool and implement the logic for the tool.
 
-      ```js helloWorld.js
-      console.log("Hello World");
-      ```
-
-      ```python hello_world.py
-      print('Hello World!')
-      ```
-
-      ```java HelloWorld.java
-      class HelloWorld {
-          public static void main(String[] args) {
-              System.out.println("Hello, World!");
-          }
-      }
-      ```
-
-      </CodeGroup>
-
+    See the SDK method [`registerToolImplementation()`](#registertoolimplementation) for more information.
+    
+    <toolReg />
 
   </Step>
-  <Step title="Second Step">
-    These are instructions or content that only pertain to the second step.
-  </Step>
-  <Step title="Third Step">
-    These are instructions or content that only pertain to the third step.
+  <Step title="Only Body Parameters Allowed">
+    Unlike server tools (which accept parameters passed by path, header, body, etc.), client tools only allow parameters to be passed in the body of the request. That means client tools will always have parameter location set like this:
+
+    ```js
+    "location": "PARAMETER_LOCATION_BODY"
+    ```
   </Step>
 </Steps>
 
-
-
-1. "client" not "http"
-
-You don't add the URL and HTTP method for client tools. Instead, you add `"client": {}` to the tool definition.
-
-import tempToolClient from '../codesnippets/temp-tool-client.txt?raw';
-export const titleClient = "Using a Client Tool"
-export const linesClient = [19];
-
-<Code code={tempToolClient} lang="js" title={titleClient} mark={linesClient} />
-
-import tempTool from '../codesnippets/temp-tool.txt?raw';
-export const title = "Using a Server Tool"
-export const lines = [19, 20, 21, 22];
-
-<Code code={tempTool} lang="js" title={title} mark={lines} />
-
-#### 2. Client Registration
-Your client tool must be registered in your client code. Here's a snippet that might be found in client code to register the client tool and implement the logic for the tool.
-
-See [SDK Methods](#registertoolimplementation) for more information.
-
-import clientToolReg from '../codesnippets/client-tool-registration.txt?raw';
-export const ctTitle = "Registering a Client Tool"
-
-<Code code={clientToolReg} lang="js" title={ctTitle} />
-
-#### 3. Only Body Parameters
-Unlike server tools (which accept parameters passed by path, header, body, etc.), client tools only allow parameters to be passed in the body of the request. That means client tools will always have parameter location set like this:
-
-```js
-"location": "PARAMETER_LOCATION_BODY"
-```
 
 ## Session Status
 The `UltravoxSession` exposes status. Based on the `UltravoxSessionStatus` enum, status can be one of the following:
@@ -291,7 +265,7 @@ LLM response: Tool calls: [FunctionCall(name='createProfile', args='{"firstName"
 
 <b>Debug Message:  Tool Call Result</b>
 
-When the tool call completes, the message contains an array of messages. Multiple tools can be invoked by the model. This message array will conatain all the calls followed by all the results. These messages are also available via [List Call Messages](../api/calls/#list-call-messages).
+When the tool call completes, the message contains an array of messages. Multiple tools can be invoked by the model. This message array will conatain all the calls followed by all the results. These messages are also available via [List Call Messages](/api-reference/calls/calls-messages-list).
 
 Here's an example of what we might see from a single tool invocation:
 

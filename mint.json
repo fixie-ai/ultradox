@@ -86,10 +86,10 @@
     {
       "group": "Essentials",
       "pages": [
-        "essentials/es1",
-        "essentials/es2",
-        "essentials/es3",
-        "essentials/es4"
+        "essentials/apikeys",
+        "essentials/tools",
+        "essentials/rag",
+        "essentials/sdk"
       ]
     },
     {
