@@ -5,5 +5,306 @@ description: ''
 
 import { SDKCards } from '/snippets/sdkcards.mdx'
 
+The Ultravox [REST API](../api/auth/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page primarily uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
+
+## Methods
+The core of the SDK is the `UltravoxSession`. The session is used to join and leave calls. The `UltravoxSession` contains methods for:
+* Joining/leaving a call
+* Sending text messages to the agent
+* Changing the output medium for how the agent replies
+* Registering client tools
+* Muting the microphone/speaker
+
+#### joinCall()
+
+```typescript
+joinCall(joinUrl: string, clientVersion?: string): void
+```
+Joins a call. Requires a joinUrl (string).
+
+Optionally, a second string parameter for clientVersion can be passed in. If provided, this will be appended to the call and be available in the `clientVersion` field when retrieving call information via the REST API.
+
+#### leaveCall()
+
+```typescript
+async leaveCall(): Promise<void>
+```
+Leaves the current call. Returns a promise (with no return value) that resolves when the call has successfully been left.
+
+#### sendText()
+
+```typescript
+sendText(text: string): void
+```
+Sends a text message to the agent. Requires inputting the text message (string).
+
+#### setOutputMedium()
+
+```ts
+setOutputMedium(medium: Medium): void
+```
+Sets the agent's output medium for future utterances. If the agent is currently speaking, this will take effect at the end of the agent's utterance. Also see [muteSpeaker](#mutespeaker) and [unmuteSpeaker](#unmutespeaker) below.
+
+| parameter        | description                                 |
+|-------------- | ------------------------------------------- |
+| medium | How replies are communicated. Must be either `'text'` or `'voice'`. |
+
+#### registerToolImplementation()
+```ts
+registerToolImplementation(name: string, implementation: ClientToolImplementation): void
+```
+Registers a client tool implementation with the given name. If the call is started with a client-implemented tool, this implementation will be invoked when the model calls the tool.
+
+| parameter        | description                                 |
+|----------------- | ------------------------------------------- |
+| name | String. The name of the tool. Must match what is defined in `selectedTools` during [call creation](../api/calls/#create-call). If `nameOverride` is set then must match that name. Otherwise must match `modelToolName`. |
+| implementation | `ClientToolImplementation` function that implements the tool's logic. |
+
+**`ClientToolImplementation`**
+
+This is a function that:
+
+**Accepts `parameters`** → An object containing key-value pairs for the tool's parameters. The keys will be strings.
+
+**Returns** → Either a string result, or an object with a result string and a responseType, or a Promise that resolves to one of these.
+
+For example:
+
+```js
+  const stock_price = (parameters) => {
+    ...  // to be implemented
+    return `Stock price is ${value}`;
+  };
+```
+
+#### registerToolImplementations()
+```ts
+registerToolImplementations(implementationMap: { [name: string]: ClientToolImplementation }): void 
+```
+Convenience batch wrapper for registerToolImplementation.
+
+**`implementationMap`** → An object where each key (a string) represents the name of the tool and each value is a `ClientToolImplementation` function.
+
+#### isMicMuted()
+
+```typescript
+isMicMuted(): boolean
+```
+Returns a boolen indicating if the end user's microphone is muted. This is scoped to the Ultravox SDK and does not detect muting done by the user outside of your application.
+
+#### isSpeakerMuted()
+
+```typescript
+isSpeakerMuted(): boolean
+```
+Returns a boolen indicating if the speaker (the agent's voice output) is muted. This is scoped to the Ultravox SDK and does not detect muting done by the user outside of your application.
+
+
+#### muteMic()
+
+```typescript
+muteMic(): void
+```
+Mutes the end user's microphone. This is scoped to the Ultravox SDK.
+
+#### unmuteMic()
+
+```typescript
+unmuteMic(): void
+```
+Unmutes the end user's microphone. This is scoped to the Ultravox SDK.
+
+
+#### muteSpeaker()
+
+```typescript
+muteSpeaker(): void
+```
+Mutes the end user's speaker (the agent's voice output). This is scoped to the Ultravox SDK.
+
+
+#### unmuteSpeaker()
+
+```typescript
+unmuteSpeaker(): void
+```
+Unmutes the end user's speaker (the agent's voice output). This is scoped to the Ultravox SDK.
+
+
+## Client Tools
+Ultravox has robust support for [tools](../tools). The SDK has support for client tools. Client tools will be invoked in your client code and enable you to add interactivity in your app that is driven by user interactions with your agent. For example, your agent could choose to invoke a tool that would trigger some UI change.
+
+<Note>
+  <b>Message Size Limit</b>
+  
+  Messages larger than 15-16KB may cause timeouts. Keep payload sizes within this limit.
+</Note>
+
+### Creating Client Tools
+
+Client tools are defined just like "server" tools with three exceptions:
+<Steps>
+  <Step title="'client' not 'http'">
+    You don't add the URL and HTTP method for client tools. Instead, you add `"client": {}` to the tool definition.
+
+    <CodeGroup>
+
+      ```js helloWorld.js
+      console.log("Hello World");
+      ```
+
+      ```python hello_world.py
+      print('Hello World!')
+      ```
+
+      ```java HelloWorld.java
+      class HelloWorld {
+          public static void main(String[] args) {
+              System.out.println("Hello, World!");
+          }
+      }
+      ```
+
+      </CodeGroup>
+
+
+  </Step>
+  <Step title="Second Step">
+    These are instructions or content that only pertain to the second step.
+  </Step>
+  <Step title="Third Step">
+    These are instructions or content that only pertain to the third step.
+  </Step>
+</Steps>
+
+
+
+1. "client" not "http"
+
+You don't add the URL and HTTP method for client tools. Instead, you add `"client": {}` to the tool definition.
+
+import tempToolClient from '../codesnippets/temp-tool-client.txt?raw';
+export const titleClient = "Using a Client Tool"
+export const linesClient = [19];
+
+<Code code={tempToolClient} lang="js" title={titleClient} mark={linesClient} />
+
+import tempTool from '../codesnippets/temp-tool.txt?raw';
+export const title = "Using a Server Tool"
+export const lines = [19, 20, 21, 22];
+
+<Code code={tempTool} lang="js" title={title} mark={lines} />
+
+#### 2. Client Registration
+Your client tool must be registered in your client code. Here's a snippet that might be found in client code to register the client tool and implement the logic for the tool.
+
+See [SDK Methods](#registertoolimplementation) for more information.
+
+import clientToolReg from '../codesnippets/client-tool-registration.txt?raw';
+export const ctTitle = "Registering a Client Tool"
+
+<Code code={clientToolReg} lang="js" title={ctTitle} />
+
+#### 3. Only Body Parameters
+Unlike server tools (which accept parameters passed by path, header, body, etc.), client tools only allow parameters to be passed in the body of the request. That means client tools will always have parameter location set like this:
+
+```js
+"location": "PARAMETER_LOCATION_BODY"
+```
+
+## Session Status
+The `UltravoxSession` exposes status. Based on the `UltravoxSessionStatus` enum, status can be one of the following:
+
+| status        | description                                 |
+|-------------- | ------------------------------------------- |
+| disconnected | Session is not connected. This is the initial state prior to joinCall. |
+| disconnecting | Session is in the process of disconnecting. |
+| connecting    | Session is establishing the connection.     |
+| idle          | Session is connected but not yet active.      |
+| listening     | Listening to the end user.                  |
+| thinking      | The model is processing/thinking.           |
+| speaking      | The model is speaking.                      |
+
+<b>Status Events</b>
+
+The status can be retrieved by adding an event listener to the session status.
+
+```js Get Session Status Events
+// Listen for status changing events
+session.addEventListener('status', (event) => {
+  console.log('Session status changed: ', session.status);
+});
+```
+
+## Transcripts
+Sometimes you may want to augment the audio with text transcripts (e.g. if you want to show the end user the model's output in real-time). Transcripts can be retrieved by adding an event listener:
+
+```js Get Transcripts
+// Listen for transcripts changing events
+session.addEventListener('transcripts', (event) => {
+  console.log('Transcripts updated: ', session.transcripts);
+});
+```
+
+Transcripts are returned as an array of transcript objects.
+
+<ResponseField name="transcript" type="Transcript Object">
+  <Expandable title="properties" defaultOpen>
+    <ResponseField name="text" type="string">
+      Text transcript of the speech from the end user or the agent.
+    </ResponseField>
+    <ResponseField name="isFinal" type="boolean">
+      True if the transcript represents a complete utterance. False if it is a fragment of an utterance that is still underway.
+    </ResponseField>
+    <ResponseField name="speaker" type="Role">
+      Either "user" or "agent". Denotes who was speaking. 
+    </ResponseField>
+    <ResponseField name="medium" type="Medium">
+      Either "voice" or "text". Denotes how the message was sent. 
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Debug Messages
+
+<Warning>
+  <b>No Guarantee</b>
+  
+  Debug messages from Ultravox should be treated as debug logs. They can change regularly and don't have a contract. Relying on the specific structure or content should be avoided.
+</Warning>
+
+The `UltravoxSession` object also provides debug messages. Debug messages must be enabled when creating a new session and then are available via an event listener similar to status and transcripts:
+
+```js Get Debug Messages
+// Listen for debug messages
+session.addEventListener('experimental_message', (msg) => {
+  console.log('Got a debug message: ', JSON.stringify(msg));
+});
+```
+
+<b>Debug Message:  Tool Call</b>
+
+When the agent invokes a tool, the message contains the function, all arguments, and an invocation ID:
+```bash
+LLM response: Tool calls: [FunctionCall(name='createProfile', args='{"firstName":"Ron","lastName":"Burgandy","organization":"Fixie.ai","useCase":"creating a talking AI news reporter"}', invocation_id='call_D2qQVS8OQc998aMEw5PRa9cF')]
+```
+
+<b>Debug Message:  Tool Call Result</b>
+
+When the tool call completes, the message contains an array of messages. Multiple tools can be invoked by the model. This message array will conatain all the calls followed by all the results. These messages are also available via [List Call Messages](../api/calls/#list-call-messages).
+
+Here's an example of what we might see from a single tool invocation:
+
+```bash
+Tool call complete.
+
+Result: [
+  role: MESSAGE_ROLE_TOOL_CALL ordinal: 6 text: "{\"firstName\":\"Ron\",\"lastName\":\"Burgandy\",\"organization\":\"Fixie.ai\",\"useCase\":\"creating a talking AI news reporter\"}" tool_name: "createProfile" invocation_id: "call_D2qQVS8OQc998aMEw5PRa9cF" tool_id: "aa737e12-0989-4adb-9895-f387f40557d8" ,
+  role: MESSAGE_ROLE_TOOL_RESULT ordinal: 7 text: "{\"firstName\":\"Ron\",\"lastName\":\"Burgandy\",\"emailAddress\":null,\"organization\":\"Fixie\",\"useCase\":\"creating a talking AI news reporter\"}" tool_name: "createProfile" invocation_id: "call_D2qQVS8OQc998aMEw5PRa9cF" tool_id: "aa737e12-0989-4adb-9895-f387f40557d8"
+]
+```
+
+## SDK Implementations
+
 <SDKCards />
 
