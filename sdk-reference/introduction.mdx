@@ -67,7 +67,7 @@ registerToolImplementation(name: string, implementation: ClientToolImplementatio
 ```
 
 <ParamField body="name" type="string" required>
-  The name of the tool. Must match what is defined in `selectedTools` during [`Create Call`](/api-reference//calls/calls-post).<br /><br />If `nameOverride` is set then must match that name. Otherwise must match `modelToolName`.
+  The name of the tool. Must match what is defined in `selectedTools` during [`Create Call`](/api-reference/calls/calls-post).<br /><br />If `nameOverride` is set then must match that name. Otherwise must match `modelToolName`.
 </ParamField>
 <ParamField body="implementation" type="ClientToolImplementation" required>
   The function that implements the tool's logic. This is a function that:
