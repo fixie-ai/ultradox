@@ -73,14 +73,8 @@
         "introduction",
         "guides/fivethings",
         "guides/allprompting",
-        {
-          "group": "Quickstart",
-          "icon": "forward-fast",
-          "pages": [
-            "guides/quickstart-phone",
-            "guides/quickstart-web"
-          ]
-        }
+        "guides/quickstart-phone",
+        "guides/quickstart-web"
       ]
     },
     {
@@ -89,7 +83,8 @@
         "essentials/apikeys",
         "essentials/tools",
         "essentials/rag",
-        "essentials/sdk"
+        "essentials/sdk",
+        "essentials/voices"
       ]
     },
     {
@@ -103,7 +98,6 @@
     {
       "group": "Advanced Guides",
       "pages": [
-        "guides/voicecloning",
         "guides/callstages",
         "guides/debugging",
         "guides/advancedprompting",
