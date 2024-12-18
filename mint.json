@@ -2,18 +2,26 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Ultradox",
   "logo": {
-    "dark": "/logo/UVMarkColor.svg",
-    "light": "/logo/UVMarkColor.svg"
+    "dark": "/images/UV Logo Horizontal White.svg",
+    "light": "/images/UV Logo Horizontal Black.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#ff936f",
-    "light": "#0077be",
-    "dark": "#0077be"
+    "primary": "#5E92FF",
+    "light": "#FBFBFB",
+    "dark": "#5E92FF"
+  },
+  "font": {
+    "headings": {
+      "family": "Inter"
+    },
+    "body": {
+      "family": "Inter"
+    }
   },
   "layout": "sidenav",
   "sidebar": { "items":"border"},
-  "background": {"style":"gradient"},
+  "background": {"style":"grid"},
   "api": {
     "baseUrl": "https://api.ultravox.ai/api/",
     "auth": {
@@ -71,7 +79,7 @@
       "group": "Getting Started",
       "pages": [
         "introduction",
-        "guides/fivethings",
+        "guides/fiverules",
         "guides/allprompting",
         "guides/quickstart-phone",
         "guides/quickstart-web"
@@ -177,6 +185,12 @@
         "api-reference/webhooks/webhooks-put",
         "api-reference/webhooks/webhooks-patch",
         "api-reference/webhooks/webhooks-delete"
+      ]
+    },
+    {
+      "group": "Schema",
+      "pages": [
+        "api-reference/schema/base-tool-definition"
       ]
     },
     {
