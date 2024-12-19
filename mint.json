@@ -92,7 +92,9 @@
         "essentials/tools",
         "essentials/rag",
         "essentials/sdk",
-        "essentials/voices"
+        "essentials/telephony",
+        "essentials/voices",
+        "essentials/multilingual-agents"
       ]
     },
     {
