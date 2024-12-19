@@ -1,3 +1,4 @@
+```python Verifying Webhook Signature
 import datetime
 import hmac
 
@@ -10,3 +11,4 @@ for signature in request.headers["X-Ultravox-Webhook-Signature"].split(","):
     break  # Valid signature
 else:
   raise RuntimeError("Message or timestamp was tampered with")
+```
