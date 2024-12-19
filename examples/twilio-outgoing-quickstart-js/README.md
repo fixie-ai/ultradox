@@ -1,6 +1,6 @@
-# Ultravox Twilio Telephony Quickstart
+# Ultravox Twilio Outgoing Call Quickstart
 
-This Node.js application demonstrates how to make automated phone calls using Ultravox AI and Twilio. It sets up an AI-powered phone call where the AI agent (named Steve) will interact with the call recipient.
+This Node.js application demonstrates how to make outgoing phone calls using Ultravox AI and Twilio. It sets up an AI-powered phone call where the AI agent (named Steve) will interact with the call recipient.
 
 ## Prerequisites
 

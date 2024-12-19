@@ -1,0 +1,13 @@
+{
+  "name": "telephony-incoming-js",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "twilio": "^5.4.0"
+  }
+}
