@@ -3,6 +3,7 @@
 Documentation for Ultravox API.
 
 ## Examples
+1. `telephony-quickstart-js` → Initiate an outgoing voice AI call with Twilio.
 1. `quickstart-js` → Provides a simple HTML front-end and a server to create calls.
   * Create `./.env` and populate your API key: `ULTRAVOX_API_KEY=<YOUR_KEY_HERE>`.
   * Install dependencies with `pnpm install`.
