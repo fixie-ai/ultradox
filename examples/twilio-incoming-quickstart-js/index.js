@@ -6,7 +6,7 @@ const app = express();
 const port = 3000;
 
 // Configuration
-const ULTRAVOX_API_KEY = 'SbifT46Y.SftLF1drgxqsvAOVuN44twKU3kAEtxfP';
+const ULTRAVOX_API_KEY = 'your_ultravox_api_key_here';
 const ULTRAVOX_API_URL = 'https://api.ultravox.ai/api/calls';
 
 // Ultravox configuration
