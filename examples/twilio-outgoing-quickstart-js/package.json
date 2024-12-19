@@ -1,5 +1,5 @@
 {
-  "name": "telephony-quickstart-js",
+  "name": "twilio-outgoing-quickstart-js",
   "private": true,
   "version": "0.0.1",
   "type": "module",
