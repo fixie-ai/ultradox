@@ -68,22 +68,27 @@
         "introduction",
         {
           "group": "The Five Rules of Ultravox",
+          "icon": "list-check",
           "pages": [
-            "guides/fiverules"
+            "gettingstarted/rule1",
+            "gettingstarted/rule2",
+            "gettingstarted/rule3",
+            "gettingstarted/rule4",
+            "gettingstarted/rule5",
+            "gettingstarted/rule6"
           ]
         },
-        "guides/fiverules",
-        "guides/allprompting",
+        "gettingstarted/prompting",
         {
           "group": "Phone Quickstart",
           "icon": "phone-plus",
           "pages": [
-            "guides/quickstart-phone-outgoing",
-            "guides/quickstart-phone-incoming"
+            "gettingstarted/quickstart-phone-outgoing",
+            "gettingstarted/quickstart-phone-incoming"
           ]
         },
         
-        "guides/quickstart-web"
+        "gettingstarted/quickstart-web"
       ]
     },
     {
