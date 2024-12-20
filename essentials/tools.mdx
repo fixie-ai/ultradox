@@ -60,7 +60,7 @@ There are three steps:
     What's happening here:
     * We are adding `selectedTools` to the request body of the [`Create Call`](/api-reference/calls/calls-post).
     * There's a single tool named `sendConversationSummary`.
-    * This tool requires a single dynamic parameter (TODO) called `conversationSummary` that is passed in the request body.
+    * This tool requires a single [dynamic parameter](#dynamic-parameters) called `conversationSummary` that is passed in the request body.
     * The tool's functionality is available via POST at the url `https://foo.bar/sendSummary`.
   </Step>
   <Step title="Implement the Function">

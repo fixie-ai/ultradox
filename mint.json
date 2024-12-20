@@ -116,7 +116,7 @@
       "pages": [
         "guides/callstages",
         "guides/debugging",
-        "guides/advancedprompting",
+        "guides/websockets",
         "guides/webhooks",
         "guides/building-interactiveui",
         "guides/building-escalationpath",

@@ -1,6 +1,6 @@
 ---
 title: 'Telephony'
-description: 'Use Ultravox to make and receive calls using WebRTC, via Telnyx, Twilio, Plivo, or over direct WebSocket connections.'
+description: 'Use Ultravox to make and receive calls using WebRTC, via Telnyx, Twilio, or Plivo.'
 icon: 'square-phone'
 ---
 
@@ -15,7 +15,7 @@ Choose your integration method based on your needs:
 
 - **WebRTC**: Best for most integrations, especially for any client deployment (for example, browsers or mobile clients). This is the default. Get started with the Ultravox client [SDK](/essentials/sdk).
 - **Phone**: For traditional phone network integration. Ultravox integrates directly with Telnyx, Twilio, and Plivo.
-- **WebSocket**: For server-to-server integration, especially when you already have high-bandwidth connections between your server and clients.
+- **WebSocket**: For server-to-server integration, especially when you already have high-bandwidth connections between your server and clients. Check out the [WebSocket Integration](/guides/websockets) guide for more information.
 
 ## Phone Integration
 Ultravox integrates with multiple telephony providers, enabling you to create AI-powered voice applications that can interact through regular phone networks. You can build AI agents that can make outgoing calls and answer incoming calls, opening up possibilities for customer service, automated outreach, and other voice-based AI applications.
@@ -237,71 +237,4 @@ Creating an Ultravox call that you can connect with a phone call is similar to c
 <b>Provider Support</b>
 <br />
 We currently integrate with Telnyx, Twilio, and Plivo. Please [let us know](https://discord.com/channels/1240071833798184990/1315065334058713198) if there's another integration you'd like to see.
-</Note>
-
-## WebSocket Integration
-
-<Warning>
-<b>Server-to-Server Only</b>
-<br />
-WebSocket connections are designed for server-to-server communication. For browser or mobile applications, use our client SDKs with WebRTC for optimal performance. WebSocket connections over TCP can experience audio blocking and ordering constraints that make them unsuitable for direct client use.
-</Warning>
-
-### Creating a WebSocket Call
-
-Creating a WebSocket-based call with Ultravox requires setting `medium` to `serverWebSocket` and passing in parameters for sample rates and buffer size.
-
-- **inputSampleRate** (required): Sample rate for input (user) audio (e.g., 48000).
-- **outputSampleRate** (optional): Sample rate for output (agent) audio (defaults to inputSampleRate).
-- **clientBufferSizeMs** (optional): Size of the client-side audio buffer in milliseconds. Smaller buffers allow for faster interruptions but may cause audio underflow if network latency fluctuates too greatly. For the best of both worlds, set this to some large value (e.g. 30000) and implement support for [PlaybackClearBuffer](/datamessages#playbackclearbuffer) messages. (Defaults to 60).
-
-```js Example: Creating an Ultravox Call for WebSockets
-    const response = await fetch('https://api.ultravox.ai/api/calls', {
-        method: 'POST',
-        headers: {
-            'X-API-Key': 'your_api_key',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            systemPrompt: "You are a helpful assistant...",
-            model: "fixie-ai/ultravox",
-            voice: "Mark",
-            medium: {
-                serverWebSocket: {
-                    inputSampleRate: 48000,
-                    outputSampleRate: 48000,
-                    clientBufferSizeMs: 30000
-                }
-            }
-        })
-    });
-
-    const { joinUrl } = await response.json();
-```
-
-```python Example: Joining an Ultravox Call via Websockets
-import websockets
-
-socket = await websockets.connect(join_url)
-audio_send_task = asyncio.create_task(_send_audio(socket))
-async for message in socket:
-    if isinstance(message, bytes):
-        # Handle agent audio data
-    else:
-        # Handle data message. See "Data Messages"
-
-...
-
-async def _send_audio(socket: websockets.WebSocketClientProtocol):
-    async for chunk in some_audio_source:
-        # chunk should be a bytes object containing s16le PCM audio from the user
-        self._socket.send(chunk)
-```
-
-See [Data Messages](/datamessages) for more information on all available messages.
-
-<Note>
-<b>Data Messages</b>
-<br />
-WebSocket connections use the same message format as WebRTC data channels. See our [Data Messages](/datamessages) documentation for detailed message specifications.
 </Note>
