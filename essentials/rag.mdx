@@ -1,5 +1,64 @@
 ---
 title: 'Adding Knowledge (RAG)'
-description: '[Under Construction]'
+description: 'Give you agent access to product documents, KBs, and more.'
 icon: 'books'
 ---
+
+LLMs have tremendous knowledge about the world, but they don't have all the up-to-date specifics about your organization, your products, or other relevant information you might want to provide to your AI voice agents.
+
+RAG is a common technique for grounding agents in the relevant information for your use case.
+
+## Examples of Knowledge Sources
+Let's consider some of the content that might be useful to serve some popular use cases:
+
+<AccordionGroup>
+  <Accordion icon="bell-concierge" iconType="sharp-solid" title="Customer Success & Support" defaultOpen="true">
+    * Product Documentation → user guides, FAQs, troubleshooting steps.
+    * Onboarding Materials → getting started guides, best practices, transcripts from training videos.
+  </Accordion>
+  <Accordion icon="messages-dollar" iconType="sharp-solid" title="Customer Acquisition">
+    * Product Information → features, pricing tiers, competitive comparisons.
+    * Sales Scripts → qualification questions, objection handling, industry-specific use cases.
+  </Accordion>
+  <Accordion icon="ballot-check" iconType="sharp-solid" title="Operations">
+    * Internal Processes → call routing rules, department directories, business hours & holiday schedules.
+    * Survey Materials → question banks, follow-up questions, rating scales.
+  </Accordion>
+</AccordionGroup>
+
+## Adding RAG to Ultravox
+As we saw in the [Using Tools](/essentials/tools) guide, tools provide power-ups for your agents. To use RAG with an Ultravox agent, it's as simple as creating a tool and instructing the agent on how to use the tool.
+
+Let's assume we have already stored our product documentation in a vector database and can search that content at `https://foo.bar/lookupProductInfo`.
+
+Here's how we might create a tool for our Ultravox agent to use:
+
+```js Example: Adding a RAG tool
+{
+  "systemPrompt": "You are a helpful assistant. You have a tool called 'lookupProductInfo' that you must use to find answers.",
+  "model": "fixie-ai/ultravox",
+  "selectedTools": [
+    {
+      "temporaryTool": {
+        "modelToolName": "lookupProductInfo",
+        "description": "Searches official product documentation using semantic similarity to find relevant information. Use this tool to look up specific product features, specifications, limitations, pricing, or support information. The tool returns the most relevant text chunks from the documentation.",
+        "dynamicParameters": [
+          {
+            "name": "query",
+            "location": "PARAMETER_LOCATION_BODY",
+            "schema": {
+              "description": "A specific, focused search query to find relevant product information",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "http": {
+          "baseUrlPattern": "https://foo.bar/lookupProductInfo",
+          "httpMethod": "POST"
+        }
+      }
+    }
+  ]
+}
+```
