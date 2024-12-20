@@ -79,6 +79,12 @@
       "group": "Getting Started",
       "pages": [
         "introduction",
+        {
+          "group": "The Five Rules of Ultravox",
+          "pages": [
+            "guides/fiverules"
+          ]
+        },
         "guides/fiverules",
         "guides/allprompting",
         "guides/quickstart-phone",
