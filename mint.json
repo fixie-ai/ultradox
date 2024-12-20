@@ -87,7 +87,15 @@
         },
         "guides/fiverules",
         "guides/allprompting",
-        "guides/quickstart-phone",
+        {
+          "group": "Phone Quickstart",
+          "icon": "phone-plus",
+          "pages": [
+            "guides/quickstart-phone-outgoing",
+            "guides/quickstart-phone-incoming"
+          ]
+        },
+        
         "guides/quickstart-web"
       ]
     },
