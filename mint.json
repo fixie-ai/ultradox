@@ -104,32 +104,12 @@
       ]
     },
     {
-      "group": "Use Cases",
-      "pages": [
-        "usecases/customersuccess",
-        "usecases/customeracquisition",
-        "usecases/operations"
-      ]
-    },
-    {
       "group": "Advanced Guides",
       "pages": [
         "guides/callstages",
         "guides/debugging",
         "guides/websockets",
-        "guides/webhooks",
-        "guides/building-interactiveui",
-        "guides/building-escalationpath",
-        {
-          "group": "Porting Your Voice Agent",
-          "icon": "swap",
-          "pages": [
-            "guides/porting-bland",
-            "guides/porting-oairt",
-            "guides/porting-retell",
-            "guides/porting-vapi"
-          ]
-        }
+        "guides/webhooks"
       ]
     },
     {
@@ -212,12 +192,6 @@
       "group": "SDK",
       "pages": [
         "sdk-reference/introduction"
-      ]
-    },
-    {
-      "group": "Integrations",
-      "pages": [
-        "integrations/introduction"
       ]
     },
     {
