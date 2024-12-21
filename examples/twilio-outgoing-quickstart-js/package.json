@@ -1,0 +1,12 @@
+{
+  "name": "twilio-outgoing-quickstart-js",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "twilio": "^5.4.0"
+  }
+}
