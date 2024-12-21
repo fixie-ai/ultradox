@@ -1,0 +1,45 @@
+---
+title: 'Voice Cloning'
+description: 'Create Custom Voices'
+icon: 'microphone'
+---
+
+Ultravox Realtime includes multiple, high-quality voices for all supported languages. The fastest way to experience the included voices is in the [Playground](https://app.ultravox.ai/playground). You can also use the [List Voices](/api-reference/voices/voices-list) endpoint to see all voices and their details.
+
+## Creating a Custom Voice
+
+You can create a custom voice by uploading an audio sample using the [Create (Clone) Voice](/api-reference/voices/voices-post) endpoint. This process allows you to generate a unique voice that matches the characteristics of your audio sample.
+
+### Prerequisites
+
+- An Ultravox Realtime API key
+- A single audio file containing a clear voice sample (30 seconds recommended)
+- The audio file must be in .mp3 or .wav format
+
+### Using the API
+
+To create a custom voice, send a POST request to the `/api/voices` endpoint with your audio file. Note: multiple files are not supported.
+
+Here's how to do it:
+
+```bash
+curl --request POST https://api.ultravox.ai/api/voices \
+  --header 'Content-Type: multipart/form-data' \
+  --header 'X-API-Key: YOUR_API_KEY' \
+  --form 'file=@"/path/to/your/audio-sample.wav"'
+```
+
+### Requirements for Audio Samples
+
+For optimal results, ensure your audio sample meets these criteria:
+
+- Clear, high-quality audio without background noise or echo
+- Single speaker throughout the recording
+- Natural speaking pace and tone
+- No music or other voices in the background
+- 30-60 seconds in length (longer samples do not typically lead to better clones)
+
+### Limitations
+
+- Maximum of one audio file per voice
+- 30MB file size maximum

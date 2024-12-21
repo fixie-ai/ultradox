@@ -1,0 +1,154 @@
+---
+title: 'Incoming Phone Calls'
+description: 'Connect incoming calls to an AI agent in 6 minutes.'
+icon: 'phone-arrow-down-left'
+---
+
+This guide walks you through connecting incoming Twilio calls to an Ultravox agent.
+
+## Prerequisites
+
+- Node.js 20 or higher
+- A Twilio account with:
+  - Account SID
+  - Auth Token
+  - Phone Number
+- An Ultravox API key
+- For incoming calls: A publicly accessible URL for your webhook (e.g., using ngrok)
+
+## Set-up and Installation
+
+<Steps>
+  <Step title="Set Up Your Project">
+    Create a new directory for your project and initialize it:
+    ```bash
+    mkdir ultravox-incoming-calls
+    cd ultravox-incoming-calls
+    npm init -y
+    ```
+  </Step>
+  <Step title="Install Dependencies">
+    ```bash
+    npm install express twilio
+    ```
+  </Step>
+  <Step title="Create Your Server">
+    Create a new file called `server.js` with the following code. This code can also be found [on GitHub](https://github.com/fixie-ai/ultradox/tree/main/examples/twilio-incoming-quickstart-js).
+    
+    Note: Make sure to add your Ultravox API key.
+  </Step>
+</Steps>
+
+```js {9}
+import express from 'express';
+import https from 'https';
+import twilio from 'twilio';
+
+const app = express();
+const port = 3000;
+
+// Configuration
+const ULTRAVOX_API_KEY = 'your_ultravox_api_key_here';
+const ULTRAVOX_API_URL = 'https://api.ultravox.ai/api/calls';
+
+// Ultravox configuration
+const SYSTEM_PROMPT = 'Your name is Steve. You are receiving a phone call. Ask them their name and see how they are doing.';
+
+const ULTRAVOX_CALL_CONFIG = {
+    systemPrompt: SYSTEM_PROMPT,
+    model: 'fixie-ai/ultravox',
+    voice: 'Mark',
+    temperature: 0.3,
+    firstSpeaker: 'FIRST_SPEAKER_AGENT',
+    medium: { "twilio": {} }
+};
+
+// Create Ultravox call and get join URL
+async function createUltravoxCall() {
+    const request = https.request(ULTRAVOX_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': ULTRAVOX_API_KEY
+        }
+    });
+
+    return new Promise((resolve, reject) => {
+        let data = '';
+
+        request.on('response', (response) => {
+            response.on('data', chunk => data += chunk);
+            response.on('end', () => resolve(JSON.parse(data)));
+        });
+
+        request.on('error', reject);
+        request.write(JSON.stringify(ULTRAVOX_CALL_CONFIG));
+        request.end();
+    });
+}
+
+// Handle incoming calls
+app.post('/incoming', async (req, res) => {
+    try {
+        console.log('Incoming call received');
+        const response = await createUltravoxCall();
+        const twiml = new twilio.twiml.VoiceResponse();
+        const connect = twiml.connect();
+        connect.stream({
+            url: response.joinUrl,
+            name: 'ultravox'
+        });
+
+        const twimlString = twiml.toString();
+        res.type('text/xml');
+        res.send(twimlString);
+
+    } catch (error) {
+        console.error('Error handling incoming call:', error);
+        const twiml = new twilio.twiml.VoiceResponse();
+        twiml.say('Sorry, there was an error connecting your call.');
+        res.type('text/xml');
+        res.send(twiml.toString());
+    }
+});
+
+// Start server
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
+```
+
+## Configure Twilio Webhook
+<Steps>
+  <Step title="Make Your Server Publicly Accessible">
+    Use ngrok or a similar service to create a public URL for your local server:
+    ```bash
+    ngrok http 3000
+    ```
+  </Step>
+  <Step title="Set Up Webhook">
+    1. Go to your Twilio Console
+    2. Navigate to your phone number's configuration
+    3. Under "Voice & Fax", set the webhook URL for incoming calls to:
+       `https://your-ngrok-url/incoming`
+  </Step>
+</Steps>
+
+### Start the Server
+
+Run the server:
+
+```bash
+node server.js
+```
+
+Now, when someone calls your Twilio number, they'll be connected to your AI assistant.
+
+## Next Steps
+
+Ultravox Realtime provides telephony integrations for Telnyx, Twilio, and Plivo. Learn more [here](/essentials/telephony).
+
+## Additional Resources
+* Twilio Documentation
+* Express.js Documentation
+* ngrok Documentation

@@ -1,0 +1,240 @@
+---
+title: 'Telephony'
+description: 'Use Ultravox to make and receive calls using WebRTC, via Telnyx, Twilio, or Plivo.'
+icon: 'square-phone'
+---
+
+The Ultravox API allows you to create AI-powered voice applications that can interact through various protocols:
+
+- **WebRTC** → Default protocol for browser and mobile applications.
+- **Regular Phone Numbers** → Connect Ultravox to phone calls you make or receive (via Telnxy, Twilio, or Plivo).
+- **WebSockets** → Direct server-to-server integration.
+
+## Choosing a Protocol
+Choose your integration method based on your needs:
+
+- **WebRTC**: Best for most integrations, especially for any client deployment (for example, browsers or mobile clients). This is the default. Get started with the Ultravox client [SDK](/essentials/sdk).
+- **Phone**: For traditional phone network integration. Ultravox integrates directly with Telnyx, Twilio, and Plivo.
+- **WebSocket**: For server-to-server integration, especially when you already have high-bandwidth connections between your server and clients. Check out the [WebSocket Integration](/guides/websockets) guide for more information.
+
+## Phone Integration
+Ultravox integrates with multiple telephony providers, enabling you to create AI-powered voice applications that can interact through regular phone networks. You can build AI agents that can make outgoing calls and answer incoming calls, opening up possibilities for customer service, automated outreach, and other voice-based AI applications.
+
+### Supported Providers
+- **Twilio** → Uses Twilio [Media Streams](https://www.twilio.com/docs/voice/media-streams).
+- **Telnyx** → Uses Telnyx [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming).
+- **Plivo** → Uses Plivo [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/).
+
+### Prerequisites
+<Tip>
+<b>Prerequisites</b>
+<br />
+Make sure you have:
+1. An active account with your chosen provider (Telnyx, Twilio, or Plivo)
+2. A phone number purchased from your provider
+</Tip>
+
+### Connecting Ultravox to a Phone Call
+<Warning>
+<b>"Calls" is Overloaded</b>
+<br />
+It can be a bit confusing because Ultravox Realtime uses the concept of a "call" to mean a voice session between an AI agent and another party. For phone calls, you will accept incoming or make outgoing calls via your chosen telephony provider and then connect those calls to an Ultravox call.
+</Warning>
+
+Creating an Ultravox call that you can connect with a phone call is similar to creating a WebRTC call, but requires specific parameters in the [Create Call](/api-reference/calls/calls-post) command:
+
+<ParamField body="medium" type="object" default="{'webRtc': {}}">
+  Tells Ultravox which protocol to use. For phone calls, must be set to one of:
+  
+  `{"telnyx": {}}`, `{"twilio": {}}`, or `{"plivo": {}}`.
+  
+  Defaults to `{"webRtc": {}}`.
+</ParamField>
+
+<ParamField body="firstSpeaker" type="string" default="FIRST_SPEAKER_AGENT">
+  Tells Ultravox who should speak first.
+  
+  For outgoing calls, typically set to `"FIRST_SPEAKER_USER"`.
+  
+  The default is `"FIRST_SPEAKER_AGENT"`.
+</ParamField>
+
+```js Example: Outgoing Call via Telnyx {4-7}
+{
+  "systemPrompt": "You are a helpful assistant...",
+  ...
+  "medium": {
+    "telnyx": {} // or "twilio": {} or "plivo": {}
+  },
+  "firstSpeaker": "FIRST_SPEAKER_USER"
+}
+```
+
+### Provider-Specific Integration
+
+<Tabs>
+  <Tab title="Telnyx">
+    #### Outgoing Calls with Telnyx
+    <Steps>
+      <Step title="Create an Ultravox Call">
+        Create a new call as shown above with `medium: { "telnyx": {} }`, `firstSpeaker: "FIRST_SPEAKER_USER"`, and get a `joinUrl`.
+      </Step>
+      <Step title="Connect Ultravox to the Telnyx Phone Call">
+        Use the `joinUrl` with a TeXML `<Stream>`:
+
+        ```javascript
+        // Example using the telnyx node library
+        const call = await telnyx.calls.create({
+          connection_id: "uuid",
+          to: phoneNumber,
+          from: telnyxPhoneNumber,
+          stream_url: joinUrl,
+          stream_track: "both_tracks"
+        });
+        ```
+
+        Or using TeXML:
+
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Connect>
+            <Stream url="${joinUrl}" />
+          </Connect>
+        </Response>
+        ```
+        </Step>
+    </Steps>
+
+    #### Incoming Calls with Telnyx
+    <Steps>
+      <Step title="Create an Ultravox Call">
+        Create a new call with `medium: { "telnyx": {} }` and `firstSpeaker` set to `"FIRST_SPEAKER_AGENT"`.
+      </Step>
+      <Step title="Connect the Inbound Telnyx Call to Ultravox">
+        Use the `joinUrl` with a TeXML `<Stream>`:
+
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Connect>
+            <Stream url="${joinUrl}" />
+          </Connect>
+        </Response>
+        ```
+      </Step>
+    </Steps>
+
+    For more details, see the [Telnyx documentation](https://developers.telnyx.com/).
+  </Tab>
+  <Tab title="Twilio">
+    #### Outgoing Calls with Twilio
+    <Steps>
+      <Step title="Create an Ultravox Call">
+        Create a new call as shown above with `medium: { "twilio": {} }`, `firstSpeaker: "FIRST_SPEAKER_USER"`, and get a `joinUrl`.
+      </Step>
+      <Step title="Connect Ultravox to the Twilio Phone Call">
+        Use the `joinUrl` with a Twilio `<Stream>`:
+
+        ```javascript
+        // Example using the twilio node library
+        const call = await client.calls.create({
+            twiml: `<Response>
+                        <Connect>
+                            <Stream url="${joinUrl}"/>
+                        </Connect>
+                    </Response>`,
+            to: phoneNumber,
+            from: twilioPhoneNumber
+        });
+        ```
+      </Step>
+    </Steps>
+
+    #### Incoming Calls with Twilio
+    <Steps>
+      <Step title="Create an Ultravox Call">
+        Create a new call with `medium: { "twilio": {} }` and `firstSpeaker` set to `"FIRST_SPEAKER_AGENT"`.
+      </Step>
+      <Step title="Connect the Inbound Twilio Call to Ultravox">
+        Use the `joinUrl` with a Twilio `<Stream>`:
+
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+            <Connect>
+                <Stream url="your_ultravox_join_url" />
+            </Connect>
+        </Response>
+        ```
+      </Step>
+    </Steps>
+
+    For more details, see the [Twilio documentation](https://www.twilio.com/docs).
+  </Tab>
+  <Tab title="Plivo">
+    #### Outgoing Calls with Plivo
+    <Steps>
+      <Step title="Create an Ultravox Call">
+        Create a new call as shown above with `medium: { "plivo": {} }`, `firstSpeaker: "FIRST_SPEAKER_USER"`, and get a `joinUrl`.
+      </Step>
+      <Step title="Connect Ultravox to the Plivo Phone Call">
+        Use the `joinUrl` with AudioStream:
+
+        ```javascript
+        // Example using the plivo node library
+        // This assumes our server exposes an endpoint at `answerUrl`
+        const call = await plivo.calls.create({
+          to: phoneNumber,
+          from: plivoPhoneNumber,
+          answer_url: answerUrl, // URL that returns the XML below
+          answer_method: "GET"
+        });
+        ```
+
+        The answer URL should return:
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+            <Stream keepCallAlive="true" 
+                    contentType="audio/x-l16;rate=16000"
+                    bidirectional="true">
+                ${joinUrl}
+            </Stream>
+        </Response>
+        ```
+
+        Note: For best audio quality, we recommend `audio/x-l16;rate=16000`. However, any contentType supported by Plivo will work with Ultravox.
+      </Step>
+    </Steps>
+
+    #### Incoming Calls with Plivo
+    <Steps>
+      <Step title="Create an Ultravox Call">
+        Create a new call with `medium: { "plivo": {} }` and `firstSpeaker` set to `"FIRST_SPEAKER_AGENT"`.
+      </Step>
+      <Step title="Connect the Inbound Twilio Call to Ultravox">
+        Use the `joinUrl` with AudioStream:
+
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+            <Stream keepCallAlive="true"
+                    contentType="audio/x-l16;rate=16000" 
+                    bidirectional="true">
+                ${joinUrl}
+            </Stream>
+        </Response>
+        ```
+      </Step>
+    </Steps>
+
+    For more details, see the [Plivo documentation](https://www.plivo.com/docs/).
+  </Tab>
+</Tabs>
+
+<Note>
+<b>Provider Support</b>
+<br />
+We currently integrate with Telnyx, Twilio, and Plivo. Please [let us know](https://discord.com/channels/1240071833798184990/1315065334058713198) if there's another integration you'd like to see.
+</Note>

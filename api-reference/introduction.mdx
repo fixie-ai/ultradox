@@ -1,0 +1,57 @@
+---
+title: 'Ultravox REST API Overview'
+description: ''
+---
+<Info>
+  <b>Get an API Key</b>
+
+  Using the Ultravox API requires an API key.
+
+  You can [sign-up](https://app.ultravox.ai) for a free account that comes with 30 free minutes for creating calls.
+</Info>
+
+## Base URL
+The Ultravox API is available at `https://api.ultravox.ai/api/`.
+
+## API Keys
+Ultravox API keys are 41 characters long and are made up of two alphanumeric parts separated by a period. The first part is 8 characters long and the second is 32 characters.
+
+For example: `Zk9Ht7Lm.wX7pN9fM3kLj6tRq2bGhA8yE5cZvD4sT`
+
+Throughout the docs we use `aBCDef.123456` for brevity.
+
+## X-API-Key Header
+When making API calls, pass your key in using the `X-API-Key` header.
+
+<Warning>
+  <b>You should never expose your API key to client code</b>
+
+  If you *really* want to ignore this advice for a local demo, use the X-Unsafe-API-Key header instead at your own risk. It works the same way except that our server will allow it in CORS preflight requests.
+</Warning>
+
+Here's an example showing how to use the fictional API key `aBCDef.123456` to get a list of calls:
+
+<CodeGroup>
+```bash curl
+curl --request GET \
+--url https://api.ultravox.ai/api/calls \
+--header 'X-API-Key: aBCDef.123456'
+```
+
+```js JavaScript
+fetch('https://api.ultravox.ai/api/calls', {
+  method: 'GET',
+  headers: {
+    'X-API-Key': 'aBCDef.123456'
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+```
+</CodeGroup>
+
+## Playground
+If you want to quickly experiment with prompts and voices, the fastest way to do that is in the [Ultravox Dashboard](https://app.ultravox.ai/playground).
+
+You can also paste in an Ultravox API key throughout the API reference (look for "Authorization" and paste your key where it asks for `X-API-Key`) and test the REST API endpoints.

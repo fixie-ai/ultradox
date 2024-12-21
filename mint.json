@@ -1,0 +1,212 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Ultradox",
+  "logo": {
+    "dark": "/images/UV Logo Horizontal White.svg",
+    "light": "/images/UV Logo Horizontal Black.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#5E92FF",
+    "light": "#FBFBFB",
+    "dark": "#5E92FF"
+  },
+  "font": {
+    "headings": {
+      "family": "Inter"
+    },
+    "body": {
+      "family": "Inter"
+    }
+  },
+  "layout": "sidenav",
+  "sidebar": { "items":"border"},
+  "background": {"style":"grid"},
+  "api": {
+    "baseUrl": "https://api.ultravox.ai/api/",
+    "auth": {
+      "method": "key",
+      "name": "X-API-Key"
+    },
+    "playground": {
+      "mode": "show"
+    }
+  },
+  "openapi": "https://api.ultravox.ai/api/schema/",
+  "topbarLinks": [
+    {
+      "name": "Community",
+      "url": "https://discord.gg/Qw6KHxv8YB"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://app.ultravox.ai"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "SDK Reference",
+      "url": "sdk-reference"
+    },
+    {
+      "name": "Integrations",
+      "url": "integrations"
+    },
+    {
+      "name": "Changelog",
+      "url": "changelog"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        {
+          "group": "The Five Rules of Ultravox",
+          "icon": "list-check",
+          "pages": [
+            "gettingstarted/rule1",
+            "gettingstarted/rule2",
+            "gettingstarted/rule3",
+            "gettingstarted/rule4",
+            "gettingstarted/rule5",
+            "gettingstarted/rule6"
+          ]
+        },
+        "gettingstarted/prompting",
+        {
+          "group": "Phone Quickstart",
+          "icon": "phone-plus",
+          "pages": [
+            "gettingstarted/quickstart-phone-outgoing",
+            "gettingstarted/quickstart-phone-incoming"
+          ]
+        },
+        
+        "gettingstarted/quickstart-web"
+      ]
+    },
+    {
+      "group": "Essentials",
+      "pages": [
+        "essentials/apikeys",
+        "essentials/tools",
+        "essentials/rag",
+        "essentials/sdk",
+        "essentials/telephony",
+        "essentials/voices",
+        "essentials/multilingual-agents"
+      ]
+    },
+    {
+      "group": "Advanced Guides",
+      "pages": [
+        "guides/callstages",
+        "guides/debugging",
+        "guides/websockets",
+        "guides/webhooks"
+      ]
+    },
+    {
+      "group": "",
+      "pages": ["api-reference/introduction"]
+    },
+    {
+      "group": "Accounts & API Keys",
+      "pages": [
+        "api-reference/accounts-apikeys/accounts-list",
+        "api-reference/accounts-apikeys/accounts-me-get",
+        "api-reference/accounts-apikeys/apikeys-list",
+        "api-reference/accounts-apikeys/apikeys-get",
+        "api-reference/accounts-apikeys/apikeys-post",
+        "api-reference/accounts-apikeys/apikeys-put",
+        "api-reference/accounts-apikeys/apikeys-patch",
+        "api-reference/accounts-apikeys/apikeys-delete"
+      ]
+    },
+    {
+      "group": "Calls, Messages, Stages",
+      "pages": [
+        "api-reference/calls/overview",
+        "api-reference/calls/calls-list",
+        "api-reference/calls/calls-get",
+        "api-reference/calls/calls-post",
+        "api-reference/calls/calls-messages-list",
+        "api-reference/calls/calls-tools-list",
+        "api-reference/calls/calls-recording-get",
+        "api-reference/calls/calls-stages-list",
+        "api-reference/calls/calls-stages-get",
+        "api-reference/calls/calls-stages-messages-list",
+        "api-reference/calls/calls-stages-tools-list"
+      ]
+    },
+    {
+      "group": "Tools",
+      "pages": [
+        "api-reference/tools/tools-list",
+        "api-reference/tools/tools-get",
+        "api-reference/tools/tools-post",
+        "api-reference/tools/tools-put",
+        "api-reference/tools/tools-delete"
+      ]
+    },
+    {
+      "group": "Voices",
+      "pages": [
+        "api-reference/voices/voices-list",
+        "api-reference/voices/voices-get",
+        "api-reference/voices/voices-post",
+        "api-reference/voices/voices-delete"
+      ]
+    },
+    {
+      "group": "Webhooks",
+      "pages": [
+        "api-reference/webhooks/webhooks-list",
+        "api-reference/webhooks/webhooks-get",
+        "api-reference/webhooks/webhooks-post",
+        "api-reference/webhooks/webhooks-put",
+        "api-reference/webhooks/webhooks-patch",
+        "api-reference/webhooks/webhooks-delete"
+      ]
+    },
+    {
+      "group": "Schema",
+      "pages": [
+        "api-reference/schema/base-tool-definition"
+      ]
+    },
+    {
+      "group": "Other",
+      "pages": [
+        "api-reference/other/models-get",
+        "api-reference/other/schema-get"
+      ]
+    },
+    {
+      "group": "SDK",
+      "pages": [
+        "sdk-reference/introduction"
+      ]
+    },
+    {
+      "group": "Changelog",
+      "pages": [
+        "changelog/news",
+        "changelog/deprecation"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "discord": "https://discord.gg/Qw6KHxv8YB",
+    "github": "https://github.com/fixie-ai/ultravox",
+    "x": "https://x.com/fixieai"
+  }
+}
+
+

@@ -1,0 +1,19 @@
+---
+title: 'The Start Call 2-Step'
+description: 'Key concepts to understand before building a voice AI agent.'
+icon: '5'
+mode: 'wide'
+---
+
+import diagram from '/snippets/diagram.mdx'
+
+## The fifth rule of building with Ultravox: "The Start Call 2-Step".
+Calls are the core of Ultravox. A call is an interaction between an agent and an end user.
+
+Calls have two distinct steps:
+
+**Call Creation** → Calls are configured and created using the Ultravox REST API's [/calls](/api-reference/calls/calls-post) endpoint. Creating a call returns a `joinUrl` which is then used to join the call.
+
+**Join Call** → Once created, calls are joined (and ended) using our [client SDK](/sdk-reference/), bridged to from a [telephony provider](/essentials/telephony), or connected from your server via [WebSockets](/guides/websockets).
+
+<diagram />

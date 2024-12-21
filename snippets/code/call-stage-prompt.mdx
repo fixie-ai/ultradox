@@ -1,0 +1,17 @@
+```js
+// Instruct the agent on how to use the stage management tool
+// Add the tool to selectedTools
+{
+  systemPrompt: "You are a helpful assistant...you have access to a tool called changeStage...",
+  ...
+  selectedTools: [
+    {
+      "temporaryTool": {
+        "modelToolName": "changeStage",
+        "description": ...,
+        "dynamicParameters": [...],
+      }
+    }
+  ]
+}
+```

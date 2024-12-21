@@ -1,6 +1,0 @@
-import ai.ultravox.UltravoxSession
-
-val session = UltravoxSession()
-session.joinCall("wss://your-call-join-url")
-
-session.leaveCall()

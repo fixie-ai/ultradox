@@ -1,0 +1,30 @@
+export const ToolsPossibilities = ({}) => (
+  <div>
+    Tools in Ultravox (also known as function calling) are a powerful way to extend your agents' capabilities by connecting them to external services and systems. At their core, tools are simply functions that agents can invoke to perform specific actions or retrieve information.
+    <br /><br />
+    Here are some of the things you can do with tools:
+
+  <CardGroup cols={2}>
+    <Card title="Communicate with the Outside world" icon="earth-americas">
+      Lookup the weather, get movie times, create calendar events, or send emails.
+    </Card>
+    <Card title="Order Lookup" icon="cart-shopping">
+      Lookup orders, backordered items, or provide shipment updates.
+    </Card>
+    <Card title="Knowledge Base" icon="circle-info">
+      Consult product and support documentation for contextual support.
+    </Card>
+    <Card title="Create Support Case" icon="message-question">
+      Open tailored support cases for human follow-up.
+    </Card>
+    <Card title="Transfer Call" icon="swap">
+      Hand-off or escalate calls to human support agents.
+    </Card>
+    <Card title="End Call" icon="phone-hangup">
+      End calls due to user inactivity or after successful resolution.
+    </Card>
+  </CardGroup>
+  <br />
+  Any functionality you can encapsulate in a function can be exposed to your agents as a tool. Addtionally, Ultravox automatically calls the underlying function so you don't have to sweat gluing things together.
+  </div>
+);

@@ -1,0 +1,60 @@
+/* ":root": {
+  "--color-tan": "#fff5e1",
+  "--color-gold": "#ffc371",
+  "--color-orange": "#ff936f",
+  "--color-hotred": "#ff5f6d",
+  "--color-deepred": "rgb(221, 69, 88)",
+  "--color-deepred-50": "rgba(221, 69, 88, 0.5)",
+  "--color-sky": "#005e99",
+  "--color-blue": "#009edc",
+  "--color-bluer": "#0077be",
+  "--color-bluest": "#7cc8ec",
+  "--color-white": "#000000",
+  "--color-offwhite": "#121212",
+  "--color-grey": "#2a2a2a",
+  "--color-greyy": "#3a3b3f",
+  "--color-greyyy": "#ced7ea",
+  "--color-batmanblack": "#fbfbfb",
+  "--color-black": "#e3e8ed",
+  "--color-bluehighlight-10": "rgba(94, 146, 255, 0.10)",
+  "--color-bluehighlight-50": "rgba(94, 146, 255, 0.50)",
+},
+".dark": {
+  "--color-tan": "#fff5e1",
+  "--color-gold": "#ffc371",
+  "--color-orange": "#ff936f",
+  "--color-hotred": "#ff5f6d",
+  "--color-deepred": "rgb(221, 69, 88)",
+  "--color-deepred-50": "rgba(221, 69, 88, 0.5)",
+  "--color-sky": "#7cc8ec",
+  "--color-blue": "#009edc",
+  "--color-bluer": "#0077be",
+  "--color-bluest": "#005e99",
+  "--color-white": "#ffffff",
+  "--color-offwhite": "#e3e8ed",
+  "--color-grey": "#9a9b9d",
+  "--color-greyy": "#3a3b3f",
+  "--color-greyyy": "#2a2a2a",
+  "--color-batmanblack": "#121212",
+  "--color-black": "#000000", */
+
+
+
+/* Default link styles */
+a {
+  color: #005e99;  /* SKY */
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: #7cc8ec;  /* Bluest */
+}
+
+dark a {
+  color: #7cc8ec;  /* SKY */
+}
+
+.dark  a:hover {
+  color: #0077be;  /* BLUER */
+}
