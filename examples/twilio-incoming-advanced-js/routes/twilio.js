@@ -81,10 +81,6 @@ router.post('/incoming', async (req, res) => {
 
 // Handle transfer of calls to another number
 router.post('/transferCall', async (req, res) => {
-    console.log('Headers:', req.headers);
-    console.log('Content-Type:', req.headers['content-type']);
-    console.log('Body:', req.body);
-
     const { callId } = req.body;
     console.log(`Request to transfer call with callId: ${callId}`);
 
