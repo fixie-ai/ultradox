@@ -7,8 +7,6 @@ import { ULTRAVOX_CALL_CONFIG } from '../ultravox-config.js';
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const destinationNumber = process.env.DESTINATION_PHONE_NUMBER;
 const router = express.Router();
-router.use(express.json());
-router.use(express.urlencoded({ extended: true }));
 
 // Hack: Dictionary to store Twilio CallSid and Ultravox Call ID mapping
 // TODO replace this with something more durable
