@@ -9,6 +9,10 @@ This Node.js application demonstrates how to handle incoming Twilio calls and co
 
 Note: This example is using a pre-release version of the upcoming Ultravox Corpus Service for RAG. You can easily substitute in your current RAG/vector DB system. If you want early access to the Ultravox Corpus Service, please let us know on [this Discord thread](https://discord.com/channels/1240071833798184990/1323352273165881426/1323352273165881426).
 
+## Video Walk-Through
+
+There is a [video](https://youtu.be/sa9uF5Rr9Os) that walks through this code.
+
 ## Prerequisites
 
 - Node.js (v14 or higher)
