@@ -4,40 +4,25 @@ import { getCallTranscript } from '../ultravox-utils.js';
 
 const router = express.Router();
 
-// Use CallID and use UV REST API to get transcript
-// Send transcript to Make.com webhook
 router.post('/webhook', async (req, res) => {
-  try {
-    const data = await new Promise((resolve, reject) => {
-        let chunks = '';
-        
-        req.on('data', chunk => {
-            chunks += chunk;
-        });
-        
-        req.on('end', () => {
-            try {
-                resolve(JSON.parse(chunks));
-            } catch (err) {
-                reject(err);
-            }
-        });
-        
-        req.on('error', reject);
-    });
+  console.log('Incoming UV Webhook!');
 
-    // Only process if it's call ended
+  try {
+    const data = req.body;
+
+    // Call ended event...let's get the transcript and send to Make
     if (data.event === "call.ended") {
+      // Use CallID and use UV REST API to get transcript
       const transcript = await getCallTranscript(data.call.callId);
       const postBody = {
         "callId": data.call.callId,
         "transcript": transcript
       };
 
-      // Send the transcript to Make.com
+      // Send the transcript to Make.com incoming webhook
       const makeResponse = await fetch(process.env.MAKE_INCOMING_WH, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/jscon' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postBody)
       });
 
