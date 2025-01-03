@@ -10,6 +10,38 @@ description: 'Stay informed about Ultravox platform announcements.'
 
 ## Latest Update
 
+### 2025-01-03 - Upgrades to Model, Tools Performance, and Docs
+We're kicking off 2025 with exciting improvements and community-driven developments build on our leading platform for voice AI (5 cents per minute, highest quality voices, low latency, and SDKs for all major languages).
+
+#### What's Hot
+1. Model Upgrades and Performance Improvements
+1. New Dashboard Features and Documentation
+1. Community Hack Day Results
+
+##### Model Upgrades and Performance Improvements
+* **Model Upgrade** → Upgraded Ultravox 0.4.1 to run on the newest Llama 3.3 model, delivering significantly improved instruction following and tool usage capabilities. This new model is now the [default in the Ultravox Realtime](/availablemodels) service and the [HF model](https://huggingface.co/fixie-ai) and model card are available.
+* **Improved Tool Performance** → Updated our vLLM tool parser with more lenient processing to better handle Llama's tool calling patterns, resulting in more consistent performance. We fixed an issue with large tool calls being unstable.
+* **More Improvements** → Added [`vadSettings`](/api-reference/calls/calls-post) parameters for more control, new public [`hang-up`](/essentials/tools#changing-call-state) tool, and added [`timeout`](/api-reference/schema/base-tool-definition) for tools.
+
+##### New Dashboard Features and Documentation
+* **Call History** → Introducing the [Call History](https://app.ultravox.ai/calls) page at app.ultravox.ai - dive deep into detailed call analytics, including tool error tracking. This is just the first of many dashboard improvements coming your way.
+* **New Docs** → Major documentation updates include enhanced [context](/gettingstarted/rule1) around Ultravox Realtime, new phone integration [quickstarts](/gettingstarted/quickstart-phone-outgoing), interactive [API playground](/api-reference) (test the REST API directly in the docs with your API key), and expanded content covering [tools](/essentials/tools), [RAG](/essentials/rag), and [voice cloning](/essentials/voices).
+
+##### Community Hack Day Results
+Last week's impromptu hack day brought our community together to share their vision for future voice agents.
+
+Members were particularly interested in implementing features like knowledge lookup/RAG, human agent handoff, end-of-call transcript retrieval, Make.com integration, and Cal.com API calendar availability checking.
+
+In response, we've released a new sample application that implements all these features as tools for the voice AI agent to call when needed (with end-of-call transcripts handled via webhooks). You can find the complete implementation on our [GitHub repo](https://github.com/fixie-ai/ultradox/tree/main/examples/twilio-incoming-advanced-js), along with a detailed [video walkthrough](https://youtu.be/sa9uF5Rr9Os).
+
+#### What's Next
+**Dashboard Evolution** → The new [Call History](https://app.ultravox.ai/calls) page is just the beginning. We're developing a no-code builder that will allow you to create and customize voice AI agents without writing any code. This will make it easier than ever to implement complex features like those showcased in our latest sample application, while still maintaining the flexibility for developers who prefer to code their own solutions.
+
+**Other Improvements** → Building on our recent Llama 3.3 integration, we're focusing on further enhancing tool usage reliability and model performance. We are also working on providing automatic conversation summaries on call end.
+
+
+## Prior Updates
+
 ### 2024-12-10 - WebSockets and More
 We're excited to announce several new features and improvements to the Ultravox platform, including new integration options, model support, and infrastructure updates.
 
@@ -44,8 +76,6 @@ We're actively working on several exciting features and improvements:
 **Platform Enhancements:** Enhanced call visibility in the dashboard to help you more easily monitor usage and debug issues. We are working on adding a low latency RAG service and are continuing to work on additional optimizations for transcripts and function calling.
 
 **Holiday Schedule Update:** Our team will be operating on a reduced schedule between Christmas and New Year's. While we'll maintain system health and provide emergency support, response times on Discord and email may be longer than usual during this period. Rest assured that all critical systems will remain fully monitored and supported by our on-call team.
-
-## Prior Updates
 
 ### 2024-11-14 - Ultravox v0.4.1 Release
 We're excited to announce the release of Ultravox v0.4.1, which brings significant improvements to the model you're already using. We've also added a new web console and have enabled your agents to start conversations via text.
