@@ -87,7 +87,6 @@
             "gettingstarted/quickstart-phone-incoming"
           ]
         },
-        
         "gettingstarted/quickstart-web"
       ]
     },
@@ -104,12 +103,20 @@
       ]
     },
     {
-      "group": "Advanced Guides",
+      "group": "Advanced Guides + Tutorials",
       "pages": [
         "guides/callstages",
         "guides/debugging",
         "guides/websockets",
-        "guides/webhooks"
+        "guides/webhooks",
+        {
+          "group": "Tutorials",
+          "icon": "chalkboard-user",
+          "pages": [
+            "tutorials/callstages",
+            "tutorials/clienttools"
+          ]
+        }
       ]
     },
     {
