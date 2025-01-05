@@ -7,3 +7,126 @@ description: "Create a new cloned voice"
 Any created voices are private to your account.
 
 Uses multipart/form-data encoding to provide the name of the voice along with an audio file containing the voice to be used for cloning.
+
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url https://api.ultravox.ai/api/voices \
+  --header 'Content-Type: multipart/form-data' \
+  --header "X-API-Key: <your_api_key> \
+  --form 'file=@/path/to/file.mp3' \
+  --form 'name=<voice_name>'
+```
+
+```python Python
+import requests
+
+url = "https://api.ultravox.ai/api/voices"
+
+payload = "-----011000010111000001101001--\r\n\r\n"
+headers = {
+    "X-API-Key": "<api-key>",
+    "Content-Type": "multipart/form-data"
+}
+
+response = requests.request("POST", url, data=payload, headers=headers)
+
+print(response.text)
+```
+
+```javascript JavaScript
+const form = new FormData();
+
+const options = {
+  method: 'POST',
+  headers: {'X-API-Key': '<api-key>', 'Content-Type': 'multipart/form-data'}
+};
+
+options.body = form;
+
+fetch('https://api.ultravox.ai/api/voices', options)
+  .then(response => response.json())
+  .then(response => console.log(response))
+  .catch(err => console.error(err));
+```
+
+```php PHP
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, [
+  CURLOPT_URL => "https://api.ultravox.ai/api/voices",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => "",
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 30,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => "POST",
+  CURLOPT_POSTFIELDS => "-----011000010111000001101001--\r\n\r\n",
+  CURLOPT_HTTPHEADER => [
+    "Content-Type: multipart/form-data",
+    "X-API-Key: <api-key>"
+  ],
+]);
+
+$response = curl_exec($curl);
+$err = curl_error($curl);
+
+curl_close($curl);
+
+if ($err) {
+  echo "cURL Error #:" . $err;
+} else {
+  echo $response;
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"strings"
+	"net/http"
+	"io/ioutil"
+)
+
+func main() {
+
+	url := "https://api.ultravox.ai/api/voices"
+
+	payload := strings.NewReader("-----011000010111000001101001--\r\n\r\n")
+
+	req, _ := http.NewRequest("POST", url, payload)
+
+	req.Header.Add("X-API-Key", "<api-key>")
+	req.Header.Add("Content-Type", "multipart/form-data")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(res)
+	fmt.Println(string(body))
+
+}
+```
+
+```java Java
+HttpResponse<String> response = Unirest.post("https://api.ultravox.ai/api/voices")
+  .header("X-API-Key", "<api-key>")
+  .header("Content-Type", "multipart/form-data")
+  .body("-----011000010111000001101001--\r\n\r\n")
+  .asString();HttpResponse<String> response = Unirest.post("https://api.ultravox.ai/api/voices")
+  .header("X-API-Key", "<api-key>")
+  .header("Content-Type", "multipart/form-data")
+  .body("-----011000010111000001101001--\r\n\r\n")
+  .asString();
+```
+
+</RequestExample>
+
