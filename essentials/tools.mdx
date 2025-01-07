@@ -305,7 +305,7 @@ Tool parameters define what gets passed in to your backend service when the tool
 ### Dynamic Parameters
 Dynamic parameters will have their values set by the model. Creating a dynamic parameter on a tool looks like this:
 
-```javascript
+```js
 // Adding a dynamic parameter to a stock price tool
 // The parameter will be named 'symbol' and will be passed as a query parameter
 {
@@ -328,7 +328,7 @@ Dynamic parameters will have their values set by the model. Creating a dynamic p
 #### Parameter Overrides
 You can choose to set static values for dynamic parameters when you start a call. The model won't see any parameters that you override. When creating a call simply pass in the overrides with each tool:
 
-```javascript
+```js
 // Overriding dynamic parameter when starting a new call
 // Always set the stock symbol to 'NVDA'
 {
