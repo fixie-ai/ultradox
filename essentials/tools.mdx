@@ -368,8 +368,13 @@ Automatic parameters are used when you don't want the model to specify the value
 
 There are currently two use cases:
 
-* **Call ID** → Used for sending the current Ultravox call ID to the tool. Can be used to provide a unique identifier or for logging purposes. Use `"knownValue": "KNOWN_PARAM_CALL_ID"`.
-* **Conversation History** → Sends the entire conversation history up to that point to the tool. Primarily used for tools that create a new call stage. Use `"knownValue": "KNOWN_PARAM_CONVERSATION_HISTORY"`.
+* **Call ID** → Used for sending the current Ultravox call ID to the tool. Can be used to provide a unique identifier or for logging purposes. Example: you want to store the call ID in your CRM as part of the current caller's record.
+
+Use `"knownValue": "KNOWN_PARAM_CALL_ID"`.
+
+* **Conversation History** → Sends the entire conversation history up to that point to the tool. Primarily used for tools that create a new call stage or when you want a tool to do something with the messages. Example: Pre-process conversation history messages when changing call stage and dynamically updating the system prompt for the new stage.
+
+Use `"knownValue": "KNOWN_PARAM_CONVERSATION_HISTORY"`.
 
 ```js
 // Adding automatic parameters to a profile creation tool
