@@ -29,6 +29,10 @@ There are three steps:
     We need to define the tool and provide it to our agent. Everything we provide here will be seen by the agent so we need to be thoughtful of names, descriptions, parameters, etc.
 
     ```js
+    // Creating a tool called 'sendConversationSummary'
+    //
+    // A 'string' parameter named 'conversationSummary'
+    // is passed in the body of a POST request to https://foo.bar/sendSummary
     {
       "systemPrompt": "You are a helpful assistant...",
       "model": "fixie-ai/ultravox",
@@ -303,6 +307,7 @@ Dynamic parameters will have their values set by the model. Creating a dynamic p
 
 ```javascript
 // Adding a dynamic parameter to a stock price tool
+// The parameter will be named 'symbol' and will be passed as a query parameter
 {
   "name": "stock_price",
   "description": "Get the current stock price for a given symbol",
@@ -343,7 +348,7 @@ Parameter overrides don't make sense for temporary tools. Instead of overriding 
 ### Static Parameters
 If you have parameters that are known at the time you create the tool, static parameters can be used.
 
-```javascript
+```js
 // Adding a static parameter that always sends utm=ultravox
 {
   "name": "stock_price",
@@ -359,10 +364,18 @@ If you have parameters that are known at the time you create the tool, static pa
 ```
 
 ### Automatic Parameters
-Automatic parameters are used when you don't want the model to specify the value and you don't know the value when the tool is created. The primary use case for automatic parameters today is for using the `call_id` that is generated for the current call and then passing it as a unique identifier to your tool. Can also be used to get the current conversation history.
+Automatic parameters are used when you don't want the model to specify the value and you don't know the value when the tool is created.
 
-```javascript
-// Adding an automatic parameter to a profile creation tool
+There are currently two use cases:
+
+* **Call ID** → Used for sending the current Ultravox call ID to the tool. Can be used to provide a unique identifier or for logging purposes. Use `"knownValue": "KNOWN_PARAM_CALL_ID"`.
+* **Conversation History** → Sends the entire conversation history up to that point to the tool. Primarily used for tools that create a new call stage. Use `"knownValue": "KNOWN_PARAM_CONVERSATION_HISTORY"`.
+
+```js
+// Adding automatic parameters to a profile creation tool
+// There are two parameters added:
+// 'call_id' which is sent as a query param
+// 'conversation_history' which is sent in the request body
 {
   "name": "create_profile",
   "description": "Creates a profile for the current caller",
@@ -371,11 +384,17 @@ Automatic parameters are used when you don't want the model to specify the value
       "name": "call_id",
       "location": "PARAMETER_LOCATION_QUERY",
       "knownValue": "KNOWN_PARAM_CALL_ID"
+    },
+    {
+      "name": "conversation_history",
+      "location": "PARAMETER_LOCATION_BODY",
+      "knownValue": "KNOWN_PARAM_CONVERSATION_HISTORY"
     }
   ]
 }
 ```
 
+You can find more on Automatic Parameters in the [Base Tool Definition](/api-reference/schema/base-tool-definition).
 
 ## Temporary vs. Durable Tools
 Ultravox supports two types of tools: temporary and durable. There is much more information below but there are a few things to consider right upfront:
