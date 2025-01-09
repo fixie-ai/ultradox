@@ -48,8 +48,12 @@ You give your AI agent access tools when you [create the call](/api-reference/ca
 };
 ```
 
+**Note:** Using built-in tools is the same as using any other [custom durable tool](#durable-tools) that you have created except for one difference: you can override built-in tools by using the same name.
+
+For example, if you created a durable tool named "hangUp" and then provide that tool by name (i.e. not by the toolId), then your tool would be used instead of the built-in hangUp tool.
+
 ### Viewing Tools
-To view available built-in tools, use the [List Tools](/api-reference/tools/tools-list) API.
+To view all tools available to you, including built-in tools, use the [List Tools](/api-reference/tools/tools-list) API.
 
 <Tip>
 The [List Tools](/api-reference/tools/tools-list) API returns all available built-in tools along with any custom tools that you have created.
@@ -440,13 +444,17 @@ Use `"knownValue": "KNOWN_PARAM_CONVERSATION_HISTORY"`.
 You can find more on Automatic Parameters in the [Base Tool Definition](/api-reference/schema/base-tool-definition).
 
 ### Temporary vs. Durable Tools
-Ultravox supports two types of tools: temporary and durable. There is much more information below but there are a few things to consider right upfront:
+Custom tools come in two varieties: temporary and durable. There is much more information below but there are a few things to consider right upfront:
 <Steps>
   <Step title="Creation">Temporary tools are created in the request body when a new call is created. Durable tools are created using the [Ultravox REST API](/api-reference/tools/tools-post).</Step>
   <Step title="No Functional Difference">There is no functional difference within the context of an Ultravox call between the two tool types.</Step>
   <Step title="Iteration Speed">Temporary tools are great when you are building out a new application and need to iterate.</Step>
   <Step title="Reuse & Collaboration">Durable tools are best when you have things dialed in and want to reuse tools across applications and/or work with a team and want to divide ownership of tools from the rest of your app.</Step>
 </Steps>
+
+<Note>
+The distinction between temporary and durable only applies to custom tools. [Built-in](#built-in-tools) tools are always durable.
+</Note>
 
 #### Temporary Tools
 Temporary tools are created each time you create a new Call and exist exclusively within the context of that call. (Temporary tools aren't visible in the [List Tools](/api-reference/tools/tools-list) response for example.)
