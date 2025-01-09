@@ -20,7 +20,45 @@ Unlike using tools with single-generation LLM APIs, Ultravox actually calls your
 While tools are supported across multiple variants of the Ultravox model, using tools with smaller models (i.e. 8B) typically don't work well. YMMV. See [available models](/availablemodels) for more info.
 </Warning>
 
-## Creating Your First Tool
+## Built-in Tools
+Ultravox currently includes the following built-in tools.
+
+| Tool Name | Tool Action                                                                                        |
+| --------- | -------------------------------------------------------------------------------------------------- |
+| hangUp    | Terminates the call. You can also have your own [custom tools end the call](#changing-call-state). |
+
+### Using a Built-in Tool
+You give your AI agent access tools when you [create the call](/api-reference/calls/calls-post) or create a new [call stage](/guides/callstages#creating-and-managing-stages).
+
+```js
+// Example request body for creating a call with a built-in tool
+{
+  "systemPrompt":"You are a helpful assistant. When the call naturally wraps up, use the 'hangUp' tool to end the call.",
+  "selectedTools":[
+    { "toolName": "hangUp" }
+  ]
+};
+
+// The toolId can also be used
+{
+  "systemPrompt":"You are a helpful assistant. When the call naturally wraps up, use the 'hangUp' tool to end the call.",
+  "selectedTools":[
+    { "toolId": "56294126-5a7d-4948-b67d-3b7e13d55ea7" }
+  ]
+};
+```
+
+### Viewing Tools
+To view available built-in tools, use the [List Tools](/api-reference/tools/tools-list) API.
+
+<Tip>
+The [List Tools](/api-reference/tools/tools-list) API returns all available built-in tools along with any custom tools that you have created.
+</Tip>
+
+## Custom Tools
+Custom tools enable you to communicate with the outside world. Anything that you can do in a function can now be done by your agent via a custom tool.
+
+### Creating Your First Custom Tool
 Let's look at creating a tool that sends an email with a summary of the conversation.
 
 There are three steps:
@@ -127,7 +165,7 @@ There are three steps:
   </Step>
 </Steps>
 
-## Server vs. Client Tools
+### Server vs. Client Tools
 You can implement your tools as either server (the tool's functionality is exposed via a URL) or client (the tool's functionality is implemented in your client application) tools. From the perspective of Ultravox Realtime, there is no difference between server or client tools. When the model chooses to call a tool, Ultravox will simply call the tool however it's defined.
 
 There are a couple things to note:
@@ -164,7 +202,7 @@ There are a couple things to note:
 </Accordion>
 
 
-## Tool Authentication
+### Tool Authentication
 Ultravox has rich support for tools auth. When creating a tool, you must specify what is required for successful auth to the backend service.
 
 Three methods for passing API keys are supported and are used when creating the tool:
@@ -294,15 +332,15 @@ You then pass in the key(s) in the `authTokens` property of `selectedTools` when
   </Tab>
 </Tabs>
 
-## Tool Parameters
+### Tool Parameters
 Tool parameters define what gets passed in to your backend service when the tool is called. When creating a tool, parameters are defined as one of three types:
 <Steps>
-  <Step title="Dynamic">The model will choose which values to pass. These are the parameters you'd use for a single-generation LLM API. Can be overridden (see [below](#parameter-overrides)).</Step>
+  <Step title="Dynamic">The model will choose which values to pass. These are the parameters you'd use for a single-generation LLM API. Can be overridden using Parameter Overrides (see [below](#dynamic-parameters)).</Step>
   <Step title="Static">Value is known when the tool is defined and is unconditionally set on invocations. Not exposed to or set by the model.</Step>
   <Step title="Automatic">Like "Static", except that the value may not be known when the tool is defined but will instead be populated by the system when the tool is invoked.</Step>
 </Steps>
 
-### Dynamic Parameters
+#### Dynamic Parameters
 Dynamic parameters will have their values set by the model. Creating a dynamic parameter on a tool looks like this:
 
 ```js
@@ -325,7 +363,7 @@ Dynamic parameters will have their values set by the model. Creating a dynamic p
 }
 ```
 
-#### Parameter Overrides
+##### Parameter Overrides
 You can choose to set static values for dynamic parameters when you start a call. The model won't see any parameters that you override. When creating a call simply pass in the overrides with each tool:
 
 ```js
@@ -345,7 +383,7 @@ You can choose to set static values for dynamic parameters when you start a call
 
 Parameter overrides don't make sense for temporary tools. Instead of overriding a dynamic parameter, use a static parameter instead.
 
-### Static Parameters
+#### Static Parameters
 If you have parameters that are known at the time you create the tool, static parameters can be used.
 
 ```js
@@ -363,7 +401,7 @@ If you have parameters that are known at the time you create the tool, static pa
 }
 ```
 
-### Automatic Parameters
+#### Automatic Parameters
 Automatic parameters are used when you want a consistent, predictable value (not generated by the model) but you don't know the value when the tool is created.
 
 There are currently two use cases:
@@ -401,7 +439,7 @@ Use `"knownValue": "KNOWN_PARAM_CONVERSATION_HISTORY"`.
 
 You can find more on Automatic Parameters in the [Base Tool Definition](/api-reference/schema/base-tool-definition).
 
-## Temporary vs. Durable Tools
+### Temporary vs. Durable Tools
 Ultravox supports two types of tools: temporary and durable. There is much more information below but there are a few things to consider right upfront:
 <Steps>
   <Step title="Creation">Temporary tools are created in the request body when a new call is created. Durable tools are created using the [Ultravox REST API](/api-reference/tools/tools-post).</Step>
@@ -410,7 +448,7 @@ Ultravox supports two types of tools: temporary and durable. There is much more 
   <Step title="Reuse & Collaboration">Durable tools are best when you have things dialed in and want to reuse tools across applications and/or work with a team and want to divide ownership of tools from the rest of your app.</Step>
 </Steps>
 
-### Temporary Tools
+#### Temporary Tools
 Temporary tools are created each time you create a new Call and exist exclusively within the context of that call. (Temporary tools aren't visible in the [List Tools](/api-reference/tools/tools-list) response for example.)
 
 Iteration is faster when using temporary tools because you don't have to create/update/delete tools as you build out your application. You can simply adjust the JSON in the request body and start a new call.
@@ -422,7 +460,7 @@ import tempTool from '/snippets/code/temp-tool.mdx'
 
 <tempTool  />
 
-### Durable Tools
+#### Durable Tools
 In addition to temporary tools, Ultravox supports the creation of durable tools. There is no functional difference between durable and temporary tools within the context of a call.
 
 Durable tools are persisted and can be reused across calls or applications. They shine once you have things dialed in, when you want to share tools across multiple applications, or if you have split responsibilities on the team.
