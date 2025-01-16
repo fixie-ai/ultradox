@@ -7,6 +7,7 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "twilio": "^5.4.0"
   }

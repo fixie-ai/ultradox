@@ -23,9 +23,10 @@ While tools are supported across multiple variants of the Ultravox model, using 
 ## Built-in Tools
 Ultravox currently includes the following built-in tools.
 
-| Tool Name | Tool Action                                                                                        |
-| --------- | -------------------------------------------------------------------------------------------------- |
-| hangUp    | Terminates the call. You can also have your own [custom tools end the call](#changing-call-state). |
+| Tool Name      | Tool Action                                                                                                                                                          |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| hangUp         | Terminates the call. You can also have your own [custom tools end the call](#changing-call-state).                                                                   |
+| playDtmfSounds | Plays dual-tone multi-frequency (a.k.a dialpad) tones. See [DTMF](/essentials/telephony#dtmf) for details on sending and receiving tones in your voice applications. |
 
 ### Using a Built-in Tool
 You give your AI agent access tools when you [create the call](/api-reference/calls/calls-post) or create a new [call stage](/guides/callstages#creating-and-managing-stages).
