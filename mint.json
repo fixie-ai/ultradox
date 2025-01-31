@@ -41,7 +41,7 @@
   ],
   "topbarCtaButton": {
     "name": "Dashboard",
-    "url": "https://app.ultravox.ai"
+    "url": "https://app.ultravox.ai?utm_source=docs"
   },
   "tabs": [
     {
@@ -150,6 +150,27 @@
         "api-reference/calls/calls-stages-get",
         "api-reference/calls/calls-stages-messages-list",
         "api-reference/calls/calls-stages-tools-list"
+      ]
+    },
+    {
+      "group": "Corpora, Query, Sources",
+      "pages": [
+        "api-reference/corpora/overview",
+        "api-reference/corpora/corpora-list",
+        "api-reference/corpora/corpora-post",
+        "api-reference/corpora/corpora-get",
+        "api-reference/corpora/corpora-put",
+        "api-reference/corpora/corpora-patch",
+        "api-reference/corpora/corpora-delete",
+        "api-reference/corpora/corpus-query",
+        "api-reference/corpora/corpora-sources-list",
+        "api-reference/corpora/corpora-sources-post",
+        "api-reference/corpora/corpora-sources-get",
+        "api-reference/corpora/corpora-sources-put",
+        "api-reference/corpora/corpora-sources-patch",
+        "api-reference/corpora/corpora-sources-delete",
+        "api-reference/corpora/corpora-sources-documents-list",
+        "api-reference/corpora/corpora-sources-documents-get"
       ]
     },
     {
