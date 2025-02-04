@@ -29,6 +29,40 @@ Let's consider some of the content that might be useful to serve some popular us
 ## Adding RAG to Ultravox
 As we saw in the [Using Tools](/essentials/tools) guide, tools provide power-ups for your agents. To use RAG with an Ultravox agent, it's as simple as creating a tool and instructing the agent on how to use the tool.
 
+### The Easy Way
+Ultravox provides the [corpus service](/api-reference/corpora/) for RAG.
+
+<Steps>
+  <Step title="Create a Corpus">
+    Use the [Create Corpus](/api-reference/corpora/corpora-post) endpoint. Give your new corpus a name and (optional) description. This returns a `corpusId`.
+  </Step>
+  <Step title="Create a Source">
+    Add a website to crawl using [Create Corpus Source](/api-reference/corpora/corpora-sources-post). Each source is given a unique `sourceId`. We will crawl the URL(s) and ingest all the content.
+  </Step>
+  <Step title="Query the Corpus">
+    After everything is loaded, try some queries using the [Query Corpus](/api-reference/corpora/corpus-query) endpoint.
+  </Step>
+  <Step title="Use the queryCorpus Tool">
+    Give the built-in [queryCorpus](/essentials/tools#built-in-tools) tool. to your agents and provide the `corpusId`. For example, if we wanted to create a voice agent to answer questions about Seattle, we could provide the tool like this:
+    ```json
+    {
+      "systemPrompt": "Use the queryCorpus tool to answer questions about Seattle.",
+      "selectedTools": [
+        {
+          "toolName": "queryCorpus", 
+          "parameterOverrides": {
+            "corpus_id": "<your_corpus_id_here>",
+            "max_results": 5
+          }
+        }
+      ]
+    }
+    ```
+  </Step>
+</Steps>
+
+
+### The Other Way
 Let's assume we have already stored our product documentation in a vector database and can search that content at `https://foo.bar/lookupProductInfo`.
 
 Here's how we might create a tool for our Ultravox agent to use:
