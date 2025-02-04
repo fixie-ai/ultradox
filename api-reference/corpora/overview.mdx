@@ -39,9 +39,10 @@ We provide the built-in [queryCorpus](/essentials/tools#built-in-tools) tool tha
 
 ### queryCorpus Tool Performance
 - Maximum of 20 chunks per query
-  - Model dynamically chooses value between 1-20
-  - Query response latency is not impacted by the number of chunks returned
-  - More chunks returned will grow the overall agent context and will mean slower subsequent generations
+  - By default, the model may dynamically choose a value between 1-20, defaulting to 5. A static value may be provided via override.
+  - Query response latency is not significantly impacted by the number of chunks returned.
+  - More chunks returned will grow the overall agent context, which will mean slower subsequent generations.
+  - More chunks may also confuse the agent if most chunks are irrelevant.
 
 ## Limits and Configuration
 
