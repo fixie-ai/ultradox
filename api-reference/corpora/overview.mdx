@@ -11,7 +11,7 @@ flowchart LR
     1(Corpus) -->|contains| 2(Source) -->|produces| 3(Document) -->|comprised of| 4(Chunk) -->|referenceable by| 5(Vector)
 ```
 
-Each `Corpus` can contain one or more sources. Each `Source` can contain one or more documents. Each `Document` is broken up into one or more chunks. Each `Chunk` is then stored as one or more vectors.
+Each `Corpus` can contain one or more sources. Each `Source` contributes one or more documents, which are single files (HTML page, PDF, DOC, etc.). Each `Document` is broken up into one or more chunks, which are the units that may be returned for a query. For each `Chunk` several vectors are produced for similarity search.
 
 The API exposes metadata about documents as well as the number of chunks and vectors in a corpus. However, there are no APIs provided to directly manipulate or edit documents, chunks, or vectors. If you need to update or delete documents, you must update or delete the source.
 
