@@ -8,7 +8,7 @@ The Ultravox corpus service is the easiest way to add [RAG](https://en.wikipedia
 ## Corpus Overview
 ```mermaid
 flowchart LR
-    1(Corpus) -->|contains| 2(Source) -->|contains| 3(Document) -->|contains| 4(Chunk) -->|contains| 5(Vector)
+    1(Corpus) -->|contains| 2(Source) -->|produces| 3(Document) -->|comprised of| 4(Chunk) -->|referenceable by| 5(Vector)
 ```
 
 Each `Corpus` can contain one or more sources. Each `Source` can contain one or more documents. Each `Document` is broken up into one or more chunks. Each `Chunk` is then stored as one or more vectors.
