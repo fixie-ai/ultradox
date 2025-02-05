@@ -60,8 +60,11 @@ We provide the built-in [queryCorpus](/essentials/tools#built-in-tools) tool tha
   - EPUB files
   - PowerPoint presentations
 
+  Note: If there are addtional content types you need, please [let us know](https://discord.com/channels/1240071833798184990/1323352273165881426).
+
 ### Source Management
-- PUT request on a source triggers a refresh while maintaining the ID and created timestamp
+- PATCH requests on a source triggers a refresh/recrawl while maintaining the ID and created timestamp
+- The corpus is still queryable during a recrawl but might return inconsistent (i.e. outdated) resources until the recrawl is finished
 - Provided urls via `startUrls` will trigger crawling on anything in the same domain (subdomains must be specified separately)
 
 ### Deletion Behavior
