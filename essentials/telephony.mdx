@@ -100,7 +100,7 @@ Creating an Ultravox call that you can connect with a phone call is similar to c
         <?xml version="1.0" encoding="UTF-8"?>
         <Response>
           <Connect>
-            <Stream url="${joinUrl}" bidirectionalMode="rtp" />
+            <Stream url="${joinUrl}" bidirectionalMode="rtp"  codec="PCMU" bidirectionalCodec="PCMU"/>
           </Connect>
         </Response>
         ```
@@ -119,14 +119,21 @@ Creating an Ultravox call that you can connect with a phone call is similar to c
         <?xml version="1.0" encoding="UTF-8"?>
         <Response>
           <Connect>
-            <Stream url="${joinUrl}" bidirectionalMode="rtp" />
+            <Stream url="${joinUrl}" bidirectionalMode="rtp" codec="PCMU" bidirectionalCodec="PCMU"/>
           </Connect>
         </Response>
         ```
       </Step>
     </Steps>
 
+    <Warning>
+      <b>Telnyx `codec`</b>
+      <br />
+      Telnyx allows setting both `codec` and `bidirectionalCodec`. The former controls user audio while the latter controls agent audio. When using with Ultravox, **these must have the same value** because Telnyx only tells us about one of them! If your users are mostly in Europe, you'll likely want to set both to PCMA. Otherwise setting both to PCMU is preferred but leaving them both unset is fine to get started.
+    </Warning>
+
     For more details, see the [Telnyx documentation](https://developers.telnyx.com/).
+
   </Tab>
   <Tab title="Twilio">
     #### Outgoing Calls with Twilio
