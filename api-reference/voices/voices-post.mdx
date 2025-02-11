@@ -3,7 +3,10 @@ openapi: post /api/voices
 title: "Create (Clone) Voice"
 description: "Create a new cloned voice"
 ---
+import { VoiceCloneLimit } from '/snippets/voiceclonelimit.mdx'
 
 Any created voices are private to your account.
 
 Uses multipart/form-data encoding to provide the name of the voice along with an audio file containing the voice to be used for cloning.
+
+<VoiceCloneLimit />
