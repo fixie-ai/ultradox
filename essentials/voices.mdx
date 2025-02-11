@@ -4,9 +4,13 @@ description: 'Create Custom Voices'
 icon: 'microphone'
 ---
 
+import { VoiceCloneLimit } from '/snippets/voiceclonelimit.mdx'
+
+
 Ultravox Realtime includes multiple, high-quality voices for all supported languages. The fastest way to experience the included voices is in the [Playground](https://app.ultravox.ai/playground). You can also use the [List Voices](/api-reference/voices/voices-list) endpoint to see all voices and their details.
 
 ## Creating a Custom Voice
+<VoiceCloneLimit />
 
 You can create a custom voice by uploading an audio sample using the [Create (Clone) Voice](/api-reference/voices/voices-post) endpoint. This process allows you to generate a unique voice that matches the characteristics of your audio sample.
 
