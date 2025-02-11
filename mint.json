@@ -108,6 +108,7 @@
         "guides/callstages",
         "guides/debugging",
         "guides/websockets",
+        "datamessages",
         "guides/webhooks",
         {
           "group": "Tutorials",
@@ -204,7 +205,8 @@
     {
       "group": "Schema",
       "pages": [
-        "api-reference/schema/base-tool-definition"
+        "api-reference/schema/base-tool-definition",
+        "api-reference/schema/datamessages"
       ]
     },
     {
