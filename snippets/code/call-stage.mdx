@@ -4,8 +4,10 @@ function changeStage(requestBody) {
     systemPrompt: "...", // new prompt
     ..., // other properties to change, like the voice
     // You may optionally also set toolResultText, which will be the content
-    // of the tool result message in conversation history. Defaults to "OK".
-    toolResultText: "New stage started. Next, focus on..."
+    // of the tool result message in conversation history. The tool result
+    // will be the most recent message the model sees during its next generation
+    // unless you set initialMessages. Defaults to "OK".
+    toolResultText: "(New Stage) Next, focus on..."
   };
 
   return {
