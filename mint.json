@@ -125,16 +125,9 @@
       "pages": ["api-reference/introduction"]
     },
     {
-      "group": "Accounts & API Keys",
+      "group": "Accounts",
       "pages": [
-        "api-reference/accounts-apikeys/accounts-list",
-        "api-reference/accounts-apikeys/accounts-me-get",
-        "api-reference/accounts-apikeys/apikeys-list",
-        "api-reference/accounts-apikeys/apikeys-get",
-        "api-reference/accounts-apikeys/apikeys-post",
-        "api-reference/accounts-apikeys/apikeys-put",
-        "api-reference/accounts-apikeys/apikeys-patch",
-        "api-reference/accounts-apikeys/apikeys-delete"
+        "api-reference/accounts/accounts-me-get"
       ]
     },
     {
