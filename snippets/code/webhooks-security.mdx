@@ -3,7 +3,7 @@ import datetime
 import hmac
 
 request_timestamp = request.headers["X-Ultravox-Webhook-Timestamp"]
-if datetime.datetime.now() - datetime.dateimte.fromisoformat(request_timestamp) > datetime.timedelta(minutes=1):
+if datetime.datetime.now() - datetime.datetime.fromisoformat(request_timestamp) > datetime.timedelta(minutes=1):
   raise RuntimeError("Expired message")
 expected_signature = hmac.new(WEBHOOK_SECRET.encode(), request.content + request_timestamp.encode(), "sha256").hexdigest()
 for signature in request.headers["X-Ultravox-Webhook-Signature"].split(","):

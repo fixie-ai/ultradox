@@ -9,21 +9,23 @@ Webhooks allow you to receive real-time notifications about events in your Ultra
 ## Available Events
 The following events are available and can be specified when creating or updating a webhoook.
 
-| event        | description                |
-|------------- | -------------------------- |
-| call.started | Fired when a call starts.  |
-| call.ended   | Fired when a call ends.    |
+| event        | description                  |
+|------------- | ---------------------------- |
+| call.started | Fired when a call starts.    |
+| call.ended   | Fired when a call ends.      |
+| call.joined  | Fired when a call is joined. |
 
 ### Event Payloads
 The payloads that are sent with each webhook are passed in the request body as follows:
 
 ```js
 {
+  "event": {event_name}
   "call": {call_object}
 }
 ```
 
-The `{call_object}` matches what is returned from the [Get Call](/api-reference/calls/calls-get) endpoint.
+The `{event_name}` is the same as the event you subscribed to when creating your webhook (e.g. `call.started`). The `{call_object}` matches what is returned from the [Get Call](/api-reference/calls/calls-get) endpoint.
 
 ## Webhooks in Ultravox
 When creating a webhook, you must provide a URL that will receive the webhook notification. Your service must return an acceptable HTTP status code.
@@ -66,7 +68,7 @@ Remember to store your webhook secret securely and never expose it in client-sid
 
 
 ### Retries
-When a destination URL fails to respond to an incoming webhook with a 200, we will retry using a random exponential backoff strategy as follows:
+When a destination URL fails to respond to an incoming webhook with a 2xx, we will retry using a random exponential backoff strategy as follows:
 
 * First retry will occur approximately 30 seconds later.
 * Subsequent retries will double the retry interval. (e.g. second retry again after 1m, third retry after 2m, etc.)
