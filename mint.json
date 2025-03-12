@@ -143,7 +143,8 @@
         "api-reference/calls/calls-stages-list",
         "api-reference/calls/calls-stages-get",
         "api-reference/calls/calls-stages-messages-list",
-        "api-reference/calls/calls-stages-tools-list"
+        "api-reference/calls/calls-stages-tools-list",
+        "api-reference/calls/calls-stages-message-audio-get"
       ]
     },
     {
