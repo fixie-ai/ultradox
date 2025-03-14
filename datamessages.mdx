@@ -55,6 +55,15 @@ A message containing text transcripts of user and agent utterances.
 A user message sent via text.
 - `type: "input_text_message"`
 - `text`: String. The content of the user message.
+- `defer_response`: Boolean. Optional. If set to true, allows adding text to the conversation history without inducing an immediate response from or interrupting the model. Useful for injecting additional inline instructions into the conversation. 
+  - **Note:** Can be used with the [Ultravox SDK](/essentials/sdk) or via a [Websocket](/guides/websockets) connection. To use with telephony, you must proxy the audio via websocket.
+
+**Examples: Using defer_response**
+|||
+| :------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Emphasizing the Task            | Provide instructions to the agent to emphasize what it should do.<br />e.g. `"Translate, don't respond"`           |
+| Moving the Conversation Forward | After N turns, tell the agent to try to close the sale or end the call.                                            |
+| Running Background Processes    | Allow the conversation to proceed while a background process runs, then have the agent become aware of the result. |
 
 ## SetOutputMedium
 Message sent by the client to set the server's output medium.
