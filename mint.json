@@ -173,7 +173,8 @@
         "api-reference/tools/tools-get",
         "api-reference/tools/tools-post",
         "api-reference/tools/tools-put",
-        "api-reference/tools/tools-delete"
+        "api-reference/tools/tools-delete",
+        "api-reference/tools/tools-history-get"
       ]
     },
     {
