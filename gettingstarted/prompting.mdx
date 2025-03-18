@@ -14,14 +14,18 @@ Remember that prompting is the most effective tool we have for controlling LLMs.
 
 > **Default Prompting Note:** Unlike many other Voice AI offerings, Ultravox does not append a default prompt to your input. This means that you should always provide a complete prompt, including any context or information that you want the model to consider. We do this to ensure you have full control over what the model does. We don't want anything hidden from view.
 
-## Prompt as a text-based LLM
-
+## Prompt As-If It's a Text-Based LLM
 It's important to understand that during training, the underlying LLM (Llama 3.3 70B in our default case) is *frozen*. This means that you should prompt the model as though it's a text model. For most scenarios, we recommend telling the model at the top of your prompt that you're talking to it as a voice model.
 
 Here's an example that works well:
 
-```
-You are [Name], a friendly AI [customer service agent / helper / etc]. You're interacting with the user over voice, so speak casually. Keep your responses short and to the point, much like someone would in dialogue. Since this is a voice conversation, do not use lists, bullets, emojis, or other things that do not translate to voice. In addition, do not use stage directions or otherwise engage in action-based roleplay (e.g., "(pauses), "*laughs").
+```text Example: General Voice Prompt
+You are [Name], a friendly AI [customer service agent / helper / etc].
+You're interacting with the user over voice, so speak casually.
+Keep your responses short and to the point, much like someone would in dialogue. 
+Since this is a voice conversation, do not use lists, bullets, emojis, or other 
+things that do not translate to voice. In addition, do not use stage directions 
+or otherwise engage in action-based roleplay (e.g., "(pauses), "*laughs").
 ```
 
 ## General Guidance
@@ -35,45 +39,78 @@ You are [Name], a friendly AI [customer service agent / helper / etc]. You're in
 - **Iterate:** Prompting is an iterative process. You'll need to prompt the model, see how it does, and then adjust your prompts based on the results. It can take time to get things right, so be patient.
 
 ## Common Prompting Patterns
+This section includes patterns and example prompts for dealing with common challenges.
 
 ### Tools
+Tools are how your model interacts with the outside world, but you have to help the model understand when and how those [tools](/essentials/tools) should be used. Here's a good pattern for prompting the model to use a tool:
 
-Tools are how your model interacts with the outside world, but you have to help the model understand when and how those tools should be used. Here's a good pattern for prompting the model to use a tool:
-
-1. **Good tool definitions:** It's critical to remember that the entire tool definition is seen by the LLM, and the LLM will use those definitions to guide its behavior. Make sure that your tool definitions are clear and concise.
-
-2. **Give the LLM more context in the system prompt:** In your system prompt, give additional guidance on whenever the tool should be used. For example, if you want the model to look up information from an address book, you might say something like:
-
-```You have access to an address book that contains personnel information. If someone asks for information for a particular person, you MUST use the lookUpAddressBook tool to find that information before replying.```
+<Steps>
+  <Step title="Use Good Tool Definitions">
+    It's critical to remember that the entire tool definition is seen by the LLM, and the LLM will use those definitions to guide its behavior. Make sure that your tool definitions are clear and concise.
+  </Step>
+  <Step title="Prompt for More Context">
+   Give the LLM additional context or guidance on whenever the tool should be used. For example, if you want the model to look up information from an address book, you might add something like this to your prompt:
+  ```text Example: Providing More Tool Context
+  You have access to an address book that contains personnel information. 
+  If someone asks for information for a particular person, you MUST use 
+  the lookUpAddressBook tool to find that information before replying.
+  ```
+  </Step>
+</Steps>
 
 ### Numbers
+Text to speech engines can sometimes have trouble with numbers, but we can help them by asking the LLM to output numbers in a more voice-friendly format. A pattern that we see that works well is to ask the LLM to separate numbers into individual digits, separated by an ellipisis.
 
-Text to speech engines can sometimes have trouble with numbers, but we can help them by asking the LLM to output numbers in a more voice-friendly format. A pattern that we see that works well is to ask the LLM to separate numbers into individual digits, separated by an ellipisis. Here's an example:
-
-```
-When you're reading out numbers, please separate them into individual digits, separated by an ellipsis. For example, the number 1234 should be read as "1...2...3...4".
+```text Example: Speaking Numbers
+When you're reading out numbers, please separate them into individual digits, 
+separated by an ellipsis. For example, the number 1234 should be read 
+as "1...2...3...4".
 ```
 
 ### Dates & Times
+Similar to numbers, dates and times can be tricky for speech generation, so it can be helpful to provide clearer guidance on how to produce the correct date/time format for effective speech generation.
 
-Similar to numbers, dates and times can be tricky for speech generation, so it can be helpful to provide clearer guidance on how to produce the correct date/time format for effective speech generation. Here's a pattern that works well:
-
-```
-When you're outputting dates, output them as individual components. For example, the date 12/25/2022 should be read as "December 25th 2022". For times, "10:00 AM" should be outputted as "10 AM".
+```text Example: Reading Out Dates
+When you're outputting dates, output them as individual components. For example, 
+the date 12/25/2022 should be read as "December 25th 2022". For times, 
+"10:00 AM" should be outputted as "10 AM".
 ```
 
 ### Jailbreaks
-
 Jailbreaking is where the user engaging with your agent tries to get the agent to do or say things outside the scope of what you've designed it to do. There is still no perfect system for preventing jailbreaking, but some simple prompting can make it much harder to jailbreak. Here's a simple pattern that works well:
 
-```
-Your only job is to [primary job of your agent]. If someone asks you a question that is not related to [the thing you're asking the model to do], politely decline and redirect the conversation back to the task at hand.
+```text Example: Minimizing Jailbreaking
+Your only job is to [primary job of your agent]. If someone asks you a question 
+that is not related to [the thing you're asking the model to do], politely 
+decline and redirect the conversation back to the task at hand.
 ```
 
-### Creating more natural pauses
+### Creating More Natural Pauses
+If you'd like to create more natural pauses, a simple but effective technique is to ask the model to add an ellipsis between sentences or after punctuation.
 
-If you'd like to create more natural pauses, a simple but effective technique is to ask the model to add an ellipsis between sentences or after punctuation. Here's an example:
-
+```text Example: Speaking with Pauses
+You want to speak slowly and clearly, so you must inject pauses between sentences. 
+Do this by emitting "..." at the end of a sentence but before any final 
+punctuation (e.g., “Wow, that's really interesting… can you tell me a bit more 
+about that…?”. You should do this more when the topic is complex or requires 
+special attention.
 ```
-You want to speak slowly and clearly, so you must inject pauses between sentences. Do this by emitting "..." at the end of a sentence but before any final punctuation (e.g., “Wow, that’s really interesting… can you tell me a bit more about that…?”. You should do this more when the topic is complex or requires special attention.
+
+
+### Step-by-Step Instructions
+Often times in customer support scenarios, you want the LLM to give instructions one at a time. You can achieve this by providing an example or two.
+
+```text Example: Step-by-Step Help
+Example: User asks for help changing their password
+- You will call the "searchArticle" tool
+- Response from tool: {"content": "1. Click "Forgot Password" on the login screen 2. Enter your email address and click "Submit" 3. Check your email for the reset link 4. Click the link and enter your new password 5. Log in with your new password"}
+- You will then use this information and proceed step-by-step with the user like this:
+  * agent: "There are a few steps we need to go through."
+  * agent: "The first step is Click on Forgot Password on the login screen. Let me know when you're there."
+  * user: "OK done."
+  * agent: "Great. next you need to enter your email address and click Submit."
+  * user: "got it."
+  * agent: "Now check your email for the reset link"
+  * user: "uh huh."
+- Repeat in this manner until you complete the entire process.
 ```
