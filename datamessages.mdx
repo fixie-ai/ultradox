@@ -80,6 +80,7 @@ Sent by the server to ask the client to invoke a client-implemented tool with th
 ## ClientToolResult
 Contains the result of a client-implemented tool invocation.
 - `type: "client_tool_result"`
+- `agent_reaction`: String. Optional. Must be one of the following: "speaks" (the default), "listens", or "speaks-once". See [Controlling Agent Responses to Tools](/essentials/tools#controlling-agent-responses-to-tools) for more.
 - `invocation_id`: String. Matches corresponding invocation.
 - `result`: String. Tool execution result. Often a JSON string. May be omitted for errors.
 - `response_type`: String. Defaults to "tool-response".
