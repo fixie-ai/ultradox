@@ -505,16 +505,32 @@ These tool actions require setting a special response type.
 |------|------|
 | hang-up | Terminates the call. In addition to having Ultravox end the call after [periods of user inactivity](/api-reference/calls/overview#inactivitymessages), your custom tool can end the call. |
 | new-stage | Creates a new call stage. See [here](/guides/callstages) for more. |
+| agent-reaction | Determines how the agent reacts after a tool call. See [below](#controlling-agent-responses-to-tools) for more. |
 
 How you set the response type depends on if you are using a server/HTTP or a client tool:
 
 **Server/HTTP Tools**
 
-Server tools must respond with the `X-Ultravox-Response-Type` header set to either `hang-up` or `new-stage`
+Server tools must respond with the `X-Ultravox-Response-Type` header set to either `hang-up` or `new-stage`.
 
 **Client Tools**
 
 For client tools, set `responseType="hang-up"` or `responseType="new-stage"` on your `ClientToolResult` object.
+
+### Controlling Agent Responses to Tools
+By default, LLM inference runs immediately after a tool call. This has the effect of the agent speaking. This is typically the desired behavior for tools that gather information. For example, for a tool that looks something up in a knowledgebase, the agent might say something like, "Give me a moment while I look that up."
+
+This can cause issues depending on how the agent uses the tool or if you want the agent to not speak over a tool call. Ultravox Realtime allows you to define how the agent reacts to a tool call using either the `X-Ultravox-Agent-Reaction` header (for server tools) or the `agent_reaction` response type (for client tools).
+
+| Reaction | Description |
+|------|------|
+| speaks | Agent will speak immediately after the tool call returns. This is the default behavior if agent reaction is not set. Should be used for tools that gather information. |
+| listens | Agent listens for user input and doesn't speak. |
+| speaks-once | Agent speaks only if it didn't speak immediately before the tool call. Prevents agent repeating things before and after the tool call. |
+
+For server/HTTP tools, use the `X-Ultravox-Agent-Reaction` header and set the value to `speaks` (the default), `listens`, or `speaks-once`.
+
+For client tools, set `agent_reaction="speaks"` (the default), `agent_reaction="listens"`, or `agent_reaction="speaks-once"` on your `ClientToolResult` object.
 
 ### Debugging
 The Ultravox SDK enables viewing [debug messages](/sdk-reference/introduction#debug-messages) for any active call. These messages include tool calls.

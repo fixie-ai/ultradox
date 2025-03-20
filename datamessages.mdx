@@ -55,6 +55,15 @@ A message containing text transcripts of user and agent utterances.
 A user message sent via text.
 - `type: "input_text_message"`
 - `text`: String. The content of the user message.
+- `defer_response`: Boolean. Optional. If set to true, allows adding text to the conversation history without inducing an immediate response from or interrupting the model. Useful for injecting additional inline instructions into the conversation. 
+  - **Note:** Can be used with the [Ultravox SDK](/essentials/sdk) or via a [Websocket](/guides/websockets) connection. To use with telephony, you must proxy the audio via websocket.
+
+**Examples: Using defer_response**
+|||
+| :------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Emphasizing the Task            | Provide instructions to the agent to emphasize what it should do. (e.g. `"Translate, don't respond"`)<br /><br />Have your application send information about what the user is doing or looking at. (e.g. `"User is viewing property #123-456"`)           |
+| Moving the Conversation Forward | After N turns, tell the agent to try to close the sale or end the call.                                            |
+| Running Background Processes    | Allow the conversation to proceed while a background process runs, then have the agent become aware of the result. |
 
 ## SetOutputMedium
 Message sent by the client to set the server's output medium.
@@ -71,6 +80,7 @@ Sent by the server to ask the client to invoke a client-implemented tool with th
 ## ClientToolResult
 Contains the result of a client-implemented tool invocation.
 - `type: "client_tool_result"`
+- `agent_reaction`: String. Optional. Must be one of the following: "speaks" (the default), "listens", or "speaks-once". See [Controlling Agent Responses to Tools](/essentials/tools#controlling-agent-responses-to-tools) for more.
 - `invocation_id`: String. Matches corresponding invocation.
 - `result`: String. Tool execution result. Often a JSON string. May be omitted for errors.
 - `response_type`: String. Defaults to "tool-response".
