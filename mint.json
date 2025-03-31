@@ -127,7 +127,8 @@
     {
       "group": "Accounts",
       "pages": [
-        "api-reference/accounts/accounts-me-get"
+        "api-reference/accounts/accounts-me-get",
+        "api-reference/accounts/accounts-me-usage-calls-get"
       ]
     },
     {
