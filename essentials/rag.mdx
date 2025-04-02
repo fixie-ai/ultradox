@@ -107,6 +107,7 @@ Follow these steps:
     * Use the [Create Corpus File Upload API](/api-reference/corpora/corpora-uploads-post)
     * Include the MIME type string in the request body
     * This returns the URL to use for upload and the unique ID for the document
+    * URLs expire after 5 minutes. Request a new one if it expires before using it
 
     <Note>The URL that is returned is tied to the provided MIME type. The same MIME type must be used during upload.</Note>
   </Step>
@@ -114,17 +115,16 @@ Follow these steps:
     * Use the `presignedUrl` from Step 1 to upload the document
     * Ensure the MIME type in the upload matches what was specified in Step 1
 
-    For example:
+    For example, if we requested an upload URL for a text file (MIME type `text/plain`):
 
     ```bash
-    # Define variables
     FILE_PATH="/path/to/your/file"
-    FILE_NAME="custom_name.txt"
-    FILE_TYPE="text/plain"
-    UPLOAD_URL="https://example.com/upload"
+    UPLOAD_URL="https://storage.googleapis.com/fixie-ultravox-prod/..."
 
-    # Use the variables in the curl command
-    curl -F "file=@$FILE_PATH;filename=$FILE_NAME;type=$FILE_TYPE" $UPLOAD_URL  
+    curl -X PUT \
+      -H "Content-Type: text/plain" \
+      --data-binary @"$FILE_PATH" \
+      "$UPLOAD_URL"
     ```
   </Step>
   <Step title="Step 3: Create New Source with Uploaded Document">
@@ -148,6 +148,3 @@ Here's the information in a markdown table format:
 | ppt | Microsoft PowerPoint Presentation | application/vnd.ms-powerpoint |
 | pptx | Microsoft PowerPoint Open XML Presentation | application/vnd.openxmlformats-officedocument.presentationml.presentation |
 | pdf | Portable Document Format | application/pdf |
-
-### limitations
-TODO file size, rates
