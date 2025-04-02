@@ -96,3 +96,58 @@ Here's how we might create a tool for our Ultravox agent to use:
   ]
 }
 ```
+
+## Add Static Files as Corpus Sources
+You can use files as sources for any of your corpora. The process requires using the [Create Corpus File Upload API](/api-reference/corpora/corpora-uploads-post) to generate an upload URL.
+
+Follow these steps:
+
+<Steps>
+  <Step title="Step 1: Request Upload URL">
+    * Use the [Create Corpus File Upload API](/api-reference/corpora/corpora-uploads-post)
+    * Include the MIME type string in the request body
+    * This returns the URL to use for upload and the unique ID for the document
+
+    <Note>The URL that is returned is tied to the provided MIME type. The same MIME type must be used during upload.</Note>
+  </Step>
+  <Step title="Step 2: Upload File">
+    * Use the `presignedUrl` from Step 1 to upload the document
+    * Ensure the MIME type in the upload matches what was specified in Step 1
+
+    For example:
+
+    ```bash
+    # Define variables
+    FILE_PATH="/path/to/your/file"
+    FILE_NAME="custom_name.txt"
+    FILE_TYPE="text/plain"
+    UPLOAD_URL="https://example.com/upload"
+
+    # Use the variables in the curl command
+    curl -F "file=@$FILE_PATH;filename=$FILE_NAME;type=$FILE_TYPE" $UPLOAD_URL  
+    ```
+  </Step>
+  <Step title="Step 3: Create New Source with Uploaded Document">
+    * Use the [Create Corpus Source API](/api-reference/corpora/corpora-sources-post)
+    * Use `upload` to provide the `documentId` from Step 1
+
+    <Note>You can provide an array of Document IDs to bulk create a source.</Note>
+  </Step>
+</Steps>
+
+### Supported File Types
+
+Here's the information in a markdown table format:
+
+| File Extension | Type of File | MIME Type |
+| -------------- | ------------ | --------- |
+| doc | Microsoft Word Document | application/msword |
+| docx | Microsoft Word Open XML Document | application/vnd.openxmlformats-officedocument.wordprocessingml.document |
+| txt | Plain Text Document | text/plain |
+| md | Markdown Document | text/markdown |
+| ppt | Microsoft PowerPoint Presentation | application/vnd.ms-powerpoint |
+| pptx | Microsoft PowerPoint Open XML Presentation | application/vnd.openxmlformats-officedocument.presentationml.presentation |
+| pdf | Portable Document Format | application/pdf |
+
+### limitations
+TODO file size, rates

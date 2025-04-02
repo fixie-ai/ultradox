@@ -164,7 +164,8 @@
         "api-reference/corpora/corpora-sources-patch",
         "api-reference/corpora/corpora-sources-delete",
         "api-reference/corpora/corpora-sources-documents-list",
-        "api-reference/corpora/corpora-sources-documents-get"
+        "api-reference/corpora/corpora-sources-documents-get",
+        "api-reference/corpora/corpora-uploads-post"
       ]
     },
     {
