@@ -250,6 +250,9 @@ Transcripts are returned as an array of transcript objects.
 The `UltravoxSession` object also provides debug messages. Debug messages must be enabled when creating a new session and then are available via an event listener similar to status and transcripts:
 
 ```js Get Debug Messages
+// Start up our Ultravox Session with Debug Messages Enabled
+session = new UltravoxSession({ experimentalMessages: ["debug"] });
+
 // Listen for debug messages
 session.addEventListener('experimental_message', (msg) => {
   console.log('Got a debug message: ', JSON.stringify(msg));
