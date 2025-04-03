@@ -138,6 +138,7 @@
         "api-reference/calls/calls-list",
         "api-reference/calls/calls-get",
         "api-reference/calls/calls-post",
+        "api-reference/calls/calls-delete",
         "api-reference/calls/calls-messages-list",
         "api-reference/calls/calls-tools-list",
         "api-reference/calls/calls-recording-get",
@@ -145,7 +146,9 @@
         "api-reference/calls/calls-stages-get",
         "api-reference/calls/calls-stages-messages-list",
         "api-reference/calls/calls-stages-tools-list",
-        "api-reference/calls/calls-stages-message-audio-get"
+        "api-reference/calls/calls-stages-message-audio-get",
+        "api-reference/calls/calls-deleted-calls-list",
+        "api-reference/calls/calls-deleted-calls-get"
       ]
     },
     {
