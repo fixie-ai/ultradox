@@ -124,3 +124,10 @@ See "Response" under [List Call Messages](/api-reference/calls/calls-messages-li
   ]
 }
 ```
+
+### Deleting Calls
+If you don't want call details (e.g. recordings, messages/transcripts) to remain in the system, you can use the [Delete Call](/api-reference/calls/calls-delete) API.
+
+When you delete a call, Ultravox deletes the call and all associated messages/transcripts, recordings, and stages. The system also creates a new entry for each deleted call and only keeps the high-level metadata necessary for billing purposes.
+
+To view deleted calls you can use either the [Get Deleted Call](/api-reference/calls/calls-deleted-calls-get) or the [List Deleted Calls](/api-reference/calls/calls-deleted-calls-list) endpoints.
