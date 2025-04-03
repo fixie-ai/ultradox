@@ -105,6 +105,7 @@
     {
       "group": "Advanced Guides + Tutorials",
       "pages": [
+        "guides/agentsonrails",
         "guides/callstages",
         "guides/debugging",
         "guides/websockets",
