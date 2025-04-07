@@ -53,7 +53,7 @@ There are three primary methods for keeping your agent on track, each with its o
 
 Let's explore each approach in detail.
 
-### Approach 1: Mono Prompt
+### <Icon icon="scroll" size={24} /> Approach 1: Mono Prompt
 
 The simplest approach is to put all instructions, constraints, and guidance directly in your system prompt. This works by frontloading all the agent's "rules of engagement" before the conversation begins.
 
@@ -100,55 +100,55 @@ You are Maya, a dental appointment scheduling assistant. Your job is to:
 - **Informational agents**: Assistants that primarily retrieve and present information
 - **Conversational agents**: When natural conversation and/or personality consistency is more important than strict process adherence
 
-#### Real-World Example
-**Language Learning Assistant (TODO: do we include this as example prompt/code?)**
-
-A language learning assistant that helps users practice conversations in different languages. The system prompt defines the assistant's supporting role, specifies how to handle corrections, provides examples of appropriately challenging vocabulary, and outlines conversation scenarios at different proficiency levels. All of this fits within a single comprehensive prompt because the task, while requiring nuance, follows consistent patterns regardless of language or topic.
-
-### Approach 2: Inline Instructions
+### <Icon icon="comment-exclamation" size={24} /> Approach 2: Inline Instructions
 
 This approach uses tool responses and deferred messages to guide the agent at each step of the conversation. Rather than trying to frontload all instructions, you continuously remind the agent of what to do next.
 
 This approach leverages three key building blocks:
 - **Deferred Messages**: Inject user messages without triggering an immediate response from the model
-- **Call Tool State**: Pass context between tool calls to maintain state
+- **Tool State**: Pass additional context via tools to maintain state
 - **Tool Response Messages**: Instruct the agent what to do next via tool call responses
 
-### How It Works + Example
+#### How It Works + Example
 
 1. Start with a simpler system prompt focused on the agent's general role and behavior
 2. Use tools to provide step-specific instructions to the agent
 3. The tool responses include guidance on what the agent should do next
-4. Call Tool State maintains context between turns
+4. Tool state maintains context between turns
 5. Deferred messages allow inserting information without derailing the conversation flow
 
 **Example: Insurance Claims Processing**
 
 An insurance claims agent that guides customers through the claims submission process. The agent uses a central claims tool that maintains state about which documents have been collected, what information is still missing, and what step comes next. At each step of the conversation, the tool response includes clear instructions on what to ask the customer next, helping the agent stay focused on the current step of the process rather than trying to hold the entire claims procedure in context.
 
-### Building Blocks
+#### Building Blocks
 
-#### Deferred Messages
+##### Deferred Messages
 Deferred messages allow you to inject a user message without causing the agent to generate a response immediately. The message gets appended to the conversation history but doesn't trigger an LLM generation.
 
 TODO link to api docs on defer_message
+
+https://docs.ultravox.ai/datamessages#inputtextmessage
+
+
 TODO code snippet/example
 
-
-#### Call Tool State
-Call Tool State allows you to maintain state between tool calls, passing context from one call to the next. This is particularly useful for guiding the agent through a multi-step process.
+##### Tool State
+Tool state allows you to maintain state between tool calls, passing context from one call to the next. This is particularly useful for guiding the agent through a multi-step process.
 
 TODO link to api docs/places where this is set/retrieved
+https://docs.ultravox.ai/api-reference/calls/calls-post#body-initial-state
+
 TODO code snippet/example
 
-The agent will not see the Call Tool State directly. It allows you to pass information between tool calls and then use that information inside tools and to impact the responses from tool calls.
+The agent will not see the tool state directly. It allows you to pass information between tool calls and then use that information inside tools and to impact the responses from tool calls.
 
-#### Tool Response Messages
+##### Tool Response Messages
 Instead of having a tool call result send a 200 with "Successfully entered customer information", you can provide an instruction of what the agent should do next (e.g. "Successfully entered customer information. Now you MUST lookup the answer to their question").
 
 TODO code snippet/example
 
-### Real-World Example
+#### Real-World Example
 
 **Appointment Scheduling Flow**
 
@@ -195,7 +195,7 @@ const schedulingTool = {
       }
     },
     required: ["action"],
-    // Automatically include the current Call Tool State
+    // Automatically include the current tool state
     additionalProperties: {
       currentState: "$callToolState"
     }
@@ -270,46 +270,46 @@ async function handleSchedulingTool(params, callToolState) {
 TODO:  Do we want to show this given the limitation with telephony?
 
 
-### Pros
+#### Pros
 - **Focused guidance**: Instructions are context-specific and timely
 - **Dynamic adaptation**: Can respond to changing conversation flow
 - **Reduced cognitive load**: The agent only needs to understand the current step
 - **Maintainable complexity**: Can handle complex workflows without overwhelming the system prompt
 - **No latency spikes**: Avoids the performance hit of call stage transitions
 
-### Cons
+#### Cons
 - **Implementation complexity**: Requires more backend code to manage state
 
-### Ideal Use Cases
+#### Ideal Use Cases
 - **Multi-step processes**: Tasks with clear sequential steps like form filling or data collection
 - **Transaction flows**: E-commerce, booking systems, or other task-completion scenarios
 - **Customer support triage**: Guiding agents through problem diagnosis trees
 - **Interactive tutorials**: Step-by-step guidance through a learning process
 
-## Approach 3: Call Stages
+### <Icon icon="arrow-progress" size={24} /> Approach 3: Call Stages
 
 Call Stages provide the most comprehensive control by segmenting conversations into distinct phases, each with its own system prompt, tools, and parameters. This approach is covered in detail in our [Call Stages](/guides/callstages) documentation, so we'll focus on positioning when to use it relative to the other approaches.
 
-### Quick Overview
+#### Quick Overview
 - Each stage can have a completely different system prompt
 - Stages can use different tools, voices, and conversation histories
 - Transitions between stages are explicit and controlled
 
-### Pros
+#### Pros
 - **Complete flexibility**: Change anything about the agent at stage boundaries
 - **Clean separation**: Each stage can be developed and tested independently
 - **Simplified prompts**: Each stage's prompt can be focused on a specific task
 
-### Cons
+#### Cons
 - **Latency impact**: Stage transitions effectively restart the call (while maintaining connection)
 - **Complexity**: Requires careful planning of stage transitions
 
-### Ideal Use Cases
+#### Ideal Use Cases
 - **Character switching**: Transitioning between different agent personalities
 - **Escalation scenarios**: Moving from automated support to "supervisor" level
 - **Distinct conversation phases**: When different parts of a conversation have fundamentally different needs
 
-### Real-World Example
+#### Real-World Example
 **Advanced Customer Support**
 
 A support system that begins with a general-purpose triage agent, then transitions to specialized agents based on the issue category. For example, a customer calling about a billing dispute might start with a general support agent, then be transferred to a billing specialist stage with different tools, voice, and approach. This is an ideal case for stages because each specialist domain requires substantially different knowledge, tools, and conversation styles.
@@ -487,4 +487,4 @@ Keeping your AI agent "on rails" is a balance between control and natural conver
 
 As you develop your Ultravox application, start with the simplest approach that meets your needs, and gradually increase complexity as required. Remember that the most effective voice experiences feel natural while still accomplishing their goals reliably.
 
-By leveraging building blocks like deferred messages, Call Tool State, and targeted tool response messages, you can create sophisticated conversational flows that guide users through complex processes while maintaining the natural feel of human conversation.
+By leveraging building blocks like deferred messages, tool state, and targeted tool response messages, you can create sophisticated conversational flows that guide users through complex processes while maintaining the natural feel of human conversation.
