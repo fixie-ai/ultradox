@@ -99,6 +99,7 @@
         "essentials/sdk",
         "essentials/telephony",
         "essentials/voices",
+        "essentials/agents",
         "essentials/multilingual-agents"
       ]
     },
