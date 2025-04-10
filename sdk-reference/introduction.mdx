@@ -37,13 +37,16 @@ async leaveCall(): Promise<void>
 ```
 
 ### sendText()
-Sends a text message to the agent.
+Sends a text message to the agent. If `deferResponse` is set, the agent will not respond (i.e. no LLM generation will be done).
 
 ```ts
-sendText(text: string): void
+sendText(text: string, deferResponse?: boolean): void
 ```
 <ParamField body="text" type="string" required>
   The message to send to the agent.
+</ParamField>
+<ParamField body="deferResponse" type="boolean">
+  Set to `true` to skip LLM generation (agent won't reply). Can be used to provide additional guidance to the model.
 </ParamField>
 
 ### setOutputMedium()
