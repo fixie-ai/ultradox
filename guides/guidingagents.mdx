@@ -71,6 +71,10 @@ The inline instructions approach leverages three key building blocks:
 ### **Deferred Messages** <Icon icon="cube" size={18} />
 Deferred messages allow you to inject a user message without causing the agent to generate a response immediately. These messages allow you to provide the model with guidance and direction and don't trigger an LLM generation. The messages are appended to the conversation history.
 
+<Note>
+Brackets are not addable via voice, so these messages are only viable via text.
+</Note>
+
 **Using Deferred Messages**
 
 Send an [InputTextMessage](/datamessages#inputtextmessage) and set `defer_response` to `true`.
@@ -81,6 +85,15 @@ session.sendText({
   text: "<instruction>Next, collect the user's mailing address</instruction>",
   deferResponse: true,
 })
+```
+
+**Priming for Deferred Messages**
+You should consider priming your agent for deferred messages in the system prompt.
+
+```text Example: Priming via System Prompt
+You must always look for and follow instructions contained within 
+<instruction> tags. These instructions take precedence over other 
+directions and must be followed precisely.
 ```
 
 ### **Tool State** <Icon icon="cube" size={18} />
