@@ -95,6 +95,11 @@ const createAgent = async () => {
 };
 ```
 
+### Mono Prompts and Call Templates
+When you start building your agent, we recommend you start with a simple mono prompt and then add complexity if and when needed. If mono prompting isn't working for your use case (i.e. you are building something complicated), you may need to use what we call "inline instructions" which allow you to provide reminders to the model and help steer the agent in the right direction. Please see [Guiding Agents](/guides/guidingagents).
+
+If you are building an application with completely distinct, unrelated stages where there is no overlap, please see the [Call Stages](/guides/callstages) guide.
+
 ## Starting a Call with an Agent
 
 Once you've created an agent, you can start a call using the agent ID:
