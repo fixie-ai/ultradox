@@ -1,20 +1,20 @@
 ---
 title: 'Telephony'
-description: 'Use Ultravox to make and receive calls using WebRTC, via Telnyx, Twilio, or Plivo.'
+description: 'Use Ultravox to make and receive calls using WebRTC, via Telnyx, Twilio, Plivo, or jambonz.'
 icon: 'square-phone'
 ---
 
 The Ultravox API allows you to create AI-powered voice applications that can interact through various protocols:
 
 - **WebRTC** → Default protocol for browser and mobile applications.
-- **Regular Phone Numbers** → Connect Ultravox to phone calls you make or receive (via Telnxy, Twilio, or Plivo).
+- **Regular Phone Numbers** → Connect Ultravox to phone calls you make or receive (via Telnxy, Twilio, Plivo, or jambonz).
 - **WebSockets** → Direct server-to-server integration.
 
 ## Choosing a Protocol
 Choose your integration method based on your needs:
 
 - **WebRTC**: Best for most integrations, especially for any client deployment (for example, browsers or mobile clients). This is the default. Get started with the Ultravox client [SDK](/essentials/sdk).
-- **Phone**: For traditional phone network integration. Ultravox integrates directly with Telnyx, Twilio, and Plivo.
+- **Phone**: For traditional phone network integration. Ultravox integrates directly with Telnyx, Twilio, Plivo, and jambonz (bring your own carrier).
 - **WebSocket**: For server-to-server integration, especially when you already have high-bandwidth connections between your server and clients. Check out the [WebSocket Integration](/guides/websockets) guide for more information.
 
 ## Phone Integration
@@ -24,14 +24,16 @@ Ultravox integrates with multiple telephony providers, enabling you to create AI
 - **Twilio** → Uses Twilio [Media Streams](https://www.twilio.com/docs/voice/media-streams).
 - **Telnyx** → Uses Telnyx [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming).
 - **Plivo** → Uses Plivo [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/).
+- **jambonz** → Uses jambonz [llm verb](https://docs.jambonz.org/verbs/verbs/llm) and connects to the carrier of your choice.
 
 ### Prerequisites
 <Tip>
 <b>Prerequisites</b>
 <br />
 Make sure you have:
-1. An active account with your chosen provider (Telnyx, Twilio, or Plivo)
+1. An active account with your chosen provider (Telnyx, Twilio, Plivo, or any carrier when connecting via jambonz)
 2. A phone number purchased from your provider
+3. A jambonz account (if connecting via jambonz)
 </Tip>
 
 ### Connecting Ultravox to a Phone Call
@@ -69,6 +71,9 @@ Creating an Ultravox call that you can connect with a phone call is similar to c
   "firstSpeaker": "FIRST_SPEAKER_USER"
 }
 ```
+<Tip>
+jambonz have integrated Ultravox into their `llm` verb, so you won't need to create an Ultravox call—this is all done for you. Just follow the instructions in the "Provider-Specific Integration" section below.
+</Tip>
 
 ### Provider-Specific Integration
 
@@ -239,12 +244,99 @@ Creating an Ultravox call that you can connect with a phone call is similar to c
 
     For more details, see the [Plivo documentation](https://www.plivo.com/docs/).
   </Tab>
+  <Tab title="jambonz">
+    #### jambonz Portal Setup
+    jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
+    This gives you the flexibility to choose your carrier of choice, you'll just need to add it in your jambonz dashboard.
+
+    <Steps>
+      <Step title="Add Your Carrier in jambonz">
+        In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any sip network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
+      </Step>
+
+      <Step title="Add a Speech Provider in jambonz">
+        Next, you need to [add speech credentials](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-speech-credentials) for your chosen vendor.
+      </Step>
+
+      <Step title="Create a New jambonz Application">
+        ​A jambonz application configured via the jambonz portal defines how calls are handled by linking them to your custom logic through webhooks or WebSocket endpoints. When you create an application, you specify:​
+        - Call webhook URL: Where jambonz sends call events.​
+        - Call status webhook URL: For receiving call status updates.​
+        - Speech vendors: Your chosen TTS/STT providers.​
+
+        Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. This setup allows you to implement features like speech recognition, text-to-speech, call routing, and integration with AI services. 
+      </Step>
+
+      <Step title="Add a Phone Number in jambonz">
+        Finally, you need to [add a phone number](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-phone-numbers) provisioned from your carrier of choice. At the bottom of the page select the jambonz application you just created to link your new virtual number to that application.
+      </Step>
+    </Steps>
+
+    #### Incoming Calls with jambonz
+
+        ```javascript
+        // Example using the @jambonz/node-client-ws library
+        session
+        .pause({length: 1.5})
+        .llm({
+          vendor: 'ultravox',
+          model: 'fixie-ai/ultravox',
+          auth: {
+            apiKey
+          },
+          actionHook: '/final',
+          eventHook: '/event',
+          llmOptions: {
+            systemPrompt: 'You are an agent named Karen. Greet the user and ask how you can help.',
+            firstSpeaker: 'FIRST_SPEAKER_AGENT',
+            initialMessages: [{
+              medium: 'MESSAGE_MEDIUM_VOICE',
+              role: 'MESSAGE_ROLE_USER'
+            }],
+            model: 'fixie-ai/ultravox',
+            voice: 'Tanya-English',
+            transcriptOptional: true,
+          }
+        })
+        .hangup()
+        .send();
+        ```
+        For more details see the `llm` verb in the [jambonz docs](https://docs.jambonz.org/verbs/verbs/llm). 
+    
+
+    #### Outgoing Calls with jambonz
+    In addition to the inbound scenario, you'll have to create a call that connects to the destination number (`phoneNumber`) and points to the jambonz application that defines how the call should be handled. Find the `APPLICATION_SID` in the jambonz portal by clicking on the application you created during the setup process.
+
+      ```javascript
+        const JambonzClient = require('@jambonz/node-client');
+
+        const client = JambonzClient(
+          process.env.JAMBONZ_ACCOUNT_SID,
+          process.env.JAMBONZ_API_KEY,
+          {baseUrl: process.env.JAMBONZ_REST_API_BASE_URL || 'https://api.jambonz.cloud/v1'}
+        );
+
+        const call = await client.calls.create({
+            from: process.env.FROM_NUMBER,  
+              to: {
+                type : 'phone',
+                number: phoneNumber,
+                trunk: process.env.CARRIER
+                },
+            application_sid: process.env.APPLICATION_SID
+        });
+
+        ```
+        
+
+    For more details, see the [jambonz documentation](https://docs.jambonz.org/) and [example code](https://github.com/jambonz/ultravox-s2s-example).
+  </Tab>
 </Tabs>
 
 <Note>
 <b>Provider Support</b>
 <br />
-We currently integrate with Telnyx, Twilio, and Plivo. Please [let us know](https://discord.com/channels/1240071833798184990/1315065334058713198) if there's another integration you'd like to see.
+We currently integrate with Telnyx, Twilio, Plivo, and jambonz (bring your own carrier voice platform). Please [let us know](https://discord.com/channels/1240071833798184990/1315065334058713198) if there's another integration you'd like to see.
 </Note>
 
 ### DTMF
