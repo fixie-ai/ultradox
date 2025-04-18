@@ -106,6 +106,7 @@
     {
       "group": "Advanced Guides + Tutorials",
       "pages": [
+        "guides/sip",
         "guides/guidingagents",
         "guides/callstages",
         "guides/debugging",
