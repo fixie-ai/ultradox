@@ -117,7 +117,8 @@
           "icon": "chalkboard-user",
           "pages": [
             "tutorials/callstages",
-            "tutorials/clienttools"
+            "tutorials/clienttools",
+            "tutorials/transfercall"
           ]
         }
       ]

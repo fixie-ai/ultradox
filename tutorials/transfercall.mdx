@@ -1,0 +1,183 @@
+---
+title: "Tutorial: Transfer Call to Human Agent"
+description: Learn how to transfer an inbound call to a human agent using Ultravox client tools and jambonz.
+icon: book-open
+---
+This tutorial walks you through ... how to transfer an inbound call to a human agent using Ultravox client tools and jambonz.
+
+**What you'll learn:**
+- How to handle an inbound call using jambonz
+- How to connect an inbound call to an Ultravox AI agent
+- How to transfer an ongoing call from an AI agent to a human agent
+
+
+## Prerequisites
+
+Before starting this tutorial, make sure you have:
+- a [jambonz](https://jambonz.cloud/) account
+- an [Ultravox](https://ultravox.ai/) account
+- Node.js 16+ installed on your machine
+- [ngrok](https://ngrok.com/docs/getting-started/) installed on your machine
+
+{/* Basic knowledge of TypeScript and React
+- The starter code from our [tutorial repository](https://github.com/fixie-ai/ultravox-tutorial-call-stages)
+- Node.js 16+ installed on your machine
+- [ngrok](https://ngrok.com/docs/getting-started/) installed on your machine */}
+
+## jambonz
+
+{/* ## Understanding Call Stages
+
+Call stages in Ultravox enable dynamic changes to an ongoing conversation by:
+- Switching system prompts mid-conversation
+- Changing voice personalities
+- Maintaining conversation context
+- Handling role transitions seamlessly
+
+In this tutorial, we'll use call stages to transfer angry customers to a manager who can better handle their complaints. */}
+
+## Project Overview: Transferring an Inbound Call from AI Agent to a Human
+
+We'll build an app that allows the Ultravox AI agent to transfer an incoming phone call to a human agent. The system will:
+1. Recognize when a customer needs a human to intervene
+2. Connect the customer to a human agent
+
+### Implementation Steps
+
+- ngrok
+- jambonz setup + carrier, phone number
+- implement the transfer logic - llm verb
+- customize prompt + further parameters
+- .env
+- test
+
+<Steps>
+  <Step title="Set Up ngrok">
+    {/* Enable external access to our escalation endpoint */}
+  </Step>
+  <Step title="jambonz Portal Setup">
+  </Step>
+  <Step title="Define the Call Transfer Tool">
+  </Step>
+  <Step title="Handle the Call Transfer Tool Call">
+  </Step>
+  <Step title="Customize Agent Prompt and Parameters">
+  </Step>
+  <Step title="Test the App">
+  </Step>
+</Steps>
+
+<Tip>
+  <b>Stuck?</b>
+  <br />
+  {/* If at any point you get lost, you can refer to the [`/final`](https://github.com/fixie-ai/ultravox-tutorial-call-stages/tree/main/final) folder in the repo to get final versions of the various files you will create or edit. */}
+</Tip>
+
+<Tip>
+  <b>Debugging</b>
+  <br />
+  During testing, watch your terminal for ngrok request logs to verify the endpoint is being called correctly.
+  recent calls and alerts in jambonz
+</Tip>
+
+## Step 1: Set Up ngrok
+
+First, we need to make our call handling logic endpoint accessible to Ultravox and jambonz.
+
+1. Start your development server:
+```bash
+pnpm run dev
+```
+
+2. In a new terminal, start ngrok:
+```bash
+ngrok http 3000
+```
+
+3. Copy the HTTPS URL from ngrok (it will look like `https://1234-56-78-910-11.ngrok-free.app`)
+   
+{/* 4. Update `toolsBaseUrl` in `demo-config.ts`:
+```ts
+const toolsBaseUrl = 'https://your-ngrok-url-here';
+``` */}
+
+## Step 2: jambonz Portal Setup
+
+jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
+    This gives you the flexibility to use your carrier and speech provider of choice, you'll just need to add them in your jambonz dashboard.
+
+    <Steps>
+      <Step title="Add Your Carrier in jambonz">
+        In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any sip network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
+      </Step>
+
+      <Step title="Add a Speech Provider in jambonz">
+        Next, you need to [add speech credentials](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-speech-credentials) for your chosen vendor.
+      </Step>
+
+      <Step title="Create a New jambonz Application">
+        ​A jambonz application configured via the jambonz portal defines how calls are handled by linking them to your custom logic through webhooks or WebSocket endpoints. When you create an application, you specify:​
+        - Call webhook URL: Where jambonz sends call events.​ — use the ngrok URL you copied earlier as `wss://your-ngrok-url-here/transfer-call`
+        - Call status webhook URL: For receiving call status updates.​ — use the ngrok URL you copied earlier as `wss://your-ngrok-url-here/transfer-call`
+        - Speech vendors: Your chosen TTS/STT providers.​
+
+        Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. 
+      </Step>
+
+      <Step title="Add a Phone Number in jambonz">
+        Finally, you need to [add a phone number](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-phone-numbers) provisioned from your carrier of choice. At the bottom of the page select the jambonz application you just created to link your new virtual number to that application.
+      </Step>
+    </Steps>
+
+## Step 3: Define the Call Transfer Tool
+Update the llm object to include a toolHook
+add tool
+
+```js
+selectedTools: [
+  {
+    temporaryTool: {
+      modelToolName: 'call-transfer',
+      description: 'Transfers the call to a human agent',
+      client: {}
+    }
+  }
+]
+```
+
+## Step 4: Handle the Call Transfer Tool Call
+
+
+
+
+
+
+
+
+
+## Testing Your Implementation
+
+
+## Common Issues
+
+1. **ngrok URL Not Working**
+   - Make sure ngrok is running
+   - Check the URL is correctly copied to `demo-config.ts`
+   - Verify no trailing slash in the URL
+
+2. **...**
+
+
+{/* 3. **Manager Voice Not Changing**
+   - Verify the `X-Ultravox-Response-Type` header is set
+   - Check the voice parameter in the response body */}
+
+## Next Steps
+
+
+
+## Resources
+
+- 
+
+- [Tutorial Source Code]() 
