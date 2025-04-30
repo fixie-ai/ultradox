@@ -245,6 +245,12 @@
         "changelog/news",
         "changelog/deprecation"
       ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "integrations/voximplant"
+      ]
     }
   ],
   "footerSocials": {

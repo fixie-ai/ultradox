@@ -1,0 +1,321 @@
+---
+title: 'Voximplant'
+description: 'Connecting Ultravox to SIP Using Voximplant'
+---
+
+<Note>
+Voximplant provides a platform for telephony and has created a native integration with Ultravox to enable SIP calling. This content has been provided courtesy of Voximplant.
+</Note>
+## Connecting to SIP PBX server with Voximplant
+
+With Voximplant, you can connect Ultravox Realtime to an existing SIP telephony server. This allows you to use Ultravox AI assistants to handle your calls and assist your customers right from your existing infrastructure.
+
+Voximplant acts as a gateway, managing connection with Ultravox via WebSockets and making/receiving calls via SIP.
+
+![Gateway]()
+
+Follow the steps below to connect Ultravox to your SIP PBX server.
+
+### Step 1: Create a Voximplant Application
+To create an application, [log in to your Voximplant account](https://manage.voximplant.com/?utm_source=docs&utm_medium=applications&utm_campaign=gettingstarted) or create a new one. Then, navigate to the [application section](https://manage.voximplant.com/applications?utm_source=docs&utm_medium=applications&utm_campaign=gettingstarted) from the upper left corner of the page. Click **New application** in the upper right corner or **Create** at the bottom of the page.
+
+![Create an application](gettingstarted-basicconcepts-applications-create.png)
+
+This opens a new application editor window where you can set it up and save by clicking **Create**. The newly created app appears in the application list. To modify its name, icon, or description, click the three dots menu and select **Edit**.
+
+![Edit an application](gettingstarted-basicconcepts-applications-dots.png)
+
+You can learn more about Voximplant applications and their sections in the [Getting started → Applications](https://voximplant.com/docs/getting-started/basic-concepts/applications) section of this documentation.
+
+### Step 2: Create Scenarios Within the Application
+Scenarios in Voximplant are JavaScript documents within a Voximplant application, where you can implement logic processing calls and messages.
+
+To create a scenario, open your existing or newly created [application](https://voximplant.com/docs/getting-started/basic-concepts/applications), and select **Scenarios** on the left menu, and click on the plus icon to create a new scenario. Give it a name.
+
+![Create a scenario](gettingstarted-basicconcepts-scenarios-create.png)
+
+This opens a new tab in the online IDE on the right, where you can write your code. If needed, you can rename the scenario or modify the source code later.
+
+You can learn more about scenarios and their best practice tips in the [Getting started → Scenarios](https://voximplant.com/docs/getting-started/basic-concepts/scenarios) section of this documentation.
+
+### Step 3: Utilize Ready-to-use Scenarios
+To connect your SIP PBX with the Ultravox LLM, we prepared two ready-to use scenarios for incoming and outgoing calls.
+
+<Info>
+**Please note**: We have hidden sensitive information in these scenarios, such as API keys, with placeholders. Please, replace the placeholders with your actual Ultravox credentials.
+</Info>
+
+Here is the `incoming` scenario for processing incoming calls:
+
+```js
+require(Modules.Ultravox);
+
+VoxEngine.addEventListener(AppEvents.CallAlerting, async ({ call }) => {
+  let webSocketAPIClient = undefined;
+
+  call.answer();
+  const callBaseHandler = () => {
+    if (webSocketAPIClient) webSocketAPIClient.close();
+    VoxEngine.terminate();
+  };
+  call.addEventListener(CallEvents.Disconnected, callBaseHandler);
+  call.addEventListener(CallEvents.Failed, callBaseHandler);
+
+  const onWebSocketClose = (event) => {
+    Logger.write('===ON_WEB_SOCKET_CLOSE==');
+    Logger.write(JSON.stringify(event));
+    VoxEngine.terminate();
+  };
+
+  const ULTRAVOX_API_KEY = 'YOUR_ULTRAVOX_API_KEY';
+  const AUTHORIZATIONS = {
+    'X-API-Key': ULTRAVOX_API_KEY,
+  };
+  
+  const MODEL = 'fixie-ai/ultravox';
+  const VOICE_NAME = 'Mark';
+  const PATH_PARAMETERS = {};
+
+  // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+  const PATH_PARAMETERS_AGENT_CALL = {agent_id: "YOUR-AGENT-ID"};
+
+  const QUERY_PARAMETERS = {};
+  const BODY_CREATE_CALL = {
+    systemPrompt: 'You are a helpful assistant',
+    model: MODEL,      
+    voice: VOICE_NAME, 
+  };
+
+  // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+  const BODY_CREATE_AGENT_CALL = {
+  };
+
+  const webSocketAPIClientParameters = {
+    // or Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
+    endpoint: Ultravox.HTTPEndpoint.CREATE_CALL, // Change for agent call
+    authorizations: AUTHORIZATIONS,
+    pathParameters: PATH_PARAMETERS, // Change for agent call
+    queryParameters: QUERY_PARAMETERS,
+    body: BODY_CREATE_CALL, // Change for agent call
+    onWebSocketClose,
+  };
+
+  try {
+    webSocketAPIClient = await Ultravox.createWebSocketAPIClient(webSocketAPIClientParameters);
+    VoxEngine.sendMediaBetween(call, webSocketAPIClient);
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Unknown, (event) => {
+      Logger.write('===Ultravox.WebSocketAPIEvents.Unknown===');
+      Logger.write(JSON.stringify(event));
+    });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.HTTPResponse, (event) => {
+      Logger.write('===Ultravox.WebSocketAPIEvents.HTTPResponse===');
+      Logger.write(JSON.stringify(event));
+    });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.State, (event) => {
+      Logger.write('===Ultravox.WebSocketAPIEvents.State===');
+      Logger.write(JSON.stringify(event));
+    });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Transcript, (event) => {
+      Logger.write('===Ultravox.WebSocketAPIEvents.Transcript===');
+      Logger.write(JSON.stringify(event));
+    });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.ClientToolInvocation, (event) => {
+      Logger.write('===Ultravox.WebSocketAPIEvents.ClientToolInvocation===');
+      Logger.write(JSON.stringify(event));
+    });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Debug, (event) => {
+      Logger.write('===Ultravox.WebSocketAPIEvents.Debug===');
+      Logger.write(JSON.stringify(event));
+    });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.PlaybackClearBuffer, (event) => {
+      Logger.write('===Ultravox.WebSocketAPIEvents.PlaybackClearBuffer===');
+      Logger.write(JSON.stringify(event));
+    });
+
+    const inputTextMessageContent = {
+      type: 'input_text_message',
+      text: 'HI!',
+    };
+    webSocketAPIClient.inputTextMessage(inputTextMessageContent);
+  } catch (error) {
+    Logger.write('===SOMETHING_WENT_WRONG===');
+    Logger.write(error);
+    VoxEngine.terminate();
+  }
+});
+```
+
+Here is the `outgoing` scenario for processing outgoing calls:
+
+```js
+require(Modules.Ultravox);
+
+VoxEngine.addEventListener(AppEvents.Started, async () => {
+  let webSocketAPIClient = undefined;
+  //Obtain parameters passed to call
+  const customData = JSON.parse(VoxEngine.customData());
+
+  const call = VoxEngine.callSIP(`sip:${customData["number"]}@sip.example.org`,customData["callerid"]);
+  
+  const callBaseHandler = () => {
+    if (webSocketAPIClient) webSocketAPIClient.close();
+    VoxEngine.terminate();
+  };
+  call.addEventListener(CallEvents.Disconnected, callBaseHandler);
+  call.addEventListener(CallEvents.Failed, callBaseHandler);
+
+  call.addEventListener(CallEvents.Connected, async () => {
+
+    const onWebSocketClose = (event) => {
+        Logger.write('===ON_WEB_SOCKET_CLOSE==');
+        Logger.write(JSON.stringify(event));
+        VoxEngine.terminate();
+      };
+    
+    const ULTRAVOX_API_KEY = 'YOUR_ULTRAVOX_API_KEY';
+      const AUTHORIZATIONS = {
+        'X-API-Key': ULTRAVOX_API_KEY,
+      };
+      
+      const MODEL = 'fixie-ai/ultravox';
+      const VOICE_NAME = 'Mark';
+      const PATH_PARAMETERS = {};
+
+    // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+      const PATH_PARAMETERS_AGENT_CALL = {agent_id: "YOUR-AGENT-ID"};
+
+    const QUERY_PARAMETERS = {};
+      const BODY_CREATE_CALL = {
+        systemPrompt: 'You are a helpful assistant',
+        model: MODEL,      
+        voice: VOICE_NAME, 
+      };
+
+    // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+      const BODY_CREATE_AGENT_CALL = {
+      };
+
+    const webSocketAPIClientParameters = {
+        // or Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
+        endpoint: Ultravox.HTTPEndpoint.CREATE_CALL, // Change for agent call
+        authorizations: AUTHORIZATIONS,
+        pathParameters: PATH_PARAMETERS, // Change for agent call
+        queryParameters: QUERY_PARAMETERS,
+        body: BODY_CREATE_CALL, // Change for agent call
+        onWebSocketClose,
+      };
+    
+    try {
+        webSocketAPIClient = await Ultravox.createWebSocketAPIClient(webSocketAPIClientParameters);
+        VoxEngine.sendMediaBetween(call, webSocketAPIClient);
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Unknown, (event) => {
+          Logger.write('===Ultravox.WebSocketAPIEvents.Unknown===');
+          Logger.write(JSON.stringify(event));
+        });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.HTTPResponse, (event) => {
+          Logger.write('===Ultravox.WebSocketAPIEvents.HTTPResponse===');
+          Logger.write(JSON.stringify(event));
+        });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.State, (event) => {
+          Logger.write('===Ultravox.WebSocketAPIEvents.State===');
+          Logger.write(JSON.stringify(event));
+        });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Transcript, (event) => {
+          Logger.write('===Ultravox.WebSocketAPIEvents.Transcript===');
+          Logger.write(JSON.stringify(event));
+        });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.ClientToolInvocation, (event) => {
+          Logger.write('===Ultravox.WebSocketAPIEvents.ClientToolInvocation===');
+          Logger.write(JSON.stringify(event));
+        });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Debug, (event) => {
+          Logger.write('===Ultravox.WebSocketAPIEvents.Debug===');
+          Logger.write(JSON.stringify(event));
+        });
+
+    webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.PlaybackClearBuffer, (event) => {
+          Logger.write('===Ultravox.WebSocketAPIEvents.PlaybackClearBuffer===');
+          Logger.write(JSON.stringify(event));
+        });
+
+    const inputTextMessageContent = {
+          type: 'input_text_message',
+          text: 'HI!',
+        };
+        webSocketAPIClient.inputTextMessage(inputTextMessageContent);
+      } catch (error) {
+        Logger.write('===SOMETHING_WENT_WRONG===');
+        Logger.write(error);
+        VoxEngine.terminate();
+      }
+    });
+});
+```
+
+The outgoing scenario accepts the `customData` parameter in the following format:
+
+```js
+{"callerid":"16503333333", "number":"16504444444"}
+```
+
+You can provide this parameter when launching the scenario via a **routing rule** or [StartScenarios](https://voximplant.com/docs/references/httpapi/scenarios#startscenarios) Management API method.
+
+
+### Step 4: Create Routing Rules
+Routing rules in a Voximplant applications define when and on what conditions to launch existing scenarios. When an incoming call arrives or you make call via your SIP PBX server, a routing rule decides which scenario to launch.
+
+To create a routing rule, navigate to the **Routing** tab in your [application](https://voximplant.com/docs/getting-started/basic-concepts/applications). You can either click **Create** in the center of the screen or **New rule** in the upper right corner:
+
+![Create a rule](gettingstarted-basicconcepts-routing-createarule.png)
+
+This opens the **New rule** editor, where you can specify the rule name, properties, and attach one or more scenarios:
+
+![New rule editor](gettingstarted-basicconcepts-routing-attachascenario.png)
+
+Disable the **Video conference** switch, as you do not plan to use the scenario as a video conference.
+
+The **Pattern** field checks if the call’s destination (the dialed number or username specified in the `e.destination` property of the incoming call) matches any rule’s pattern. If the call’s destination aligns with the pattern, the attached scenario(s) are executed. If the call’s destination doesn’t match the pattern, the attached scenario(s) remain inactive, and the call proceeds to the next routing rule.
+
+The application systematically evaluates the routing rules from top to bottom, with higher-priority rules taking precedence. When the call’s destination matches one of the rules, the rule is executed, and the application disregards any subsequent rules, ensuring that only one rule is executed at a time.
+
+<Info>
+**Note**: If the destination phone number meets several rules' patterns, only **the first rule** executes.
+</Info>
+
+The **Pattern** field employs regular expressions to create masks for phone numbers or usernames. Common expressions include:
+
+- `.*` means any quantity of any symbols, so all the numbers or usernames match the rule.
+- `+?[1-9]\d{1,14}` matches any phone number
+- `123.+` matches 1234, 12356, etc., and so on.
+
+For more information on building regular expressions, refer to [Wikipedia](https://en.wikipedia.org/wiki/Regular_expression).
+
+The **Available scenarios** dropdown list enables you to attach one or more scenarios to execute when the rule is triggered.
+
+You can attach **multiple scenarios** to a single rule. In this scenario, the rule executes all the attached scenarios sequentially within a single context, promoting code reuse. This allows you to encapsulate all the functions within a scenario and utilize them in another scenario.
+
+You can view all the attached scenarios in the **Assigned scenarios** field.
+
+After specifying all the settings, click the **Create rule** button to create a rule.
+
+You can learn more about routing rules and ways to launch them in the [Getting started → Routing rules](https://voximplant.com/docs/getting-started/basic-concepts/applications) section of this documentation.
+
+### Step 5: Setup Your SIP PBX Server
+Voximplant handles the incoming calls, launching the `incoming` scenario automatically via a specified routing rule and its pattern.
+
+To handle the **outgoing** calls, you can either configure the outgoing routing rule to a specific pattern according to your existing SIP system, passing the number to call and the caller ID to the routing rule (see the [Utilize our ready-to-use scenarios](#step-3-utilize-ready-to-use-scenarios) section above).
+
+Or you can manually launch the `outbound` scenario calling the [StartScenarios](https://voximplant.com/docs/references/httpapi/scenarios#startscenarios) Management API method from your system and passing the number and caller ID parameters as it is explained above.
