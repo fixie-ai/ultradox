@@ -6,13 +6,26 @@ description: 'Connecting Ultravox to SIP Using Voximplant'
 <Note>
 Voximplant provides a platform for telephony and has created a native integration with Ultravox to enable SIP calling. This content has been provided courtesy of Voximplant.
 </Note>
-## Connecting to SIP PBX server with Voximplant
+## Connecting to SIP Trunk with Voximplant
 
 With Voximplant, you can connect Ultravox Realtime to an existing SIP telephony server. This allows you to use Ultravox AI assistants to handle your calls and assist your customers right from your existing infrastructure.
 
 Voximplant acts as a gateway, managing connection with Ultravox via WebSockets and making/receiving calls via SIP.
 
-![Gateway]()
+```mermaid
+graph LR
+    A[AI \n agent] <-->|WebSockets| B((Voximplant \n Cloud))
+    B <-->|PSTN| C[Phone \n Network]
+    B <-->|SIP Trunk| D[VoIP \n Infrastructure]
+    B <-->|WebRTC| E[SDK]
+    
+    classDef cloud fill:#a881f7,stroke:#a881f7,shape:cloud;
+    class B cloud
+
+    %%Highlight SIP
+    linkStyle 2 stroke:#a881f7,stroke-width:6px;
+
+```
 
 Follow the steps below to connect Ultravox to your SIP PBX server.
 
