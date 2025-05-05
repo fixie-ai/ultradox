@@ -329,6 +329,7 @@ You can learn more about routing rules and ways to launch them in the [Getting s
 ### Step 5: Setup Your SIP PBX Server
 Voximplant handles the incoming calls, launching the `incoming` scenario automatically via a specified routing rule and its pattern.
 
-To handle the **outgoing** calls, you can either configure the outgoing routing rule to a specific pattern according to your existing SIP system, passing the number to call and the caller ID to the routing rule (see the [Utilize our ready-to-use scenarios](#step-3-utilize-ready-to-use-scenarios) section above).
+To handle the **outgoing** calls, you can either:
 
-Or you can manually launch the `outbound` scenario calling the [StartScenarios](https://voximplant.com/docs/references/httpapi/scenarios#startscenarios) Management API method from your system and passing the number and caller ID parameters as it is explained above.
+* Configure the outgoing routing rule to a specific pattern according to your existing SIP system, passing the number to call and the caller ID to the routing rule (see the [Utilize our ready-to-use scenarios](#step-3-utilize-ready-to-use-scenarios) section above).
+* Or manually launch the `outbound` scenario calling the [StartScenarios](https://voximplant.com/docs/references/httpapi/scenarios#startscenarios) Management API method from your system and passing the number and caller ID parameters as explained above.
