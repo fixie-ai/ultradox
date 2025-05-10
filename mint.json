@@ -109,6 +109,7 @@
         "guides/sip",
         "guides/guidingagents",
         "guides/callstages",
+        "guides/external-tts",
         "guides/debugging",
         "guides/websockets",
         "datamessages",
