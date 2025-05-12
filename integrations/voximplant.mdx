@@ -58,7 +58,7 @@ To connect your SIP PBX with Ultravox, Voximplant prepared two ready-to use scen
 **Please note**: We have hidden sensitive information in these scenarios, such as API keys, with placeholders. Please, replace the placeholders with your actual Ultravox credentials.
 </Info>
 
-Here is the `incoming` scenario for processing incoming calls:
+Here is the `incoming` scenario for processing incoming calls forwarded to Voximplant:
 
 ```js
 require(Modules.Ultravox);
@@ -298,6 +298,8 @@ This opens the **New rule** editor, where you can specify the rule name, propert
 
 ![New rule editor](voximplant-images/gettingstarted-basicconcepts-routing-attachascenario.png)
 
+If you intend to use the scenario for video conferencing, enable the **Video conference** switch. Without this parameter, all video conferences fail with an error.
+
 Disable the **Video conference** switch, as you do not plan to use the scenario as a video conference.
 
 The **Pattern** field checks if the call’s destination (the dialed number or username specified in the `e.destination` property of the incoming call) matches any rule’s pattern. If the call’s destination aligns with the pattern, the attached scenario(s) are executed. If the call’s destination doesn’t match the pattern, the attached scenario(s) remain inactive, and the call proceeds to the next routing rule.
@@ -326,10 +328,164 @@ After specifying all the settings, click the **Create rule** button to create a 
 
 You can learn more about routing rules and ways to launch them in the [Getting started → Routing rules](https://voximplant.com/docs/getting-started/basic-concepts/applications) section of the Voximplant documentation.
 
-### Step 5: Setup Your SIP PBX Server
-Voximplant handles the incoming calls, launching the `incoming` scenario automatically via a specified routing rule and its pattern.
 
-To handle the **outgoing** calls, you can either:
+## Configure Your SIP PBX
 
-* Configure the outgoing routing rule to a specific pattern according to your existing SIP system, passing the number to call and the caller ID to the routing rule (see the [Utilize our ready-to-use scenarios](#step-3-utilize-ready-to-use-scenarios) section above).
-* Or manually launch the `outbound` scenario calling the [StartScenarios](https://voximplant.com/docs/references/httpapi/scenarios#startscenarios) Management API method from your system and passing the number and caller ID parameters as explained above.
+Your configuration depends on the type of the PBX that you use and internet access that it has.
+
+### Using an Internet-Connected, Self-Hosted PBX with Fixed Public IP
+
+In this case you need to:
+
+1. Whitelist the IP address of your PBX in the [Secrity](https://manage.voximplant.com/settings/security/white_list) section of Voximplant Control Panel.
+1. Configure your PBX to forward calls to the following SIP URI: sip:{number}@{app_name}.{account_name}.voximplant.com. `number` may be any number or username that matches the regular expression specified earlier when configuring the routing rules. `app_name` and `account_name` are the names of the Voximplant application and account respectively.
+
+### Using a Cloud PBX
+
+In this case, Voximplant can resemble a user in your cloud PBX. To complete the configuration you need to:
+
+1. Create a user in your cloud PBX account.
+1. Configure your PBX to forward calls that need to be handled by the voice bot to the user you have just created.
+1. Create a [SIP registration](https://manage.voximplant.com/settings/sip_registrations) with credentials of the created user and the domain name of the cloud PBX instance you use.
+1. Attach the SIP registration to the application in `SIP registations` section of application configuration. When doing so, select the routing rule for incoming calls created earlier.
+
+## Making Outgoing Calls
+
+Voximplant can initiate outgoing calls to your PBX and join them to the voice agent. This can be done by calling the [StartScenarios](https://voximplant.com/docs/references/httpapi/scenarios#startscenarios) Management API method from your system and passing the number and caller ID parameters as it is explained below.
+
+### Configuring Your Voximplant Account
+
+<Steps>
+  <Step>
+    Create an application the same way as [described above](#step-1%3A-create-a-voximplant-application).
+  </Step>
+  <Step>
+    Create a call scenario. Here is the sample scenario for starting outgoing calls. Please note that Ultravox and PBX connection information need to be provided in the script instead of placeholders.
+
+    ```js
+    require(Modules.Ultravox);
+
+    VoxEngine.addEventListener(AppEvents.Started, async () => {
+      let webSocketAPIClient = undefined;
+      // Obtain parameters passed to call
+      const customData = JSON.parse(VoxEngine.customData());
+      
+      const call = VoxEngine.callSIP(`sip:${customData["number"]}@YOUR_PBX_ADDRESS`,customData["callerid"]);
+      
+      const callBaseHandler = () => {
+        if (webSocketAPIClient) webSocketAPIClient.close();
+        VoxEngine.terminate();
+      };
+      call.addEventListener(CallEvents.Disconnected, callBaseHandler);
+      call.addEventListener(CallEvents.Failed, callBaseHandler);
+      
+      call.addEventListener(CallEvents.Connected, async () => {
+      
+        const onWebSocketClose = (event) => {
+            Logger.write('===ON_WEB_SOCKET_CLOSE==');
+            Logger.write(JSON.stringify(event));
+            VoxEngine.terminate();
+          };
+        
+        const ULTRAVOX_API_KEY = 'YOUR_ULTRAVOX_API_KEY';
+          const AUTHORIZATIONS = {
+            'X-API-Key': ULTRAVOX_API_KEY,
+          };
+          
+          const MODEL = 'fixie-ai/ultravox';
+          const VOICE_NAME = 'Mark';
+          const PATH_PARAMETERS = {};
+      
+        // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+          const PATH_PARAMETERS_AGENT_CALL = {agent_id: "YOUR-AGENT-ID"};
+      
+        const QUERY_PARAMETERS = {};
+          const BODY_CREATE_CALL = {
+            systemPrompt: 'You are a helpful assistant',
+            model: MODEL,      
+            voice: VOICE_NAME, 
+          };
+      
+        // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+          const BODY_CREATE_AGENT_CALL = {
+          };
+      
+        const webSocketAPIClientParameters = {
+            // or Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
+            endpoint: Ultravox.HTTPEndpoint.CREATE_CALL, // Change for agent call
+            authorizations: AUTHORIZATIONS,
+            pathParameters: PATH_PARAMETERS, // Change for agent call
+            queryParameters: QUERY_PARAMETERS,
+            body: BODY_CREATE_CALL, // Change for agent call
+            onWebSocketClose,
+          };
+        
+        try {
+            webSocketAPIClient = await Ultravox.createWebSocketAPIClient(webSocketAPIClientParameters);
+            VoxEngine.sendMediaBetween(call, webSocketAPIClient);
+      
+        webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Unknown, (event) => {
+              Logger.write('===Ultravox.WebSocketAPIEvents.Unknown===');
+              Logger.write(JSON.stringify(event));
+            });
+      
+        webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.HTTPResponse, (event) => {
+              Logger.write('===Ultravox.WebSocketAPIEvents.HTTPResponse===');
+              Logger.write(JSON.stringify(event));
+            });
+      
+        webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.State, (event) => {
+              Logger.write('===Ultravox.WebSocketAPIEvents.State===');
+              Logger.write(JSON.stringify(event));
+            });
+      
+        webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Transcript, (event) => {
+              Logger.write('===Ultravox.WebSocketAPIEvents.Transcript===');
+              Logger.write(JSON.stringify(event));
+            });
+      
+        webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.ClientToolInvocation, (event) => {
+              Logger.write('===Ultravox.WebSocketAPIEvents.ClientToolInvocation===');
+              Logger.write(JSON.stringify(event));
+            });
+      
+        webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Debug, (event) => {
+              Logger.write('===Ultravox.WebSocketAPIEvents.Debug===');
+              Logger.write(JSON.stringify(event));
+            });
+      
+        webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.PlaybackClearBuffer, (event) => {
+              Logger.write('===Ultravox.WebSocketAPIEvents.PlaybackClearBuffer===');
+              Logger.write(JSON.stringify(event));
+            });
+      
+        const inputTextMessageContent = {
+              type: 'input_text_message',
+              text: 'HI!',
+            };
+            webSocketAPIClient.inputTextMessage(inputTextMessageContent);
+          } catch (error) {
+            Logger.write('===SOMETHING_WENT_WRONG===');
+            Logger.write(error);
+            VoxEngine.terminate();
+          }
+        });
+    });
+    ```
+  </Step>
+  <Step>
+    Create a routing rule and attach the scenario to it. The rule pattern can be arbitrary in this case because the pattern is only used when processing incoming calls.
+  </Step>
+</Steps>
+
+### Configure your PBX
+
+You can either whitelist the Voximplant SIP IP addresses or create a user in your PBX and use those credentials to authenticate. In the first case you can use the [API endpoint](http://api.voximplant.com/getMediaResources?with_sbcs) to get Voximplant SIP IP addresses. In the latter case you need to pass authentication information to the [callSIP](https://voximplant.com/docs/references/voxengine/voxengine/callsip) function in the secnario.
+
+The outgoing scenario accepts the `customData` parameter in the following format:
+
+```js
+{"callerid":"16503333333", "number":"16504444444"}
+```
+
+You can provide this parameter when launching the scenario via a **routing rule** or [StartScenarios](https://voximplant.com/docs/references/httpapi/scenarios#startscenarios) Management API method.
