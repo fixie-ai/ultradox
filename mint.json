@@ -104,6 +104,16 @@
       ]
     },
     {
+      "group": "Calls Cookbook",
+      "pages": [
+        "callscookbook/callscookbook",
+        "callscookbook/calltransfer",
+        "callscookbook/whispertransfer",
+        "callscookbook/concurrency"
+        
+      ]
+    },
+    {
       "group": "Advanced Guides + Tutorials",
       "pages": [
         "guides/sip",
