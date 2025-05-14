@@ -150,7 +150,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, async ({ call }) => {
     webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.PlaybackClearBuffer, (event) => {
       Logger.write('===Ultravox.WebSocketAPIEvents.PlaybackClearBuffer===');
       Logger.write(JSON.stringify(event));
-      webSocketAPIClient.clearMediaBuffer();
+      if (webSocketAPIClient) webSocketAPIClient.clearMediaBuffer();
     });
 
     const inputTextMessageContent = {
@@ -263,7 +263,7 @@ VoxEngine.addEventListener(AppEvents.Started, async () => {
     webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.PlaybackClearBuffer, (event) => {
           Logger.write('===Ultravox.WebSocketAPIEvents.PlaybackClearBuffer===');
           Logger.write(JSON.stringify(event));
-          webSocketAPIClient.clearMediaBuffer();
+          if (webSocketAPIClient) webSocketAPIClient.clearMediaBuffer();
         });
 
     const inputTextMessageContent = {
@@ -459,7 +459,7 @@ Voximplant can initiate outgoing calls to your PBX and join them to the voice ag
         webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.PlaybackClearBuffer, (event) => {
               Logger.write('===Ultravox.WebSocketAPIEvents.PlaybackClearBuffer===');
               Logger.write(JSON.stringify(event));
-              webSocketAPIClient.clearMediaBuffer();
+              if (webSocketAPIClient) webSocketAPIClient.clearMediaBuffer();
             });
       
         const inputTextMessageContent = {
