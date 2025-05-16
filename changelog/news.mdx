@@ -19,7 +19,7 @@ We're kicking off 2025 with exciting improvements and community-driven developme
 1. Community Hack Day Results
 
 ##### Model Upgrades and Performance Improvements
-* **Model Upgrade** → Upgraded Ultravox 0.4.1 to run on the newest Llama 3.3 model, delivering significantly improved instruction following and tool usage capabilities. This new model is now the [default in the Ultravox Realtime](/availablemodels) service and the [HF model](https://huggingface.co/fixie-ai) and model card are available.
+* **Model Upgrade** → Upgraded Ultravox 0.4.1 to run on the newest Llama 3.3 model, delivering significantly improved instruction following and tool usage capabilities. This new model is now the default in the Ultravox Realtime service and the [HF model](https://huggingface.co/fixie-ai) and model card are available.
 * **Improved Tool Performance** → Updated our vLLM tool parser with more lenient processing to better handle Llama's tool calling patterns, resulting in more consistent performance. We fixed an issue with large tool calls being unstable.
 * **More Improvements** → Added [`vadSettings`](/api-reference/calls/calls-post) parameters for more control, new public [`hang-up`](/essentials/tools#changing-call-state) tool, and added [`timeout`](/api-reference/schema/base-tool-definition) for tools.
 
@@ -192,7 +192,7 @@ You tell us! We're all ears for your suggestions to make Ultravox even better fo
 ### 2024-09-04 - Price Reduction, Resume Calls, Voice Cloning
 * Our managed Ultravox APIs are getting _much_ cheaper. We're decreasing our price to **$0.05/min**. That's full-on, real-time, speech-to-speech voice chat. We think this is the highest quality, lowest cost system out there.
 * We continue to offer 30 minutes of free usage to try it out for yourself. If you'd like to continue using our managed APIs after that, you'll need to set up a Stripe subscription. You can now do that by accessing the billingUrl from the new [/accounts API](../api/accounts/).
-* We've added the ability to seamlessly continue a prior conversation. This is as simple as passing in a priorCallId parameter when [starting a call](../api/calls/). 
-* We've added support for [Voice Cloning](../api/voices/#create-clone-voice). 
+* We've added the ability to seamlessly continue a prior conversation. This is as simple as passing in a priorCallId parameter when [starting a call](../api/calls/).
+* We've added support for [Voice Cloning](../api/voices/#create-clone-voice).
 * We released a new version of the Ultravox Model, [v0.4](https://github.com/fixie-ai/ultravox/releases/tag/v0.4).
 * Tool support is coming very soon!
