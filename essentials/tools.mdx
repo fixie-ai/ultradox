@@ -23,6 +23,9 @@ Ultravox Realtime currently includes the following built-in tools.
 | hangUp         | Terminates the call. You can also have your own [custom tools end the call](#changing-call-state).                                                                   |
 | playDtmfSounds | Plays dual-tone multi-frequency (a.k.a dialpad) tones. See [DTMF](/essentials/telephony#dtmf) for details on sending and receiving tones in your voice applications. |
 
+Aside from being publicly visible, there's nothing special about built-in tools. If you use [list tools](/api-reference/tools/tools-list),
+you'll see they use the same definitions you can create yourself.
+
 ### Using a Built-in Tool
 You give your AI agent access tools when you [create the call](/api-reference/calls/calls-post) or create a new [call stage](/guides/callstages#creating-and-managing-stages).
 
@@ -222,7 +225,7 @@ There are a couple things to note:
 <Accordion title="Client tools require webrtc or websocket call medium.">
   Client tools work best with our client SDKs, which are designed for the webrtc call medium. See [Client Tools](/sdk-reference/introduction#client-tools) to learn how those are registered and used with the [Ultravox Client SDK](/sdk-reference/).
 
-  You can also use client tools with a websocket medium. See the `ClientToolInvocation` and `ClientToolResult` [data messages](/datamessages.mdx).
+  You can also use client tools with a websocket medium. See the `ClientToolInvocation` and `ClientToolResult` [data messages](/datamessages).
 
   If you want a similar experience to client tools with a telephony medium, you have two options:
 
@@ -250,6 +253,8 @@ Your tool can specify multiple options for fulfilling auth requirements (for exa
 Each option may also contain multiple requirements, for example if your server requires both a user_id and an auth_token for that user.
 
 When defining an agent or creating a call, you pass in the key(s) in the `authTokens` property of `selectedTools`.
+If the tokens you provide satisfy multiple options, the first non-empty option whose requirements are all satisfied
+will be used. An unauthenticated option, if present, will only be used if no other option can be satisfied.
 
 <Tabs>
   <Tab title="Query Parameter">
@@ -377,10 +382,10 @@ More information about parameters and their overrides is below.
 
 
 ### Tool Parameters
-Tool parameters define what gets passed in to your backend service when the tool is called. When creating a tool, parameters are defined as one of three types:
+Tool parameters define what gets passed to your implementation when the tool is called. When creating a tool, parameters are defined as one of three types:
 <Steps>
-  <Step title="Dynamic">The model will choose which values to pass. These are the parameters you'd use for a single-generation LLM API. Can be overridden using Parameter Overrides (see [below](#dynamic-parameters)).</Step>
-  <Step title="Static">Value is known when the tool is defined and is unconditionally set on invocations. Not exposed to or set by the model.</Step>
+  <Step title="Dynamic">The model will choose which values to pass. These are the parameters you'd use for a single-generation LLM API.</Step>
+  <Step title="Static">This value is known when the tool is defined and is unconditionally set on invocations. The parameter is not exposed to or set by the model.</Step>
   <Step title="Automatic">Like "Static", except that the value may not be known when the tool is defined but will instead be populated by the system when the tool is invoked.</Step>
 </Steps>
 
@@ -532,15 +537,13 @@ For example:
 }
 ```
 
-## Additional Information
-
 ### Dealing with latency
 
 #### Precomputable Tools
-In order to make sure you can always understand why your tool was invoked, tool invocations are always
-included in the conversation history if they occur at all, with one exception explained shortly. In order
-to maintain this invariant when the model produces both text and a tool call, tools cannot be invoked
-until the agent is done speaking so that we know the agent won't be interrupted.
+In order to make sure you can always understand why your tool was invoked, by default tool invocations
+are always included in the conversation history if they occur at all. To maintain this invariant when
+the model produces both text and a tool call, tools cannot be invoked until the agent is done speaking
+so that we know the agent won't be interrupted.
 
 This is essential for tools that modify state since there's no good way to revert changes if the agent
 is interrupted. However, it's obviously suboptimal for tools like `queryCorpus` where we'd like to look
@@ -548,23 +551,22 @@ up information while the agent is speaking and simply ignore the response if the
 Tools like this can be marked `precomputable`.
 
 Any tool marked `precomputable` will be speculatively invoked as soon as the model produces the tool call.
-When the model produces both text and the tool call, the tool's latency can be masked by the agent speaking.
-If the agent is interrupted, there will be no record of the invocation.
+When the model produces both text and the tool call, the tool's latency can be masked by the agent speaking,
+but if the agent is interrupted there will be no record of the invocation.
 
 In order to safely be marked `precomputable`, a tool should have three properties:
-1. No state changes. For `http` tools, GET requests are usually safe while methods like POST are not.
-1. No side effects. Even a GET request is not safe to precompute if it has a side effect! (It's up to you to decide what counts here though. Side effects like logging probably don't matter to you for example while any database write likely does.)
-1. Idempotent. The tool must return the same result when called with the same parameters, regardless of when or how many times it is called.
+1. *No state changes*. For `http` tools, GET requests are usually safe while methods like POST are not.
+1. *No side effects*. Even a GET request is not safe to precompute if it has a side effect! (It's up to you to decide what counts here though. Side effects like logging probably don't matter to you for example while any database write likely does.)
+1. *Idempotent*. The tool must return the same result when called with the same parameters, regardless of when or how many times it is called.
 
 If your tool meets these requirements, you can mark it `precomputable` using the [corresponding field](/api-reference/tools/tools-post#body-definition-precomputable).
 
 #### Timeouts
-While tools are executing, the conversation is essentially frozen (with caveats for precomputable tools
-as explained above). The user can continue talking all they like, but the agent will never respond until
-after the tool invocation completes. (The agent does have access to anything the user said during tool
-execution once execution completes.)
+While tools are executing, the conversation is essentially frozen. The user can continue talking all they like,
+but the agent will never respond until after the tool invocation completes. (The agent does have access to
+anything the user said during tool execution once execution completes.)
 
-To users, this may feel like the call was disconnected. In order to avoid that, tools are limited to 2.5 seconds
+To users this may feel like the call was disconnected. In order to avoid that, tools are limited to 2.5 seconds
 by default. If your tool needs longer than that (and you can't make it faster!), you can increase the timeout up
 to 20 seconds by setting the tool's [timeout field](/api-reference/tools/tools-post#body-definition-timeout). You
 can also reduce your tool's timeout if you'd like. The value is a duration in seconds, like `5s` for 5 seconds or
@@ -596,9 +598,9 @@ By default, the agent speaks again immediately after a tool call. This is typica
 for tools that gather information since the agent can immediately respond based on the information
 retrieved.
 
-However, this may make less sense for other tools. For example, if your agent is gathering information and
-you have a tool that allows the agent to store what's been gathered so far, you may want the agent to speak
-either before or after the tool but not both.
+However, this may make less sense for other tools. For example, if your agent is gathering information for
+the user and you have a tool that allows the agent to store what's been gathered so far, you may want the
+agent to speak either before or after the tool but not both.
 
 Ultravox Realtime allows you to define how the agent reacts after a tool call by setting the `agent reaction`.
 A default can be set on the tool itself or you can use either the `X-Ultravox-Agent-Reaction` header (for http tools)
