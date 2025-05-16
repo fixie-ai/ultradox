@@ -538,6 +538,8 @@ For example:
 ```
 
 ### Dealing with latency
+When adding your own tools, it's important to keep in mind that there's always a user actively waiting
+for your tool to respond. Tools need to be (or at least appear) fast to make sense in a real-time context.
 
 #### Precomputable Tools
 In order to make sure you can always understand why your tool was invoked, by default tool invocations
