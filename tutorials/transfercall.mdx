@@ -3,7 +3,9 @@ title: "Tutorial: Transfer Call to Human Agent"
 description: Learn how to transfer an inbound call to a human agent using Ultravox client tools and jambonz.
 icon: book-open
 ---
-This tutorial walks you through ... how to transfer an inbound call to a human agent using Ultravox client tools and jambonz.
+This tutorial walks you through building a node.js application that allows the Ultravox AI agent to transfer an incoming phone call to a human agent. The system will:
+1. Recognize when a customer needs a human to intervene
+2. Connect the customer to a human agent
 
 **What you'll learn:**
 - How to handle an inbound call using jambonz
@@ -19,41 +21,23 @@ Before starting this tutorial, make sure you have:
 - Node.js 16+ installed on your machine
 - [ngrok](https://ngrok.com/docs/getting-started/) installed on your machine
 
-{/* Basic knowledge of TypeScript and React
-- The starter code from our [tutorial repository](https://github.com/fixie-ai/ultravox-tutorial-call-stages)
-- Node.js 16+ installed on your machine
-- [ngrok](https://ngrok.com/docs/getting-started/) installed on your machine */}
-
 ## jambonz
 
-{/* ## Understanding Call Stages
-
-Call stages in Ultravox enable dynamic changes to an ongoing conversation by:
-- Switching system prompts mid-conversation
-- Changing voice personalities
-- Maintaining conversation context
-- Handling role transitions seamlessly
-
-In this tutorial, we'll use call stages to transfer angry customers to a manager who can better handle their complaints. */}
-
-## Project Overview: Transferring an Inbound Call from AI Agent to a Human
-
-We'll build an app that allows the Ultravox AI agent to transfer an incoming phone call to a human agent. The system will:
-1. Recognize when a customer needs a human to intervene
-2. Connect the customer to a human agent
+jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
+This gives you the flexibility to use your carrier and speech provider of choice, you'll just need to add them in your jambonz dashboard, following the steps below.
 
 ### Implementation Steps
 
-- ngrok
+{/* - ngrok
 - jambonz setup + carrier, phone number
 - implement the transfer logic - llm verb
 - customize prompt + further parameters
 - .env
-- test
+- test */}
 
 <Steps>
   <Step title="Set Up ngrok">
-    {/* Enable external access to our escalation endpoint */}
+    Enable external access to our transfer-call endpoint
   </Step>
   <Step title="jambonz Portal Setup">
   </Step>
@@ -61,54 +45,37 @@ We'll build an app that allows the Ultravox AI agent to transfer an incoming pho
   </Step>
   <Step title="Handle the Call Transfer Tool Call">
   </Step>
-  <Step title="Customize Agent Prompt and Parameters">
-  </Step>
-  <Step title="Test the App">
-  </Step>
 </Steps>
 
 <Tip>
   <b>Stuck?</b>
   <br />
-  {/* If at any point you get lost, you can refer to the [`/final`](https://github.com/fixie-ai/ultravox-tutorial-call-stages/tree/main/final) folder in the repo to get final versions of the various files you will create or edit. */}
+  If at any point you get lost, you can refer to the [source code](https://github.com/jambonz/ultravox-transfer-call-example).
 </Tip>
 
 <Tip>
   <b>Debugging</b>
   <br />
   During testing, watch your terminal for ngrok request logs to verify the endpoint is being called correctly.
-  recent calls and alerts in jambonz
+  Keep an eye on Recent Calls and Alerts in your jambonz dashboard.
 </Tip>
 
 ## Step 1: Set Up ngrok
 
-First, we need to make our call handling logic endpoint accessible to Ultravox and jambonz.
+For the purpose of this tutorial, we will use ngrok to expose our local server to the internet. This allows jambonz to send requests to our local server without needing to deploy it to a public server.
 
-1. Start your development server:
-```bash
-pnpm run dev
-```
-
-2. In a new terminal, start ngrok:
+1. In a new terminal, start ngrok:
 ```bash
 ngrok http 3000
 ```
 
-3. Copy the HTTPS URL from ngrok (it will look like `https://1234-56-78-910-11.ngrok-free.app`)
-   
-{/* 4. Update `toolsBaseUrl` in `demo-config.ts`:
-```ts
-const toolsBaseUrl = 'https://your-ngrok-url-here';
-``` */}
+2. Make note of the ngrok URL (it will look like `https://1234-56-78-910-11.ngrok-free.app`), we'll use it in the next step.
 
 ## Step 2: jambonz Portal Setup
 
-jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
-    This gives you the flexibility to use your carrier and speech provider of choice, you'll just need to add them in your jambonz dashboard.
-
     <Steps>
       <Step title="Add Your Carrier in jambonz">
-        In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any sip network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
+        In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any SIP network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
       </Step>
 
       <Step title="Add a Speech Provider in jambonz">
@@ -116,10 +83,14 @@ jambonz is a “bring your own everything” open-source telephony platform that
       </Step>
 
       <Step title="Create a New jambonz Application">
-        ​A jambonz application configured via the jambonz portal defines how calls are handled by linking them to your custom logic through webhooks or WebSocket endpoints. When you create an application, you specify:​
+        In jambonz, an application defines how calls are handled by liniking them to our custom logic through webhooks or WebSocket endpoints. We're building a WebSocket application, so we need to link the transfer-call WebSocket endpoint.
+
+        When creating an application, you specify:
         - Call webhook URL: Where jambonz sends call events.​ — use the ngrok URL you copied earlier as `wss://your-ngrok-url-here/transfer-call`
         - Call status webhook URL: For receiving call status updates.​ — use the ngrok URL you copied earlier as `wss://your-ngrok-url-here/transfer-call`
-        - Speech vendors: Your chosen TTS/STT providers.​
+        - Speech vendors: Your chosen TTS/STT providers.​ — select the speech provider you just created
+
+        We're building a WebSocket application, so both the call webhook and call status webhook will be the WebSocket endpoint.
 
         Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. 
       </Step>
@@ -129,23 +100,96 @@ jambonz is a “bring your own everything” open-source telephony platform that
       </Step>
     </Steps>
 
-## Step 3: Define the Call Transfer Tool
-Update the llm object to include a toolHook
-add tool
+## Step 3: Implement WebSocket Endpoint
+Now that we have our jambonz application set up, we need to implement the WebSocket endpoint that will handle incoming calls. This endpoint will be responsible for controlling the call flow, connecting the caller to an Ultravox agent, and transferring them to a human agent when necessary.
+To do this, we will use the [`@jambonz/node-client-ws`](https://docs.jambonz.org/sdks/nodeclientws) client SDK to create a WebSocket server that listens for incoming calls and handles them according to the logic we implement.
+
+### The jambonz WebSocket Client SDK
+
+jambonz can interact with applications using either HTTP webhooks or a websocket connection. This library alows jambonz to interact with applications via a websocket connection. This is useful for applications that need to maintain a persistent connection to jambonz, such as those that require real-time updates or bidirectional communication.
+
+To use this library, an application must first create an http(s) server. This library exposes a function, `createEndpoint` that is then invoked to attach a websocket server to that http server.
+
+Doing so exposes a `makeService` function that can then be called one or more times to create different services corresponding to different request paths ( ‘/transfer-call’ in our case).
+
+Calling `makeService` with a path returns a service client associated with that path. The client emits a `session:new` event when an incoming call has been received for the specified path, providing the application with a `session` object which is then used to act on that call. We'll attach [verbs](https://docs.jambonz.org/verbs/verbs/overview) to this object to define the call flow.
+
+
 
 ```js
-selectedTools: [
-  {
-    temporaryTool: {
-      modelToolName: 'call-transfer',
-      description: 'Transfers the call to a human agent',
-      client: {}
-    }
-  }
-]
+// index.js
+require('dotenv').config(); // load environment variables from .env file
+const logger = require('pino')({level: process.env.LOGLEVEL || 'info'}); // create a logger instance
+
+
+/* create an http/s server in your application */
+const {createServer} = require('http');
+const server = createServer();
+const port = process.env.WS_PORT || 3000;
+server.listen(port, () => {
+    logger.info(`jambonz websocket server listening at http://localhost:${port}`);
+});
+
+/* require the library and call the returned function with your server */
+const {createEndpoint} = require('@jambonz/node-client-ws');
+const makeService = createEndpoint({server});
+
+const service = ({logger, makeService}) => {
+    /* create a jambonz application listeng for requests with URL path '/transfer-call' */
+    const svc = makeService({path: '/transfer-call'});
+
+    /* listen for new calls to that service */
+    svc.on('session:new', (session) => {
+      /* the 'session' object has all of the properties of the incoming call */
+      session.locals = {logger: logger.child({call_sid: session.call_sid})};
+      logger.info({session}, `new incoming call: ${session.call_sid}`);
+      // this is where we'll handle an incoming call
+
+      try {
+            /* set up some event handlers for this session */
+            session
+                .on('close', onClose.bind(null, session))
+                .on('error', onError.bind(null, session))
+
+            /* all of the jambonz verbs are available as methods on the session object 
+            https://www.jambonz.org/docs/webhooks/overview/ */
+            session
+                .answer()
+                .pause({length: 1.5})
+                .llm({
+                  // jambonz integrates with Ultravox via the llm verb
+                  // this is where we'll connect the call to the Ultravox agent
+                })
+                .hangup()
+                .send(); // sends the queued verbs to jambonz
+
+        } catch (err) {
+          session.locals.logger.info({err}, `Error to responding to incoming call: ${session.call_sid}`);
+          session.close();
+        }
+
+    });
+};
+
+const onClose = (session, code, reason) => {
+    const {logger} = session.locals;
+    logger.info({session, code, reason}, `session ${session.call_sid} closed`);
+};
+
+const onError = (session, err) => {
+    const {logger} = session.locals;
+    logger.info({err}, `session ${session.call_sid} received error`);
+};
+
+module.exports = service;
+service({logger, makeService});  
+
 ```
 
-## Step 4: Handle the Call Transfer Tool Call
+
+## Step 4: 
+
+
 
 
 
@@ -168,16 +212,11 @@ selectedTools: [
 2. **...**
 
 
-{/* 3. **Manager Voice Not Changing**
-   - Verify the `X-Ultravox-Response-Type` header is set
-   - Check the voice parameter in the response body */}
-
 ## Next Steps
 
 
 
 ## Resources
 
-- 
-
-- [Tutorial Source Code]() 
+- [jambonz LLM Verb Reference](https://docs.jambonz.org/verbs/verbs/llm)
+- [Tutorial Source Code](https://github.com/jambonz/ultravox-transfer-call-example) 
