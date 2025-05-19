@@ -1,0 +1,305 @@
+---
+title: 'Transferring Calls'
+description: 'How to have your agent transfer the call to a human.'
+icon: 'shuffle'
+---
+
+## Introduction
+
+There are scenarios where your voice AI agent may need to transfer a call to a human agent or another system. This could be for:
+
+- Escalating complex issues that require human intervention
+- Transferring to specialized departments based on customer needs
+- Handing off to human agents when callers specifically request it or are upset
+
+## Implementing Call Transfers
+
+To implement call transfers, we need to:
+
+1. [**Create a Transfer Tool**](#step-1%3A-create-a-transfer-tool) → Create a custom tool that your Ultravox agent can use to trigger transfers.
+1. [**Implement Tool Endpoint**](#step-2%3A-implement-tool-endpoint) → Set up an API endpoint to handle the transfer request.
+1. [**Use Telephony Provider's API**](#step-3%3A-use-telephony-provider%E2%80%99s-api) → Utilize your telephony provider's API to perform the actual call transfer.
+1. [**Track Active Calls**](#step-4%3A-track-active-calls) → Maintain a list of Ultravox call IDs and their corresponding call identifier for your telephony calls.
+
+Let's get into the details for each step:
+
+### Step 1: Create a Transfer Tool
+First, you need to define a tool that your Ultravox agent can use to initiate transfers. This tool will collect necessary information about the caller and reason for transfer.
+
+```js Tool Definition
+{
+  "name": "transferCall",
+  "definition": {
+    "description": "Transfers call to a human. Use this if a caller is upset.",
+    "automaticParameters": [
+      {
+        "name": "callId",
+        "location": "PARAMETER_LOCATION_BODY",
+        "knownValue": "KNOWN_PARAM_CALL_ID"
+      }
+    ],
+    "dynamicParameters": [
+      {
+        "name": "firstName",
+        "location": "PARAMETER_LOCATION_BODY",
+        "schema": {
+          "description": "The caller's first name",
+          "type": "string"
+        },
+        "required": true
+      },
+      {
+        "name": "lastName",
+        "location": "PARAMETER_LOCATION_BODY",
+        "schema": {
+          "description": "The caller's last name",
+          "type": "string"
+        },
+        "required": true
+      },
+      {
+        "name": "transferReason",
+        "location": "PARAMETER_LOCATION_BODY",
+        "schema": {
+          "description": "The reason the call is being transferred.",
+          "type": "string"
+        },
+        "required": true
+      }
+    ],
+    "http": {
+      "baseUrlPattern": "<YOUR_SERVER_URI>/transferCall",
+      "httpMethod": "POST"
+    }
+  }
+}
+```
+
+This configuration:
+- Names the tool `transferCall`.
+- Provides a description explaining when to use it. This description should be customized for your use case.
+- Automatically includes the unique Ultravox Call ID for the current call and names it `callId`.
+- Collects caller information and transfer reason as dynamic parameters. These should be customized (or omitted) for your scenario.
+- Defines the HTTP endpoint and method for the tool. This can also be implemented as a [client tool](/essentials/tools#server-vs-client-tools).
+
+### Step 2: Implement Tool Endpoint
+Next, create an API endpoint that will handle the transfer call tool request from your Ultravox agent. 
+
+```js 
+// Express.js example for exposing an HTTP tool
+router.post('/transferCall', async (req, res) => {
+  const { callId } = req.body;
+  try {
+    const result = await transferActiveCall(callId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+```
+
+### Step 3: Use Telephony Provider's API
+Implement the function that uses your telephony provider's API to perform the actual call transfer.
+
+<Note>
+For Plivo we have to introduce a new endpoint to return XML for the call transfer. Otherwise, the approaches are similar.
+</Note>
+
+<Tabs>
+  <Tab title="Twilio">
+    ```js
+    // Store Ultravox callId and Twilio callSid mapping when a call starts
+    // In prod replace the map with a database
+    const activeCalls = new Map();
+    function registerCall(ultravoxCallId, twilioCallSid, callerNumber) {
+      activeCalls.set(ultravoxCallId, {
+        twilioCallSid,
+        callerNumber,
+        startTime: new Date()
+      });
+    }
+
+    /**
+     * Transfer an active call to a destination number
+     * @param {string} ultravoxCallId - The Ultravox call ID
+     * @param {string} destinationNumber - The phone number to transfer to (e.g., "+15551234567")
+     * @returns {Object} Result of the transfer operation
+     */
+    async function transferActiveCall(ultravoxCallId, destinationNumber = "+15551234567") {
+      try {
+        const callData = activeCalls.get(ultravoxCallId);
+        if (!callData || !callData.twilioCallSid) {
+          throw new Error('Call not found or invalid CallSid');
+        }
+
+        // Initialize Twilio client
+        const twilio = require('twilio');
+        const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+        const twiml = new twilio.twiml.VoiceResponse();
+        twiml.dial().number(destinationNumber);
+
+        // Update the active call with the new TwiML
+        const updatedCall = await client.calls(callData.twilioCallSid)
+          .update({
+            twiml: twiml.toString()
+          });
+
+        return {
+          status: 'success',
+          message: 'Call transfer initiated',
+          callDetails: updatedCall
+        };
+
+      } catch (error) {
+        console.error('Error transferring call:', error);
+        throw error;
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Plivo">
+    ```js
+    // Store Ultravox callId and Plivo call uuid mapping when a call starts
+    // In prod replace the map with a database
+    const activeCalls = new Map();
+    function registerCall(ultravoxCallId, plivoCallUuid, callerNumber) {
+      activeCalls.set(ultravoxCallId, {
+        plivoCallUuid,
+        callerNumber,
+        startTime: new Date()
+      });
+    }
+
+    /**
+     * Transfer an active call to a destination number using Plivo
+     * @param {string} ultravoxCallId - The Ultravox call ID
+     * @param {string} destinationNumber - The phone number to transfer to (e.g., "+15551234567")
+     * @returns {Object} Result of the transfer operation
+     */
+    async function transferActiveCall(ultravoxCallId, destinationNumber = "+15551234567") {
+      try {
+        const callData = activeCalls.get(ultravoxCallId);
+        if (!callData || !callData.plivoCallUuid) {
+          throw new Error('Call not found or invalid Call UUID');
+        }
+
+        // Initialize Plivo client
+        const plivo = require('plivo');
+        const client = new plivo.Client(process.env.PLIVO_AUTH_ID, process.env.PLIVO_AUTH_TOKEN);
+        
+        // URL to your endpoint that will return XML with instructions to dial the destination number
+        // This endpoint should be pre-configured to return the appropriate XML
+        const transferUrl = `https://your-application-url.com/plivo-transfer-xml?destination=${encodeURIComponent(destinationNumber)}`;
+        
+        // Initiate the transfer
+        const transferResponse = await client.calls.transfer(
+          callData.plivoCallUuid,
+          {
+            legs: 'aleg',  // Transfer the caller (A leg)
+            alegUrl: transferUrl,
+            alegMethod: 'POST'
+          }
+        );
+
+        return {
+          status: 'success',
+          message: 'Call transfer initiated',
+          callDetails: transferResponse
+        };
+
+      } catch (error) {
+        console.error('Error transferring call:', error);
+        throw {
+          status: 'error',
+          message: 'Failed to transfer call',
+          error: error.message
+        };
+      }
+    }
+
+    // Express.js example for the Plivo endpoint to return XML
+    app.post('/plivo-transfer-xml', (req, res) => {
+      const destination = req.query.destination;
+      const plivoResponse = new plivo.Response();
+      const dial = plivoResponse.addDial();
+      dial.addNumber(destination);
+      res.set('Content-Type', 'text/xml');
+      res.send(plivoResponse.toXML());
+    });
+    ```
+  </Tab>
+  <Tab title="Telnyx">
+    ```js
+    // Store Ultravox callId and Telnyx call control id mapping when a call starts
+    // In prod replace the map with a database
+    const activeCalls = new Map();
+    function registerCall(ultravoxCallId, telnyxCallControlId, callerNumber) {
+      activeCalls.set(ultravoxCallId, {
+        telnyxCallControlId,
+        callerNumber,
+        startTime: new Date()
+      });
+    }
+
+    /**
+    * Transfer an active call to a destination number using Telnyx
+    * @param {string} ultravoxCallId - The Ultravox call ID
+    * @param {string} destinationNumber - The phone number to transfer to (e.g., "+15551234567")
+    * @returns {Object} Result of the transfer operation
+    */
+    async function transferActiveCall(ultravoxCallId, destinationNumber = "+15551234567") {
+      try {
+        const callData = activeCalls.get(ultravoxCallId);
+        if (!callData || !callData.telnyxCallControlId) {
+          throw new Error('Call not found or invalid Call Control ID');
+        }
+
+        // Initialize Telnyx client
+        const telnyx = require('telnyx')(process.env.TELNYX_API_KEY);
+
+        // Initiate transfer using the Call Control API
+        const transferResponse = await telnyx.calls.transfer({
+          call_control_id: callData.telnyxCallControlId,
+          to: destinationNumber
+        });
+
+        return {
+          status: 'success',
+          message: 'Call transfer initiated',
+          callDetails: transferResponse.data
+        };
+
+      } catch (error) {
+        console.error('Error transferring call:', error);
+        throw {
+          status: 'error',
+          message: 'Failed to transfer call',
+          error: error.message
+        };
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Step 4: Track Active Calls
+Finally, when you create new Ultravox calls, track them along with the unique identifier for your telephony provider's call.
+
+```js
+  // When a new call comes in
+  app.post('/incomingCall', (req, res) => {
+    // Showing Twilio, adjust for Plivo or Telnyx
+    const twilioCallSid = req.body.CallSid;
+    const callerNumber = req.body.From;
+    
+    // Start Ultravox call
+    const response = createUltravoxCall();
+    
+    // Register the call in our db for later transfer capability
+    // Adjust for Plivo or Telnyx
+    registerCall(response.callId, twilioCallSid, callerNumber);
+    
+    // Continue with normal call handling...
+  });
+  ```
