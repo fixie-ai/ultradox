@@ -153,11 +153,7 @@ For Plivo we have to introduce a new endpoint to return XML for the call transfe
 
       } catch (error) {
         console.error('Error transferring call:', error);
-        throw {
-          status: 'error',
-          message: 'Failed to transfer call',
-          error: error.message
-        };
+        throw error;
       }
     }
     ```
