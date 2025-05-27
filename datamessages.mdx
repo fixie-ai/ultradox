@@ -25,6 +25,7 @@ This table provides key messages at a glance. Details on each message type appea
 | [ClientToolInvocation](#clienttoolinvocation) | Server | Asks the client to invoke a client tool.               |
 | [ClientToolResult](#clienttoolresult)         | Client | Contains the result of a client tool invocation.       |
 | [Debug](#debug)                               | Server | Useful for application debugging. Excluded by default. |
+| [CallStarted](#callstarted)                   | Server | Notifies that a call has started.                      |
 | [PlaybackClearBuffer](#playbackclearbuffer)   | Server | Used to clear buffered output audio. WebSocket only.   |
 
 
@@ -93,6 +94,11 @@ A message sent by the server to communicate debug information.
 - `type: "debug"`
 - `message`: String. Debug information
 - Disabled by default
+
+## CallStarted
+A message sent by the server to notify that a call has started.
+- `type: "call_started"`
+- `callId`: String. The ID of the call that has started.
 
 ## PlaybackClearBuffer
 Message sent by our server to clear buffered output audio. Integrators should drop as much unplayed output audio as possible in order for interruptions to function properly.
