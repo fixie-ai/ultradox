@@ -1,0 +1,448 @@
+---
+title: "Tutorial: Transfer Call to Human Agent"
+description: Learn how to transfer an inbound call to a human agent using Ultravox client tools and jambonz.
+icon: book-open
+---
+This tutorial walks you through building a node.js application that allows the Ultravox AI agent to transfer an incoming phone call to a human agent. The system will:
+1. Recognize when a customer needs a human to intervene
+2. Connect the customer to a human agent
+
+**What you'll learn:**
+- How to handle an inbound call using jambonz
+- How to connect an inbound call to an Ultravox AI agent
+- How to transfer an ongoing call from an AI agent to a human agent
+
+
+## Prerequisites
+
+Before starting this tutorial, make sure you have:
+- a [jambonz](https://jambonz.cloud/) account
+- an [Ultravox](https://ultravox.ai/) account
+- Node.js 16+ installed on your machine
+- [ngrok](https://ngrok.com/docs/getting-started/) installed on your machine
+
+## jambonz
+
+jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
+This gives you the flexibility to use your carrier and speech provider of choice, you'll just need to add them in your jambonz dashboard, following the steps below.
+
+<Tip>
+  <b>Stuck?</b>
+  <br />
+  If at any point you get lost, you can refer to the [source code](https://github.com/jambonz/ultravox-transfer-call-example).
+</Tip>
+
+<Tip>
+  <b>Debugging</b>
+  <br />
+  During testing, watch your terminal for ngrok request logs to verify the endpoint is being called correctly.
+  Keep an eye on Recent Calls and Alerts in your jambonz dashboard.
+</Tip>
+
+## Step 1: Set Up ngrok
+
+For the purpose of this tutorial, we will use ngrok to expose our local server to the internet. This allows jambonz to send requests to our local server without needing to deploy it to a public server.
+
+1. In a new terminal, start ngrok:
+```bash
+ngrok https 3000
+```
+
+2. Make note of the ngrok URL (it will look like `https://1234-56-78-910-11.ngrok-free.app`), we'll use it in the next step.
+
+## Step 2: jambonz Portal Setup
+
+    <Steps>
+      <Step title="Add Your Carrier in jambonz">
+        In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any SIP network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
+      </Step>
+
+      <Step title="Add a Speech Provider in jambonz">
+        Next, you need to [add speech credentials](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-speech-credentials) for your chosen vendor.
+      </Step>
+
+      <Step title="Create a New jambonz Application">
+        In jambonz, an application defines how calls are handled by liniking them to our custom logic through webhooks or WebSocket endpoints. We're building a WebSocket application, so we need to link the transfer-call WebSocket endpoint.
+
+        When creating an application, you specify:
+        - Call webhook URL: Where jambonz sends call events.​ — use the ngrok URL you copied earlier as `wss://your-ngrok-url-here/transfer-call`
+        - Call status webhook URL: For receiving call status updates.​ — use the ngrok URL you copied earlier as `wss://your-ngrok-url-here/transfer-call`
+        - Speech vendors: Your chosen TTS/STT providers.​ — select the speech provider you just created
+
+        We're building a WebSocket application, so both the call webhook and call status webhook will be the WebSocket endpoint.
+
+        Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. 
+      </Step>
+
+      <Step title="Add a Phone Number in jambonz">
+        Finally, you need to [add a phone number](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-phone-numbers) provisioned from your carrier of choice. At the bottom of the page select the jambonz application you just created to link your new virtual number to that application.
+      </Step>
+    </Steps>
+
+## Step 3: Handle the Incoming Call
+Now that we have our jambonz application set up, we need to implement the WebSocket endpoint that will handle incoming calls. This endpoint will be responsible for controlling the call flow, connecting the caller to an Ultravox agent, and transferring them to a human agent when necessary.  
+
+We will use the [`@jambonz/node-client-ws`](https://docs.jambonz.org/sdks/nodeclientws) client SDK to define how the inbound calls will be handled.
+
+### The jambonz WebSocket Client SDK
+
+This library alows jambonz to interact with applications via a websocket connection. This is useful for applications that need to maintain a persistent connection to jambonz, such as those that require real-time updates or bidirectional communication.
+
+To use this library, an application must first create an http(s) server. This library exposes a function, `createEndpoint` that is then invoked to attach a websocket server to that http server.
+
+Doing so exposes a `makeService` function that can then be called to create services corresponding to different request paths (‘/transfer-call’ in our case).
+
+Calling `makeService` with a path returns a service client associated with that path. The client emits a `session:new` event when an incoming call has been received for the specified path, providing the application with a `session` object which is then used to act on that call. We'll attach [verbs](https://docs.jambonz.org/verbs/verbs/overview) to this object to define the call flow.
+
+
+
+```js
+// load environment variables from .env file
+require('dotenv').config(); 
+// create a logger instance
+const logger = require('pino')({level: process.env.LOGLEVEL || 'info'}); // create a logger instance
+
+
+// create an http/s server in your application 
+const {createServer} = require('http');
+const server = createServer();
+const port = process.env.WS_PORT || 3000;
+server.listen(port, () => {
+    logger.info(`jambonz websocket server listening at http://localhost:${port}`);
+});
+
+// require the library and call the returned function with your server 
+const {createEndpoint} = require('@jambonz/node-client-ws');
+const makeService = createEndpoint({server});
+
+const service = ({logger, makeService}) => {
+    // create a jambonz application listeng for requests with URL path '/transfer-call' 
+    const svc = makeService({path: '/transfer-call'});
+
+    // listen for new calls to that service 
+    svc.on('session:new', (session) => {
+      // the 'session' object has all of the properties of the incoming call 
+      session.locals = {logger: logger.child({call_sid: session.call_sid})};
+      logger.info({session}, `new incoming call: ${session.call_sid}`);
+
+      const apiKey = process.env.ULTRAVOX_API_KEY;
+
+      try {
+            // set up some event handlers for this session 
+            session
+                .on('close', onClose.bind(null, session))
+                .on('error', onError.bind(null, session))
+
+            // all jambonz verbs available as methods on the session object 
+            // https://www.jambonz.org/docs/webhooks/overview/ 
+            session
+                .answer()
+                .pause({length: 1.5})
+                .llm({
+                  // this is where we'll connect the call to the Ultravox agent
+                })
+                .hangup()
+                .send(); // sends the queued verbs to jambonz
+
+        } catch (err) {
+          session.locals.logger.info({err}, `Error to responding to incoming call: ${session.call_sid}`);
+          session.close();
+        }
+
+    });
+};
+
+const onClose = (session, code, reason) => {
+    const {logger} = session.locals;
+    logger.info({session, code, reason}, `session ${session.call_sid} closed`);
+};
+
+const onError = (session, err) => {
+    const {logger} = session.locals;
+    logger.info({err}, `session ${session.call_sid} received error`);
+};
+
+module.exports = service;
+service({logger, makeService});  
+
+```
+
+## Step 4: Connect the Call to Ultravox
+Now that we have our WebSocket endpoint set up, we need to connect the call to an Ultravox agent. This is done using the [`llm` verb](https://docs.jambonz.org/verbs/verbs/llm).
+
+
+```js
+.llm({
+    // select Ultravox as the vendor
+    vendor: 'ultravox',
+    model: 'fixie-ai/ultravox',
+    // your Ultravox API key
+    auth: {
+        apiKey
+    },
+    actionHook: '/final',
+    eventHook: '/event',
+    toolHook: '/toolCall',
+    llmOptions: {
+        // define what the AI agent does
+        systemPrompt: 'You are an agent named Karen. You can help the caller with simple questions or transfer them to a human agent. Be brief. When you call the tool to transfer the call provide a brief summary of the call with the user so far. Let the caller know you are going to transfer them and then immediately call the call-transfer tool.',
+        // agent to speak first
+        firstSpeaker: 'FIRST_SPEAKER_AGENT',
+        initialMessages: [{
+            medium: 'MESSAGE_MEDIUM_VOICE',
+            role: 'MESSAGE_ROLE_USER'
+        }],
+        model: 'fixie-ai/ultravox',
+        voice: 'Tanya-English',
+        transcriptOptional: true,
+        selectedTools: [{
+            temporaryTool: {
+                modelToolName: 'call-transfer',
+                description: 'Transfers the call to a human agent',
+                dynamicParameters: [
+                    {
+                      name: 'conversation_summary',
+                      location: 'PARAMETER_LOCATION_BODY',
+                      schema: {
+                        type: 'string',
+                        description: 'A summary of the conversation so far'
+                      },
+                      required: true
+                    }
+                  ],
+                client: {}
+            }
+        }]
+    }
+})
+```
+
+`actionHook: '/final'`: Webhook that will be called when the LLM session ends.
+
+`eventHook: '/event'`: Webhook that will be called when a requested LLM event happens (e.g., transcript).
+
+`toolHook: '/toolCall'`: Webhook that will be called when the LLM wants to call a function (e.g. call-transfer).
+
+### Define the Call Transfer Tool 
+
+The `llm` verb allows you to define a tool that will be called when the Ultravox agent determines that a human agent is needed. This is done using the `selectedTools` property of the `llmOptions` object.
+
+```js
+
+selectedTools: [{
+    temporaryTool: {
+        modelToolName: 'call-transfer',
+        description: 'Transfers the call to a human agent',
+        client: {}
+    }
+}]
+
+```
+
+
+### Collect a Summary of the Conversation with the AI Agent
+
+We need to create a `conversation_summary` dynamic parameter within the `temporaryTool` object that will store a brief summary of the conversation between the caller and the Ultravox AI agent. We can then use this variable to pass the summary along to the human agent as a text-to-speech message upon transfer.
+
+```js
+
+dynamicParameters: [
+            {
+              name: 'conversation_summary',
+              location: 'PARAMETER_LOCATION_BODY',
+              schema: {
+                type: 'string',
+                description: 'A summary of the conversation so far'
+              },
+              required: true
+            }
+          ]
+```
+
+## Step 5: Connect the Call to a Human Agent
+
+### Transfer the Call to a Human Agent
+
+When the Ultravox agent determines that a human agent is needed, it will call the `call-transfer` tool we defined earlier. This tool will then transfer the call to a human agent by making an outbound call using the [`dial` verb](https://docs.jambonz.org/verbs/verbs/dial).
+In the call logic, we're also defining an `actionHook` and a `confirmHook` to handle the call transfer process.
+
+`actionHook: '/dialAction'`: webhook to invoke when the call ends. The webhook will include properties describing the outcome of the call attempt.
+
+`confirmHook: '/confirmAction'`: webhook for an application to run on the callee’s end after the dialed number answers but before the call is connected. This is where we'll play a text-to-speech summary of the call so far to the human agent befor the caller gets connected. We'll implement this in the next step.
+
+
+```js
+const onToolCall = async(session, evt) => {
+    const {logger} = session.locals;
+    const {name, args, tool_call_id} = evt;
+    const {conversation_summary} = args;
+    logger.info({evt}, `got toolHook for ${name} with tool_call_id ${tool_call_id}`);
+
+    session.locals.conversation_summary = conversation_summary;
+
+    try {
+        const data = {
+            type: 'client_tool_result',
+            invocation_id: tool_call_id,
+            result: "Successfully transferred call to agent, telling user to wait for a moment.",
+        };
+    
+        
+        session.sendCommand('redirect', [
+            {
+                verb: 'say',
+                text: 'Please wait while I connect your call'
+            },
+            {
+                verb: 'dial',
+                actionHook: '/dialAction',
+                confirmHook: '/confirmAction',
+                callerId: process.env.HUMAN_AGENT_CALLERID,
+                target: [
+                    {
+                        type: 'phone',
+                        number: process.env.HUMAN_AGENT_NUMBER,
+                        trunk: process.env.HUMAN_AGENT_TRUNK
+                    }
+                ]
+            }
+        ]);
+    
+    
+        session.sendToolOutput(tool_call_id, data);
+  
+    } catch (err) {
+        logger.info({err}, 'error transferring call');
+        const data = {
+            type: 'client_tool_result',
+            invocation_id: tool_call_id,
+            error_message: 'Failed to transfer call'
+        };
+        session.sendToolOutput(tool_call_id, data);
+    }
+};
+
+```
+
+### Send Call Summary to Human Agent
+
+The call logic we define within `confirmAction` will be executed after the human agent answers the call but before the call is connected to the caller. In this case, we're sending a summary of the conversation so far to the human agent by using the [`say`verb](https://docs.jambonz.org/verbs/verbs/say).
+
+```js
+
+const confirmAction = async(session, evt) => {
+    conversation_summary = session.locals.conversation_summary;
+    logger.info(`Summary: ${conversation_summary}`);
+
+    session
+        .pause({length: 1})
+        .say({text: "The summary of the conversation so far is: " + conversation_summary})
+        .reply();
+}
+```
+
+## Step 6: Add Event Handlers for the Hooks Created
+
+Ensure that all the hooks we defined so far are handled. This includes the event hook, final action hook, tool call hook, dial action hook, and confirm action hook in addition to the initial setup.
+
+```js
+session
+    .on('/event', onEvent.bind(null, session))
+    .on('/final', onFinal.bind(null, session))
+    .on('close', onClose.bind(null, session))
+    .on('error', onError.bind(null, session))
+    .on('/toolCall', onToolCall.bind(null, session))
+    .on('/dialAction', dialAction.bind(null, session))
+    .on('/confirmAction', confirmAction.bind(null, session));
+
+```
+
+`onEvent` is called when the LLM session receives an event, such as a transcript or a tool call. This is where we can log the event or take any other action we need to.
+```js
+const onEvent = async(session, evt) => {
+    const {logger} = session.locals;
+    logger.info(`got eventHook: ${JSON.stringify(evt)}`);
+};
+```
+
+`onFinal` is called when the LLM session ends. This is where we will handle any errors that occur during the call and notify the caller if necessary.
+
+```js
+const onFinal = async(session, evt) => {
+    const {logger} = session.locals;
+    logger.info(`got actionHook: ${JSON.stringify(evt)}`);
+
+    if (['server failure', 'server error'].includes(evt.completion_reason)) {
+        if (evt.error.code === 'rate_limit_exceeded') {
+            let text = 'Sorry, you have exceeded your  rate limits. ';
+            const arr = /try again in (\d+)/.exec(evt.error.message);
+            if (arr) {
+                text += `Please try again in ${arr[1]} seconds.`;
+            }
+            session
+                .say({text});
+        }
+        else {
+            session
+                .say({text: 'Sorry, there was an error processing your request.'});
+        }
+        session.hangup();
+    }
+    session.reply();
+};
+```
+
+`dialAction` is the action hook that will be called when the call to the human agent ends. This is where we will notify the caller that the call has ended and hang up.
+
+```js
+const dialAction = async(session, evt) => {
+    const {logger} = session.locals;
+    logger.info(`dialAction: `);
+    console.log(evt);
+    session
+        .say({text: "The call with a human agent has ended"})
+        .hangup()
+        .reply();
+}
+```
+
+## Test Your Implementation
+
+Finally, create a `.env` file in the root of your project with the following variables:
+
+```env
+ULTRAVOX_API_KEY=eWBZ1yD3.example-UV-KEYotRQ3DlTR8a1sKVr
+WS_PORT=3000
+
+# Required for Call Transfer
+HUMAN_AGENT_NUMBER=+12125551212
+HUMAN_AGENT_TRUNK=MyCarrier
+HUMAN_AGENT_CALLERID=+14155551000
+```
+Install dependencies:
+
+```bash
+npm install @jambonz/node-client-ws dotenv pino
+```
+
+Then start your application:
+
+```bash
+node index.js
+```
+Now, when you call the phone number you provisioned in jambonz, the call will be answered by the Ultravox AI agent. If the AI agent determines that a human agent is needed, it will transfer the call to the human agent and provide a summary of the conversation so far.
+
+## Next Steps
+
+This tutorial illustrates a simple call transfer scenario, but you can customize it to fit a wide variety of use cases.
+
+Adjust the `systemPrompt` to change the behavior of the Ultravox agent—make this as detailed and specific as you like. See the [Ultravox Prompting Guide](https://docs.ultravox.ai/gettingstarted/prompting) for more information on how to craft effective prompts.  
+
+You can also add more tools to the `selectedTools` array to enable the Ultravox agent to perform additional actions, such as querying a database or calling an external API.
+
+Customize the call behaviour by adding more verbs to the session, such as `play`, `record`, or `gather`. See the [jambonz docs](https://docs.jambonz.org/verbs/verbs/overview) for a full list of available verbs.
+
+## Resources
+
+- [jambonz LLM Verb Reference](https://docs.jambonz.org/verbs/verbs/llm)
+- [Tutorial Source Code](https://github.com/jambonz/ultravox-transfer-call-example) 
