@@ -284,6 +284,13 @@ dynamicParameters: [
 
 ### Transfer the Call to a Human Agent
 
+When the Ultravox agent determines that a human agent is needed, it will call the `call-transfer` tool we defined earlier. This tool will then transfer the call to a human agent by making an outbound call using the [`dial` verb](https://docs.jambonz.org/verbs/verbs/dial).
+In the call logic, we're also defining an `actionHook` and a `confirmHook` to handle the call transfer process.
+
+`actionHook: '/dialAction'`: webhook to invoke when the call ends. The webhook will include properties describing the outcome of the call attempt.
+
+`confirmHook: '/confirmAction'`: webhook for an application to run on the callee’s end after the dialed number answers but before the call is connected. This is where we'll play a text-to-speech summary of the call so far to the human agent befor the caller gets connected. We'll implement this in the next step.
+
 
 ```js
 const onToolCall = async(session, evt) => {
@@ -338,13 +345,9 @@ const onToolCall = async(session, evt) => {
 
 ```
 
-`actionHook: '/dialAction'`: webhook to invoke when the call ends. The webhook will include properties describing the outcome of the call attempt.
-
-`confirmHook: '/confirmAction'`: webhook for an application to run on the callee’s end after the dialed number answers but before the call is connected.
-
-
 ### Send Call Summary to Human Agent
 
+The call logic we define within `confirmAction` will be executed after the human agent answers the call but before the call is connected to the caller. In this case, we're sending a summary of the conversation so far to the human agent by using the [`say`verb](https://docs.jambonz.org/verbs/verbs/say).
 
 ```js
 
@@ -361,6 +364,8 @@ const confirmAction = async(session, evt) => {
 
 ## Step 6: Add Event Handlers for the Hooks Created
 
+Ensure that all the hooks we defined so far are handled. This includes the event hook, final action hook, tool call hook, dial action hook, and confirm action hook in addition to the initial setup.
+
 ```js
 session
     .on('/event', onEvent.bind(null, session))
@@ -373,12 +378,15 @@ session
 
 ```
 
+`onEvent` is called when the LLM session receives an event, such as a transcript or a tool call. This is where we can log the event or take any other action we need to.
 ```js
 const onEvent = async(session, evt) => {
     const {logger} = session.locals;
     logger.info(`got eventHook: ${JSON.stringify(evt)}`);
 };
 ```
+
+`onFinal` is called when the LLM session ends. This is where we will handle any errors that occur during the call and notify the caller if necessary.
 
 ```js
 const onFinal = async(session, evt) => {
@@ -405,6 +413,8 @@ const onFinal = async(session, evt) => {
 };
 ```
 
+`dialAction` is the action hook that will be called when the call to the human agent ends. This is where we will notify the caller that the call has ended and hang up.
+
 ```js
 const dialAction = async(session, evt) => {
     const {logger} = session.locals;
@@ -419,20 +429,39 @@ const dialAction = async(session, evt) => {
 
 ## Test Your Implementation
 
+Finally, create a `.env` file in the root of your project with the following variables:
 
-## Common Issues
+```env
+ULTRAVOX_API_KEY=eWBZ1yD3.example-UV-KEYotRQ3DlTR8a1sKVr
+WS_PORT=3000
 
-1. **ngrok URL Not Working**
-   - Make sure ngrok is running
-   - Check the URL is correctly copied to `demo-config.ts`
-   - Verify no trailing slash in the URL
+# Required for Call Transfer
+HUMAN_AGENT_NUMBER=+12125551212
+HUMAN_AGENT_TRUNK=MyCarrier
+HUMAN_AGENT_CALLERID=+14155551000
+```
+Install dependencies:
 
-2. **...**
+```bash
+npm install @jambonz/node-client-ws dotenv pino
+```
 
+Then start your application:
+
+```bash
+node index.js
+```
+Now, when you call the phone number you provisioned in jambonz, the call will be answered by the Ultravox AI agent. If the AI agent determines that a human agent is needed, it will transfer the call to the human agent and provide a summary of the conversation so far.
 
 ## Next Steps
 
+This tutorial illustrates a simple call transfer scenario, but you can customize it to fit a wide variety of use cases.
 
+Adjust the `systemPrompt` to change the behavior of the Ultravox agent—make this as detailed and specific as you like. See the [Ultravox Prompting Guide](https://docs.ultravox.ai/gettingstarted/prompting) for more information on how to craft effective prompts.  
+
+You can also add more tools to the `selectedTools` array to enable the Ultravox agent to perform additional actions, such as querying a database or calling an external API.
+
+Customize the call behaviour by adding more verbs to the session, such as `play`, `record`, or `gather`. See the [jambonz docs](https://docs.jambonz.org/verbs/verbs/overview) for a full list of available verbs.
 
 ## Resources
 
