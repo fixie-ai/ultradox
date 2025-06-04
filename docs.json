@@ -45,6 +45,7 @@
             "group": "Essentials",
             "pages": [
               "essentials/apikeys",
+              "essentials/concurrency",
               "essentials/tools",
               "essentials/rag",
               "essentials/sdk",

@@ -2,6 +2,9 @@
 title: 'Ultravox REST API Overview'
 description: ''
 ---
+
+import ConcurrencyTable from '/snippets/concurrencyTable.mdx'
+
 <Info>
   <b>Get an API Key</b>
 
@@ -60,9 +63,11 @@ We restrict the number of API requests per second. We restrict at the account an
 * **API Key**: 200 requests per second
 
 ### Call Concurrency Limits
-Accounts can have five concurrent calls. That means any calls that have been created and that are not yet ended.
+The number of concurrent calls allowed depends on your plan.
 
-Contact us if you need higher call concurrency limits. Ultravox can scale to thousands of concurrent calls per account.
+<ConcurrencyTable />
+
+See [Scaling & Call Concurrency](/essentials/concurrency) for more details.
 
 ## Playground
 If you want to quickly experiment with prompts and voices, the fastest way to do that is in the [Ultravox Dashboard](https://app.ultravox.ai/playground).
