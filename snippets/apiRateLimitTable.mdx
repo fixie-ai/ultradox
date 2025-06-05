@@ -1,0 +1,19 @@
+
+### API Limits
+We restrict the number of API requests per second. We restrict at the account and API key level as follows:
+
+| Level          | API Requests per Second |
+|----------------|-------------------------|
+| <b>Account</b> | 500                     |
+| <b>API Key</b> | 200                     |
+
+### Call Creation Limits
+In addition to the overall [API limits](#api-limits), we restrict how quickly accounts can create calls in the system.
+
+| Plan Type    | Per Second | Per Minute |
+|--------------|------------|------------|
+| Free / PAYGO | 5          | 30         |
+| Pro          | 10         | 120        |
+| Scale        | 30         | 360        |
+
+> _Call creation is limited by whichever threshold is reached first (per second or per minute)._

@@ -4,6 +4,7 @@ description: ''
 ---
 
 import ConcurrencyTable from '/snippets/concurrencyTable.mdx'
+import APIRateLimits from '/snippets/apiRateLimitTable.mdx'
 
 <Info>
   <b>Get an API Key</b>
@@ -57,10 +58,7 @@ fetch('https://api.ultravox.ai/api/calls', {
 ## Rate Limits
 The Ultravox API includes safeguards to help maximize stability for all customers. Too many requests can trigger an error with status code `429`.
 
-### API Limits
-We restrict the number of API requests per second. We restrict at the account and API key level as follows:
-* **Account**: 500 requests per second
-* **API Key**: 200 requests per second
+<APIRateLimits />
 
 ### Call Concurrency Limits
 The number of concurrent calls allowed depends on your plan.
