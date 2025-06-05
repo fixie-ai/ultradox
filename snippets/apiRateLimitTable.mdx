@@ -1,6 +1,8 @@
 
 ### API Limits
-We restrict the number of API requests per second. We restrict at the account and API key level as follows:
+We restrict the number of total API requests per second. This restriction applies to all API endpoints that are part of `https://api.ultravox.ai/api/`.
+
+We restrict at the account and API key level as follows:
 
 | Level          | API Requests per Second |
 |----------------|-------------------------|
@@ -8,7 +10,7 @@ We restrict the number of API requests per second. We restrict at the account an
 | <b>API Key</b> | 200                     |
 
 ### Call Creation Limits
-In addition to the overall [API limits](#api-limits), we restrict how quickly accounts can create calls in the system.
+In addition to the overall [API limits](#api-limits) above, we place additional restrictions on how quickly accounts can create calls in the system.
 
 | Plan Type    | Per Second | Per Minute |
 |--------------|------------|------------|
