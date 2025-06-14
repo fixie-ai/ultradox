@@ -1,12 +1,12 @@
 ---
-title: 'Prompting Quickstart'
+title: 'Prompting Guide'
 description: 'A guide to prompting for great voice AI experiences'
 icon: 'person-chalkboard'
 ---
 
 ## Introduction
 
-As we say in our guide, it's all about prompting. Prompting is how we get Voice AI agents to do what we want, but all models work a little bit differently. Under the hood, the Realtime platform runs a version of the Ultravox model built on Llama 3.3 70B, so we recommend looking at the [Llama Prompting Guides](https://www.llama.com/docs/how-to-guides/prompting/) as a good starting point.
+As we say in the [How Ultravox Works](/gettingstarted/how-ultravox-works#key-principles) guide, it's all about prompting. Prompting is how we get Voice AI agents to do what we want, but all models work a little bit differently. Under the hood, the Realtime platform runs a version of the Ultravox model built on Llama 3.3 70B, so we recommend looking at the [Llama Prompting Guides](https://www.llama.com/docs/how-to-guides/prompting/) as a good starting point.
 
 Below, we try to lay out the core patterns that we see working well at scale, but you'll probably need to customize these approaches based on your particular use case.
 
@@ -42,7 +42,7 @@ or otherwise engage in action-based roleplay (e.g., "(pauses), "*laughs").
 This section includes patterns and example prompts for dealing with common challenges.
 
 ### Tools
-Tools are how your model interacts with the outside world, but you have to help the model understand when and how those [tools](/essentials/tools) should be used. Here's a good pattern for prompting the model to use a tool:
+Tools are how your model interacts with the outside world, but you have to help the model understand when and how those [tools](/tools/overview) should be used. Here's a good pattern for prompting the model to use a tool:
 
 <Steps>
   <Step title="Use Good Tool Definitions">
@@ -110,3 +110,8 @@ Example: User asks for help changing their password
   * user: "uh huh."
 - Repeat in this manner until you complete the entire process.
 ```
+
+## Related Resources
+
+- Learn how [Agents](/agents/overview) work and how to build them
+- Check out the guide on [Guiding Agents](/agents/guidingagents) to learn techniques for steering agents toward good experiences

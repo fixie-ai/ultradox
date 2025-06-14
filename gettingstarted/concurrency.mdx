@@ -1,0 +1,140 @@
+---
+title: 'Scaling & Call Concurrency'
+description: 'How to scale call volume with Ultravox.'
+icon: 'wave-pulse'
+---
+
+import ConcurrencyTable from '/snippets/concurrencyTable.mdx'
+
+<Info>
+  <b>Call Concurrency `noun`</b>
+  <br />
+  The maximum number of simultaneous calls that your account can have active at any given moment.
+</Info>
+
+## 🔑 TL;DR
+
+<ConcurrencyTable />
+
+## Call Concurrency in Ultravox Realtime
+Ultravox works differently than most other voice AI platforms. Unlike other providers, we manage our own GPUs running the Ultravox model. This gives us granular control over the performance of our system. When you create a voice AI call on Ultravox Realtime, we dedicate GPU resources to your call for its entire lifespan. This allows us to keep your latency low and consistent, regardless of conversation length or traffic to our system.
+
+In contrast, most voice AI providers rely on shared inference pools provided by LLM vendors. These systems queue each request and dynamically assign them to available GPUs, often using microbatching for efficiency. This leads to variable latency during the call and makes scaling reliably challenging.
+
+If you're on a paid subscription plan, there are no hard caps on concurrency. If you're on the pay as you go model, there is a hard cap of 5 concurrent calls. Our goal is to dynamically match compute with demand, but during periods of extremely high load, it's possible that we might not have compute available to serve your call. When that happens, we'll issue an `HTTP 429` status code (“Too Many Request”) so you know to try again after a short wait.
+
+This system is designed to help customers scale without having to overpay for concurrency. Most customers don't need the same amount of concurrency 24 hours a day. Ultravox Realtime is designed to scale with you, and we balance load with `429`s to keep the system fair for everyone. More on how to handle 429s [below](#managing-concurrency).
+
+For customers that have high, sustained load, we offer [priority call concurrency](#priority-concurrency) on our Scale plan. We also offer dedicated capacity as part of our enterprise plans.
+
+### Unbounded Concurrency
+All accounts on a paid subscription enjoy no hard caps on call concurrency. This means not having to worry about paying for concurrency slots that are only needed occasionally for spikes in traffic. If the system is under load and we are unable to fulfill a request to create a call, you may receive a 429 "Too Many Requests" response. See [below](#keeping-the-pipe-full) for more on how to properly handle this.
+
+### Priority Concurrency
+Accounts on the Scale plan enjoy priority in the system for up to 100 concurrent calls (need even more? [contact us](mailto:sales@ultravox.ai?subject=Need%20More%20Concurrency) to discuss our enterprise agreements). This provides peace of mind for high impact inbound calls and ensuring that your most critical voice interactions are always available, even during peak system demand. If we are unable to create a call when an account is below its allotted priority call count, we will return a 503 "Service Unavailable" error. 429s are used if we are unable to fulfill new call requests above an account's priority call limit. See [below](#keeping-the-pipe-full) for more on how to properly handle 429s and 503s in your code.
+
+### Hard Concurrency Caps
+Ultravox Realtime accounts default to a hard cap on call concurrency. Any account not on a monthly or annual subscription is limited to five concurrent calls. Any attempt to create additional calls above the hard cap will result in an immediate HTTP 429 "Too Many Requests" response, allowing you to implement proper retry logic and queue management in your application. See [below](#keeping-the-pipe-full) for more on how to properly handle this.
+
+## Managing Concurrency
+If you encounter concurrency limits, proper handling in your application ensures a smooth user experience and optimal resource utilization. The key is implementing robust retry logic and monitoring your concurrent call usage.
+
+### Example: Hitting the Cap
+Let's consider an example where a pay-as-you-go account attempts to create multiple Ultravox calls over a short time:
+
+| Time | Active Calls   | New Request   | Status      | Concurrent Count |
+| ---- | -------------- | ------------- | ----------- | ---------------- |
+| 0s   | -              | Create Call 1 | ✅ Success  | 1/5              |
+| 2s   | Call 1         | Create Call 2 | ✅ Success  | 2/5              |
+| 3s   | Call 1,2       | Create Call 3 | ✅ Success  | 3/5              |
+| 4s   | Call 1,2,3     | Create Call 4 | ✅ Success  | 4/5              |
+| 5s   | Call 1,2,3,4   | Create Call 5 | ✅ Success  | 5/5 (At Limit)   |
+| 6s   | Call 1,2,3,4,5 | Create Call 6 | ❌ HTTP 429 | 5/5 (Rejected)   |
+| 7s   | Call 2,3,4,5   | Create Call 7 | ❌ HTTP 429 | 5/5 (Rejected)   |
+| 8s   | Call 2,3,5     | Create Call 8 | ✅ Success  | 4/5              |
+
+### Keeping the Pipe Full
+When you receive a 429 or 503 response, it's important to use `Retry-After` header to implement a proper retry strategy and avoid overwhelming the system. The `Retry-After` header is used to provide the number of seconds to wait before making any additional new requests.
+
+Here's an example of how to do that with an exponential backoff + retry handling:
+
+<Tabs>
+  <Tab title="JavaScript">
+    ```js Creating Calls with Retry Logic
+    async function createCallWithRetry(callConfig, maxRetries = 3) {
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          const response = await fetch('https://api.ultravox.ai/api/calls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(callConfig)
+          });
+
+          const retryAfter = response.headers.get('Retry-After');
+          
+          if (retryAfter) {
+            const delay = parseInt(retryAfter) * 1000;
+            console.log(`Retry-After header found. Retrying in ${delay/1000}s...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+
+          if (response.ok) {
+            return await response.json();
+          }
+          
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        } catch (error) {
+          if (attempt === maxRetries - 1) throw error;
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
+      }
+    }
+    ```
+
+  </Tab>
+  <Tab title="Python">
+    ```python Creating Calls with Retry Logic
+    import time
+    import requests
+    from datetime import datetime
+    from email.utils import parsedate_to_datetime
+
+    def create_call_with_retry(call_config, max_retries=3):
+        for attempt in range(max_retries):
+            response = requests.post('https://api.ultravox.ai/calls', json=call_config)
+            
+            retry_after = response.headers.get('Retry-After')
+            if retry_after:
+                try:
+                    delay = int(retry_after)
+                except ValueError:
+                    delay = (parsedate_to_datetime(retry_after) - datetime.utcnow()).total_seconds()
+                
+                print(f"Retry-After header found. Retrying in {delay:.1f} seconds...")
+                time.sleep(delay)
+                continue
+            
+            response.raise_for_status()
+            return response.json()
+    ```
+  </Tab>
+</Tabs>
+
+### Outbound Call Scheduler (`Expected July 2025`)
+Set it and forget it. You don't have to sweat the load or keep track of 429s. Leave that to us. Available to all accounts with a paid subscription.
+
+**You Provide**
+* Time window (e.g. tomorrow between 8am-5pm)
+* List of destination phone numbers
+* Desired agent to use for the calls
+
+**We Handle**
+* Queueing of all calls
+* Load balancing
+* Retries and 429 handling (these are fully abstracted)
+
+**Use Cases**
+* Marketing call campaigns
+* Proactive customer service follow-ups
+* High-volume appointment reminders

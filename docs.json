@@ -14,58 +14,36 @@
         "tab": "Documentation",
         "groups": [
           {
+            "group": " ",
+            "pages": ["overview"]
+          },
+          {
             "group": "Getting Started",
+            "icon": "rocket",
             "pages": [
-              "introduction",
-              {
-                "group": "The Five Rules of Ultravox",
-                "icon": "list-check",
-                "pages": [
-                  "gettingstarted/rule1",
-                  "gettingstarted/rule2",
-                  "gettingstarted/rule3",
-                  "gettingstarted/rule4",
-                  "gettingstarted/rule5",
-                  "gettingstarted/rule6"
-                ]
-              },
+              "gettingstarted/how-ultravox-works",
               "gettingstarted/prompting",
+              "gettingstarted/concurrency",
               {
-                "group": "Phone Quickstart",
-                "icon": "phone-plus",
+                "group": "Quickstarts",
+                "icon": "person-running-fast",
                 "pages": [
-                  "gettingstarted/quickstart-phone-outgoing",
-                  "gettingstarted/quickstart-phone-incoming"
+                  "gettingstarted/quickstart/agent-console",
+                  "gettingstarted/quickstart/telephony-outbound",
+                  "gettingstarted/quickstart/telephony-inbound",
+                  "gettingstarted/quickstart/web-app",
+                  "gettingstarted/quickstart/apikeys"
                 ]
               },
-              "gettingstarted/quickstart-web"
-            ]
-          },
-          {
-            "group": "Essentials",
-            "pages": [
-              "essentials/apikeys",
-              "essentials/tools",
-              "essentials/rag",
-              "essentials/sdk",
-              "essentials/telephony",
-              "essentials/voices",
-              "essentials/agents",
-              "essentials/multilingual-agents"
-            ]
-          },
-          {
-            "group": "Advanced Guides + Tutorials",
-            "pages": [
-              "guides/sip",
-              "guides/guidingagents",
-              "guides/callstages",
-              "guides/external-tts",
-              "guides/debugging",
-              "guides/websockets",
-              "datamessages",
-              "guides/webhooks",
               {
+                "group": "Examples",
+                "icon": "code",
+                "pages": [
+                  "gettingstarted/examples",
+                  "gettingstarted/examples/outbound-phone-call",
+                  "gettingstarted/examples/inbound-phone-call",
+                  
+                  {
                 "group": "Tutorials",
                 "icon": "chalkboard-user",
                 "pages": [
@@ -73,6 +51,104 @@
                   "tutorials/clienttools"
                 ]
               }
+                ]
+              },
+              "gettingstarted/getting-help"
+            ]
+          },
+          {
+            "group": "Agents & Calls",
+            "icon": "robot",
+            "pages": [
+              "agents/overview",
+              "agents/building-and-editing-agents",
+              "agents/making-calls",
+              "agents/guiding-agents",
+              "agents/call-stages",
+              "agents/testing-and-debugging"
+            ]
+          },
+          {
+            "group": "Telephony",
+            "icon": "square-phone",
+            "pages": [
+              "telephony/overview", 
+              "telephony/supported-providers", 
+              "telephony/outbound-calls", 
+              "telephony/incoming-calls", 
+              "telephony/call-transfers",
+              "telephony/ivr-flows",
+              "telephony/sip"
+            ]
+          },
+          {
+            "group": "Web & Apps",
+            "icon": "window",
+            "pages": ["apps/overview", "/apps/webrtc", "/apps/sdks"]
+          },
+          {
+            "group": "Tools",
+            "icon": "hammer",
+            "pages": [
+              "tools/overview",
+              "tools/built-in-tools",
+              "tools/http-vs-client-tools",
+              "tools/durable-vs-temporary-tools",
+              "tools/async-tools",
+              {
+                "group": "RAG",
+                "icon": "books",
+                "pages": [
+                  "tools/rag/overview",
+                  "tools/rag/rag",
+                  "tools/rag/crawling-websites",
+                  "tools/rag/using-static-documents"
+                ]
+              },
+              {
+                "group": "Advanced topics",
+                "icon": "gear-complex-code",
+                "pages": [
+                  "tools/advanced/parameter-overrides"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Voices",
+            "icon": "microphone",
+            "pages": [
+              "voices/overview",
+              "voices/cloning",
+              "voices/bring-your-own"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "icon": "webhook",
+            "pages": [
+              "webhooks/overview",
+              "webhooks/availablewebhooks",
+              "webhooks/securingwebhooks"
+            ]
+          },
+          {
+            "group": "Ultravox Protocol",
+            "icon": "network-wired",
+            "pages": [
+              "protocol/overview",
+              "protocol/websockets",
+              "protocol/datamessages"
+            ]
+          },
+          {
+            "group": "Noise & VAD",
+            "icon": "waveform-lines",
+            "pages": [
+              "noise/overview",
+              "noise/understanding-vad",
+              "noise/handling-background-noise",
+              "noise/handling-background-speakers"
             ]
           }
         ]
@@ -181,6 +257,7 @@
           {
             "group": "Schema",
             "pages": [
+              "api-reference/schema/call-definition",
               "api-reference/schema/base-tool-definition",
               "api-reference/schema/datamessages"
             ]

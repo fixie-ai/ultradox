@@ -1,0 +1,566 @@
+---
+title: 'Handling IVR Flows TODO'
+description: 'Build interactive voice response systems with keypad input and DTMF tones.'
+icon: 'grid'
+---
+
+Interactive Voice Response (IVR) systems allow callers to navigate phone menus using keypad input. Ultravox provides comprehensive DTMF (Dual-Tone Multi-Frequency) support for both receiving keypad input and sending tones to navigate external systems.
+
+## DTMF Capabilities
+
+Ultravox supports both directions of DTMF communication:
+
+- **Receiving DTMF**: Automatically converts keypad presses to text for your AI agent
+- **Sending DTMF**: Use the `playDtmfSounds` tool to send tones to external systems
+
+<Note>
+<b>WebRTC Limitation</b>
+<br />
+DTMF tones are inaudible in WebRTC connections due to audio codec limitations. The DTMF features are designed for telephony integrations only.
+</Note>
+
+## Receiving DTMF Input
+
+When callers press keys on their phone keypad, Ultravox automatically converts these tones to text that your AI agent can understand and respond to.
+
+### Basic IVR Menu
+
+```javascript
+const systemPrompt = `
+You are an automated phone system for ABC Company.
+
+When a caller joins, greet them and present these options:
+"Welcome to ABC Company! Please select from the following options:
+- Press 1 for Sales
+- Press 2 for Customer Support  
+- Press 3 for Billing
+- Press 0 to speak with an operator"
+
+When they press a number:
+- 1: Say "Connecting you to Sales" and use the transfer tool to +1-555-0100
+- 2: Say "Connecting you to Support" and use the transfer tool to +1-555-0200
+- 3: Say "Connecting you to Billing" and use the transfer tool to +1-555-0300
+- 0: Say "Connecting you to an operator" and use the transfer tool to +1-555-0000
+
+If they press any other key, say "I didn't understand that selection. Please try again with a valid option."
+
+If they speak instead of pressing keys, politely remind them to use their keypad.
+`;
+
+const callConfig = {
+  systemPrompt,
+  selectedTools: [{ "toolName": "transfer" }],
+  medium: { "twilio": {} },
+  firstSpeaker: "FIRST_SPEAKER_AGENT"
+};
+```
+
+### Multi-Level IVR System
+
+```javascript
+const systemPrompt = `
+You are an advanced IVR system for TechCorp.
+
+MAIN MENU:
+"Welcome to TechCorp! Please select an option:
+- Press 1 for Product Information
+- Press 2 for Technical Support
+- Press 3 for Account Services
+- Press 9 to return to this main menu
+- Press 0 for an operator"
+
+PRODUCT INFORMATION (after pressing 1):
+"Product Information:
+- Press 1 for Software Products
+- Press 2 for Hardware Products  
+- Press 3 for Pricing Information
+- Press 9 for Main Menu
+- Press 0 for an operator"
+
+TECHNICAL SUPPORT (after pressing 2):
+"Technical Support:
+- Press 1 for Software Issues
+- Press 2 for Hardware Problems
+- Press 3 for Network Connectivity
+- Press 9 for Main Menu
+- Press 0 for an operator"
+
+ACCOUNT SERVICES (after pressing 3):
+"Account Services:
+- Press 1 for Billing Questions
+- Press 2 for Account Changes
+- Press 3 for Payment Information
+- Press 9 for Main Menu
+- Press 0 for an operator"
+
+Keep track of the current menu level and navigate accordingly. Always acknowledge their selection before proceeding.
+
+For final destinations, transfer to the appropriate department:
+- Software Products: +1-555-0110
+- Hardware Products: +1-555-0120
+- Pricing: +1-555-0130
+- Software Issues: +1-555-0210
+- Hardware Problems: +1-555-0220
+- Network: +1-555-0230
+- Billing: +1-555-0310
+- Account Changes: +1-555-0320
+- Payments: +1-555-0330
+- Operator: +1-555-0000
+`;
+```
+
+### Data Collection IVR
+
+```javascript
+const systemPrompt = `
+You are an IVR system for collecting customer information.
+
+Guide callers through entering their information using the keypad:
+
+1. Start: "Please enter your 4-digit customer ID followed by the pound key"
+2. After ID: "Thank you. Now please enter your 5-digit ZIP code followed by pound"
+3. After ZIP: "Finally, please enter your birth month as a 2-digit number (01-12) followed by pound"
+4. After birth month: Confirm all information and transfer to appropriate agent
+
+Validate each input:
+- Customer ID: exactly 4 digits
+- ZIP code: exactly 5 digits  
+- Birth month: 01-12 only
+
+If invalid input, ask them to try again with specific instructions.
+
+Example validation:
+- If they enter 3 digits for customer ID: "I need exactly 4 digits for your customer ID. Please try again."
+- If they enter 13 for birth month: "Birth month must be between 01 and 12. Please enter your birth month again."
+
+After collecting all valid information, say: "Thank you. I have customer ID [ID], ZIP code [ZIP], and birth month [month]. Connecting you to an agent now."
+
+Transfer to +1-555-0400 with description including the collected information.
+`;
+```
+
+## Sending DTMF Tones
+
+The `playDtmfSounds` tool allows your AI agent to send DTMF tones, useful for navigating external IVR systems or phone trees.
+
+### Enable DTMF Sending
+
+```javascript
+const callConfig = {
+  systemPrompt: "You are an assistant that can navigate phone systems using DTMF tones.",
+  selectedTools: [
+    { "toolName": "playDtmfSounds" }
+  ],
+  medium: { "twilio": {} },
+  firstSpeaker: "FIRST_SPEAKER_AGENT"
+};
+```
+
+### Supported DTMF Characters
+
+The `playDtmfSounds` tool supports:
+- **Numbers**: 0-9
+- **Special keys**: *, #  
+- **Extended tones**: A, B, C, D (rarely used)
+
+### Example Usage
+
+```javascript
+// Tool invocation examples
+{
+  "digits": "123#"          // Plays 1, 2, 3, then pound
+}
+
+{
+  "digits": "*67"           // Plays star, 6, 7
+}
+
+{
+  "digits": "0"             // Plays zero (often for operator)
+}
+```
+
+### Navigating External Systems
+
+```javascript
+const systemPrompt = `
+You are an AI assistant that can help navigate phone systems.
+
+When a user asks you to dial an extension or navigate a phone menu:
+
+1. Listen for specific instructions like:
+   - "Dial extension 1234"
+   - "Press 2 for technical support"
+   - "Enter the conference ID 567890"
+
+2. Use the playDtmfSounds tool to send the appropriate tones
+
+3. Confirm what you're doing: "I'm dialing extension 1234 now" or "Pressing 2 for technical support"
+
+Common scenarios:
+- Extensions: Usually followed by # (e.g., "1234#")
+- Menu selections: Single digits (e.g., "2")
+- Conference codes: May include * or # (e.g., "*567890#")
+- Passwords/PINs: Series of digits, often followed by #
+
+Wait for the user's instructions before sending any tones.
+`;
+```
+
+## Advanced IVR Patterns
+
+### Time-Based Routing
+
+```javascript
+const currentHour = new Date().getHours();
+const isBusinessHours = currentHour >= 9 && currentHour < 17;
+const isWeekend = [0, 6].includes(new Date().getDay());
+
+const systemPrompt = `
+You are an IVR system with time-based routing.
+
+${isBusinessHours && !isWeekend ? `
+BUSINESS HOURS MENU:
+"Welcome! Our offices are currently open. Please select:
+- Press 1 for Sales (available now)
+- Press 2 for Support (available now)
+- Press 3 for Billing (available now)
+- Press 0 for immediate operator assistance"
+` : `
+AFTER HOURS MENU:
+"Welcome! Our offices are currently closed (hours: 9 AM - 5 PM, Monday-Friday). Please select:
+- Press 1 to leave a sales message
+- Press 2 for emergency technical support
+- Press 3 for billing emergency
+- Press 4 to hear our hours and location
+- Press 0 for emergency operator (urgent issues only)"
+`}
+
+Route calls appropriately based on availability and urgency.
+`;
+```
+
+### Language Selection IVR
+
+```javascript
+const systemPrompt = `
+You are a multilingual IVR system.
+
+Start with language selection:
+"Welcome to Global Services. Para Español, presiona 1. For English, press 2. Pour le Français, appuyez sur 3."
+
+After language selection:
+
+ENGLISH (2):
+"Thank you for choosing English. Please select:
+- Press 1 for Customer Service
+- Press 2 for Technical Support
+- Press 3 for Billing"
+
+SPANISH (1):
+"Gracias por elegir Español. Por favor seleccione:
+- Presiona 1 para Servicio al Cliente
+- Presiona 2 para Soporte Técnico  
+- Presiona 3 para Facturación"
+
+FRENCH (3):
+"Merci d'avoir choisi le Français. Veuillez sélectionner:
+- Appuyez sur 1 pour le Service Client
+- Appuyez sur 2 pour le Support Technique
+- Appuyez sur 3 pour la Facturation"
+
+Transfer to appropriate language-specific agents:
+- English Support: +1-555-0100
+- Spanish Support: +1-555-0150  
+- French Support: +1-555-0160
+`;
+```
+
+### Priority Queue IVR
+
+```javascript
+const systemPrompt = `
+You are an IVR system with priority queuing.
+
+Welcome message: "Welcome to Premium Services. Your call is important to us."
+
+PRIORITY CLASSIFICATION:
+"Please select your priority level:
+- Press 1 for Emergency (immediate attention)
+- Press 2 for Urgent (same day response)
+- Press 3 for Standard (next business day)
+- Press 4 if you're not sure"
+
+After priority selection, collect additional info:
+
+EMERGENCY (1):
+"Emergency priority selected. Please briefly describe your issue after the beep, then press # when finished."
+- Record message, then immediate transfer to +1-555-0911
+
+URGENT (2):
+"Urgent priority selected. Please select your department:
+- Press 1 for Technical Issues
+- Press 2 for Billing Problems
+- Press 3 for Account Access Issues"
+- Transfer to appropriate urgent queue
+
+STANDARD (3):
+"Standard priority selected. Please select:
+- Press 1 for General Questions
+- Press 2 for New Service Requests
+- Press 3 for Account Information"
+- Transfer to standard queue
+
+NOT SURE (4):
+Ask clarifying questions to determine appropriate priority level.
+`;
+```
+
+## Input Validation and Error Handling
+
+### Robust Input Processing
+
+```javascript
+const systemPrompt = `
+You are an IVR system with intelligent input handling.
+
+INPUT VALIDATION RULES:
+1. Accept only valid keypad inputs (0-9, *, #)
+2. Ignore spoken words - remind users to use keypad
+3. Handle multiple rapid key presses gracefully
+4. Provide clear error messages for invalid selections
+
+ERROR HANDLING:
+- Invalid menu choice: "That option is not available. Please try again with a valid selection."
+- No input after 10 seconds: "I didn't hear a selection. Please press a number on your keypad."
+- Spoken response: "Please use your telephone keypad to make a selection. Speaking is not supported in this menu."
+- Multiple invalid attempts: "I'm having trouble understanding your selection. Let me transfer you to an operator who can help."
+
+ACCESSIBILITY:
+- Repeat menu options if requested: "To hear the menu again, press 9"
+- Speak slowly and clearly
+- Pause between options
+- Confirm selections: "You pressed 2 for Customer Support. Is that correct? Press 1 for yes, 2 for no."
+`;
+```
+
+### Timeout and Retry Logic
+
+```javascript
+const systemPrompt = `
+You are an IVR system with intelligent timeout handling.
+
+TIMEOUT MANAGEMENT:
+- First timeout (10 seconds): "I'm still waiting for your selection. Please press a number."
+- Second timeout: "Please make a selection using your keypad, or press 0 for an operator."
+- Third timeout: "I'll connect you with an operator who can assist you."
+
+RETRY LIMITS:
+- Maximum 3 invalid attempts per menu
+- After 3 failures, offer operator assistance
+- Track attempts across the entire call
+
+PROGRESSIVE ASSISTANCE:
+1. First error: Simple correction
+2. Second error: More detailed instructions  
+3. Third error: Offer alternatives including operator transfer
+
+Example progression:
+1. "I didn't understand that. Please try again."
+2. "Please press a single number from the options I provided. For example, press 1 for Sales."
+3. "I'm having difficulty with your selection. Would you like me to connect you with an operator who can help? Press 0 for yes, or try your menu selection again."
+`;
+```
+
+## Integration with External Systems
+
+### CRM Lookup During IVR
+
+```javascript
+const systemPrompt = `
+You are an intelligent IVR system with customer recognition.
+
+When a customer enters their phone number or customer ID:
+1. Look up their account information
+2. Personalize the experience
+3. Route based on account status
+
+ACCOUNT LOOKUP FLOW:
+"Welcome to Customer Service. To serve you better, please enter your customer ID followed by #, or press * to enter your phone number."
+
+If customer ID entered:
+- Validate format (4-8 digits)
+- Look up account details
+- Greet with personalization: "Hello [Name], I see you're calling about [account type]. How can I help you today?"
+
+If phone number entered:
+- Look up by phone number
+- If found: Personalized greeting
+- If not found: "I don't see an account with that number. Press 1 to create a new account or 2 to speak with an agent."
+
+PRIORITY ROUTING:
+- VIP customers: Direct to premium support (+1-555-0500)
+- Past due accounts: Route to billing (+1-555-0300)  
+- Technical issues: Route based on product type
+- New customers: Sales team (+1-555-0100)
+`;
+```
+
+### Conference Bridge IVR
+
+```javascript
+const systemPrompt = `
+You are an IVR system for conference call access.
+
+CONFERENCE ACCESS FLOW:
+"Welcome to SecureConf. Please enter your conference ID followed by #."
+
+After conference ID:
+"Thank you. Now please enter your participant PIN followed by #."
+
+VALIDATION:
+- Conference ID: 6-10 digits
+- PIN: 4-6 digits
+- Validate against active conferences
+
+SUCCESS PATH:
+"Access confirmed. You are joining the [Conference Name] meeting. Please hold while we connect you."
+
+ERROR PATHS:
+- Invalid conference ID: "That conference ID was not found. Please check and try again."
+- Wrong PIN: "Incorrect PIN. Please try again or press 0 for assistance."
+- Conference ended: "That conference has ended. Press 0 to speak with an operator."
+- Conference not started: "That conference has not started yet. You can wait on hold or call back at the scheduled time."
+
+ADDITIONAL OPTIONS:
+"If you need to join as a guest, press *. To hear dial-in information, press 9."
+`;
+```
+
+## Testing IVR Systems
+
+### Development Testing
+
+```javascript
+// Test script for IVR validation
+const testScenarios = [
+  {
+    name: "Valid menu navigation",
+    inputs: ["1", "2", "3"],
+    expectedResponse: "transfer_to_department"
+  },
+  {
+    name: "Invalid input handling", 
+    inputs: ["7", "8", "9"],
+    expectedResponse: "error_message"
+  },
+  {
+    name: "Timeout handling",
+    inputs: [], // No input
+    expectedResponse: "timeout_prompt"
+  },
+  {
+    name: "Multi-level navigation",
+    inputs: ["1", "2", "1"],
+    expectedResponse: "deep_menu_transfer"
+  }
+];
+
+// Automated testing with Ultravox API
+async function testIVRFlow(scenario) {
+  const call = await createUltravoxCall(ivrSystemPrompt);
+  
+  // Simulate keypad inputs
+  for (const input of scenario.inputs) {
+    await simulateKeypadInput(call.id, input);
+  }
+  
+  const result = await getCallOutcome(call.id);
+  assert(result.type === scenario.expectedResponse);
+}
+```
+
+### Production Monitoring
+
+```javascript
+// Monitor IVR performance
+app.post('/ultravox/webhook', (req, res) => {
+  const { event, call } = req.body;
+  
+  if (event === 'call.ended') {
+    analyzeIVRUsage(call);
+  }
+  
+  res.sendStatus(200);
+});
+
+function analyzeIVRUsage(call) {
+  const transcript = call.transcript || [];
+  
+  // Track menu navigation patterns
+  const keypadInputs = transcript.filter(msg => 
+    /^[0-9*#]$/.test(msg.text?.trim())
+  );
+  
+  // Identify common paths
+  const navigationPath = keypadInputs.map(input => input.text);
+  
+  // Track errors and timeouts
+  const errorMessages = transcript.filter(msg => 
+    msg.text?.includes('didn\'t understand') || 
+    msg.text?.includes('try again')
+  );
+  
+  // Save analytics
+  saveIVRAnalytics({
+    callId: call.id,
+    navigationPath,
+    errorCount: errorMessages.length,
+    completionRate: call.outcome === 'transfer' ? 1 : 0,
+    duration: call.duration
+  });
+}
+```
+
+## Best Practices
+
+### User Experience
+- **Clear instructions**: Always explain keypad options clearly
+- **Consistent navigation**: Use standard conventions (0 for operator, 9 for main menu)
+- **Error recovery**: Provide helpful error messages and alternatives
+- **Accessibility**: Support users who may have difficulty with keypad input
+
+### System Design
+- **Shallow menus**: Limit menu depth to 3 levels maximum
+- **Logical grouping**: Group related options together
+- **Escape routes**: Always provide ways to reach a human operator
+- **Validation**: Implement robust input validation and error handling
+
+### Performance Optimization
+- **Fast response**: Minimize delays between keypad input and system response
+- **Efficient routing**: Use customer data to personalize and speed up routing
+- **Load balancing**: Distribute calls efficiently across available agents
+- **Monitoring**: Track performance metrics and user satisfaction
+
+## Common Use Cases
+
+### Customer Service Routing
+Route customers to appropriate departments based on their needs and account status.
+
+### Appointment Systems  
+Allow customers to schedule, confirm, or cancel appointments using keypad input.
+
+### Payment Processing
+Collect payment information securely through DTMF input.
+
+### Survey Systems
+Conduct automated surveys using keypad responses for ratings and feedback.
+
+### Conference Access
+Provide secure access to conference calls and meetings.
+
+## Next Steps
+
+- Learn about [Call Transfers](/telephony/call-transfers) for routing calls to human agents
+- Explore [Supported Providers](/telephony/supported-providers) for provider-specific features
+- Implement webhooks for IVR analytics and call monitoring
