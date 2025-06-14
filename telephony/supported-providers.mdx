@@ -1,0 +1,206 @@
+---
+title: 'Supported Providers TODO'
+description: 'Comprehensive guide to telephony providers that integrate with Ultravox.'
+icon: 'network-wired'
+---
+
+Ultravox integrates with multiple telephony providers, each with different strengths and capabilities. Choose the provider that best fits your needs and existing infrastructure.
+
+## Supported Providers
+- **Twilio** → Uses Twilio [Media Streams](https://www.twilio.com/docs/voice/media-streams).
+- **Telnyx** → Uses Telnyx [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming).
+- **Plivo** → Uses Plivo [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/).
+- **jambonz** → Uses jambonz [llm verb](https://docs.jambonz.org/verbs/verbs/llm) and connects to the carrier of your choice.
+- **Voximplant** → See the [integration guide](/integrations/voximplant).
+
+
+
+
+
+## Provider Comparison
+
+| Provider | Streaming API | Global Coverage | Pricing | Best For |
+|----------|---------------|-----------------|---------|----------|
+| **Twilio** | Media Streams | Excellent | Premium | Enterprise, reliability |
+| **Telnyx** | Media Streaming | Excellent | Competitive | Cost-conscious, global |
+| **Plivo** | AudioStream | Good | Mid-range | Balanced features/cost |
+| **jambonz** | LLM verb | Flexible | Variable | Custom carriers, open-source |
+| **Voximplant** | Custom integration | Good | Competitive | Existing Voximplant users |
+
+## Provider Details
+
+### Twilio
+**Enterprise-grade telephony with excellent reliability.**
+
+**Strengths:**
+- Market leader with proven reliability
+- Extensive global coverage and phone number availability
+- Comprehensive documentation and developer resources
+- Strong SLA and enterprise support
+
+**Integration Method:** Uses Twilio [Media Streams](https://www.twilio.com/docs/voice/media-streams)
+
+**Best For:** Enterprise applications requiring maximum reliability and global reach.
+
+**Getting Started:**
+1. Create a Twilio account
+2. Purchase a phone number
+3. Set up Media Streams in your TwiML application
+
+---
+
+### Telnyx
+**Modern, API-first telephony with competitive pricing.**
+
+**Strengths:**
+- Competitive pricing with transparent costs
+- Modern API design and developer experience
+- Good global coverage
+- High-quality voice networks
+
+**Integration Method:** Uses Telnyx [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming)
+
+**Best For:** Cost-conscious applications with global requirements.
+
+**Getting Started:**
+1. Create a Telnyx account
+2. Purchase a phone number
+3. Configure Media Streaming in your application
+
+**Special Notes:**
+- Supports both PCMU and PCMA codecs
+- Codec settings must match for bidirectional audio
+- PCMA recommended for European users
+
+---
+
+### Plivo
+**Balanced feature set with competitive pricing.**
+
+**Strengths:**
+- Good balance of features and cost
+- Solid API and documentation
+- Reliable voice quality
+- Growing global presence
+
+**Integration Method:** Uses Plivo [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)
+
+**Best For:** Applications needing good features at moderate cost.
+
+**Getting Started:**
+1. Create a Plivo account
+2. Purchase a phone number
+3. Set up AudioStream in your XML application
+
+**Special Notes:**
+- Supports multiple audio formats
+- Recommended: `audio/x-l16;rate=16000` for best quality
+- Non-streaming integration (buffered text input)
+
+---
+
+### jambonz
+**Open-source platform with carrier flexibility.**
+
+**Strengths:**
+- Bring your own carrier flexibility
+- Open-source platform you can self-host
+- Direct Ultravox integration via LLM verb
+- Cost control through carrier choice
+
+**Integration Method:** Uses jambonz [LLM verb](https://docs.jambonz.org/verbs/verbs/llm) with native Ultravox support
+
+**Best For:** Organizations wanting carrier flexibility or open-source solutions.
+
+**Getting Started:**
+1. Set up jambonz account (or self-host)
+2. Connect your chosen carrier
+3. Configure speech providers
+4. Use the LLM verb with Ultravox
+
+**Special Notes:**
+- Requires carrier relationship or SIP trunk
+- Built-in Ultravox integration simplifies setup
+- Most flexible but requires more configuration
+
+---
+
+### Voximplant
+**Existing integration for current users.**
+
+**Strengths:**
+- Good for existing Voximplant customers
+- Comprehensive platform features
+- Global infrastructure
+
+**Integration Method:** Custom integration - see [Voximplant guide](/integrations/voximplant)
+
+**Best For:** Organizations already using Voximplant platform.
+
+## Prerequisites by Provider
+
+### Twilio
+- Active Twilio account
+- Purchased phone number from Twilio
+- TwiML application configured for Media Streams
+
+### Telnyx  
+- Active Telnyx account
+- Purchased phone number from Telnyx
+- Mission Control Portal access for configuration
+
+### Plivo
+- Active Plivo account
+- Purchased phone number from Plivo
+- XML application configured for AudioStream
+
+### jambonz
+- jambonz account (cloud or self-hosted)
+- Carrier/SIP trunk relationship
+- Speech provider credentials configured
+
+### Voximplant
+- Active Voximplant account
+- Configured application and scenarios
+
+## Choosing a Provider
+
+**Consider these factors when selecting a provider:**
+
+**Budget:** Telnyx often offers the most competitive pricing, while Twilio is premium-priced.
+
+**Reliability:** Twilio leads in enterprise reliability and SLAs.
+
+**Global Reach:** Both Twilio and Telnyx offer excellent global coverage.
+
+**Existing Relationships:** Use providers you already have accounts with for faster setup.
+
+**Technical Requirements:** jambonz offers the most flexibility for custom carrier arrangements.
+
+**Integration Complexity:** Providers with native streaming (Twilio, Telnyx) offer the best performance.
+
+## Getting Provider Support
+
+**Twilio:** Extensive documentation, community support, and enterprise support tiers.
+
+**Telnyx:** Developer-focused support with comprehensive API documentation.
+
+**Plivo:** Standard support channels with good documentation.
+
+**jambonz:** Open-source community support plus commercial support options.
+
+**Voximplant:** Standard support for platform customers.
+
+## Regional Considerations
+
+**North America:** All providers work well, with Twilio and Telnyx having the strongest presence.
+
+**Europe:** Telnyx and Twilio both offer good coverage. Consider PCMA codec for optimal quality.
+
+**Asia-Pacific:** Twilio has the broadest coverage, Telnyx is expanding.
+
+**Other Regions:** Check provider-specific coverage maps for availability.
+
+## Need Another Provider?
+
+We're continuously expanding our telephony integrations. If you need support for a specific provider not listed here, please [let us know on Discord](https://discord.com/channels/1240071833798184990/1315065334058713198) and we'll consider adding it to our roadmap.

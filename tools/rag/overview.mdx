@@ -1,0 +1,150 @@
+---
+title: 'Overview: RAG'
+description: 'Give you agent access to product documents, KBs, and more.'
+icon: 'books'
+---
+
+LLMs have tremendous knowledge about the world, but they don't have all the up-to-date specifics about your organization, your products, or other relevant information you might want to provide to your AI voice agents.
+
+RAG is a common technique for grounding agents in the relevant information for your use case.
+
+## Examples of Knowledge Sources
+Let's consider some of the content that might be useful to serve some popular use cases:
+
+<AccordionGroup>
+  <Accordion icon="bell-concierge" iconType="sharp-solid" title="Customer Success & Support" defaultOpen="true">
+    * Product Documentation → user guides, FAQs, troubleshooting steps.
+    * Onboarding Materials → getting started guides, best practices, transcripts from training videos.
+  </Accordion>
+  <Accordion icon="messages-dollar" iconType="sharp-solid" title="Customer Acquisition">
+    * Product Information → features, pricing tiers, competitive comparisons.
+    * Sales Scripts → qualification questions, objection handling, industry-specific use cases.
+  </Accordion>
+  <Accordion icon="ballot-check" iconType="sharp-solid" title="Operations">
+    * Internal Processes → call routing rules, department directories, business hours & holiday schedules.
+    * Survey Materials → question banks, follow-up questions, rating scales.
+  </Accordion>
+</AccordionGroup>
+
+## Adding RAG to Ultravox
+As we saw in the [Using Tools](/essentials/tools) guide, tools provide power-ups for your agents. To use RAG with an Ultravox agent, it's as simple as creating a tool and instructing the agent on how to use the tool.
+
+### The Easy Way
+Ultravox provides the [corpus service](/api-reference/corpora/) for RAG.
+
+<Steps>
+  <Step title="Create a Corpus">
+    Use the [Create Corpus](/api-reference/corpora/corpora-post) endpoint. Give your new corpus a name and (optional) description. This returns a `corpusId`.
+  </Step>
+  <Step title="Create a Source">
+    Add a website to crawl using [Create Corpus Source](/api-reference/corpora/corpora-sources-post). Each source is given a unique `sourceId`. We will crawl the URL(s) and ingest all the content.
+  </Step>
+  <Step title="Query the Corpus">
+    After everything is loaded, try some queries using the [Query Corpus](/api-reference/corpora/corpus-query) endpoint.
+  </Step>
+  <Step title="Use the queryCorpus Tool">
+    Give the built-in [queryCorpus](/essentials/tools#built-in-tools) tool. to your agents and provide the `corpusId`. For example, if we wanted to create a voice agent to answer questions about Seattle, we could provide the tool like this:
+    ```json
+    {
+      "systemPrompt": "Use the queryCorpus tool to answer questions about Seattle.",
+      "selectedTools": [
+        {
+          "toolName": "queryCorpus", 
+          "parameterOverrides": {
+            "corpus_id": "<your_corpus_id_here>",
+            "max_results": 5
+          }
+        }
+      ]
+    }
+    ```
+  </Step>
+</Steps>
+
+
+### The Other Way
+Let's assume we have already stored our product documentation in a vector database and can search that content at `https://foo.bar/lookupProductInfo`.
+
+Here's how we might create a tool for our Ultravox agent to use:
+
+```js Example: Adding a RAG tool
+{
+  "systemPrompt": "You are a helpful assistant. You have a tool called 'lookupProductInfo' that you must use to find answers.",
+  "model": "fixie-ai/ultravox",
+  "selectedTools": [
+    {
+      "temporaryTool": {
+        "modelToolName": "lookupProductInfo",
+        "description": "Searches official product documentation using semantic similarity to find relevant information. Use this tool to look up specific product features, specifications, limitations, pricing, or support information. The tool returns the most relevant text chunks from the documentation.",
+        "dynamicParameters": [
+          {
+            "name": "query",
+            "location": "PARAMETER_LOCATION_BODY",
+            "schema": {
+              "description": "A specific, focused search query to find relevant product information",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "http": {
+          "baseUrlPattern": "https://foo.bar/lookupProductInfo",
+          "httpMethod": "POST"
+        }
+      }
+    }
+  ]
+}
+```
+
+## Add Static Files as Corpus Sources
+You can use files as sources for any of your corpora. The process requires using the [Create Corpus File Upload API](/api-reference/corpora/corpora-uploads-post) to generate an upload URL.
+
+Follow these steps:
+
+<Steps>
+  <Step title="Step 1: Request Upload URL">
+    * Use the [Create Corpus File Upload API](/api-reference/corpora/corpora-uploads-post)
+    * Include the MIME type string in the request body
+    * This returns the URL to use for upload and the unique ID for the document
+    * URLs expire after 5 minutes. Request a new one if it expires before using it
+
+    <Note>The URL that is returned is tied to the provided MIME type. The same MIME type must be used during upload.</Note>
+  </Step>
+  <Step title="Step 2: Upload File">
+    * Use the `presignedUrl` from Step 1 to upload the document
+    * Ensure the MIME type in the upload matches what was specified in Step 1
+
+    For example, if we requested an upload URL for a text file (MIME type `text/plain`):
+
+    ```bash
+    FILE_PATH="/path/to/your/file"
+    UPLOAD_URL="https://storage.googleapis.com/fixie-ultravox-prod/..."
+
+    curl -X PUT \
+      -H "Content-Type: text/plain" \
+      --data-binary @"$FILE_PATH" \
+      "$UPLOAD_URL"
+    ```
+  </Step>
+  <Step title="Step 3: Create New Source with Uploaded Document">
+    * Use the [Create Corpus Source API](/api-reference/corpora/corpora-sources-post)
+    * Use `upload` to provide the `documentId` from Step 1
+
+    <Note>You can provide an array of Document IDs to bulk create a source.</Note>
+  </Step>
+</Steps>
+
+### Supported File Types
+
+Here's the information in a markdown table format:
+
+| File Extension | Type of File | MIME Type |
+| -------------- | ------------ | --------- |
+| doc | Microsoft Word Document | application/msword |
+| docx | Microsoft Word Open XML Document | application/vnd.openxmlformats-officedocument.wordprocessingml.document |
+| txt | Plain Text Document | text/plain |
+| md | Markdown Document | text/markdown |
+| ppt | Microsoft PowerPoint Presentation | application/vnd.ms-powerpoint |
+| pptx | Microsoft PowerPoint Open XML Presentation | application/vnd.openxmlformats-officedocument.presentationml.presentation |
+| pdf | Portable Document Format | application/pdf |
