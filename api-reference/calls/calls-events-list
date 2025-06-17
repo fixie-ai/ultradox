@@ -1,0 +1,5 @@
+---
+openapi: get /api/calls/{call_id}/events
+title: "List Call Events"
+description: "Returns any events logged during the call"
+---
