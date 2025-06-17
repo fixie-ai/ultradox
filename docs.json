@@ -125,7 +125,8 @@
               "api-reference/calls/calls-stages-tools-list",
               "api-reference/calls/calls-stages-message-audio-get",
               "api-reference/calls/calls-deleted-calls-list",
-              "api-reference/calls/calls-deleted-calls-get"
+              "api-reference/calls/calls-deleted-calls-get",
+              "api-reference/calls/calls-events-list"
             ]
           },
           {
