@@ -1,124 +1,49 @@
 ---
-title: 'Overview: Telephony TODO'
+title: 'Overview: Telephony'
 description: 'Connect Ultravox to traditional phone networks for AI-powered voice calls.'
 icon: 'compass'
 ---
 
-[Under Construction]
-
-Ultravox Realtime is a "BYOT" (bring your own telephony) platform and integrates with major telephony providers to enable AI-powered voice applications that work with regular phone numbers. Your AI agents can make outbound calls and answer incoming calls through traditional phone networks.
+Ultravox Realtime is a "BYOT" (bring your own telephony) platform and integrates with major telephony providers to enable AI-powered voice applications that work with regular phone numbers. Your AI agents can make outbound calls and answer inbound calls through traditional phone networks.
 
 ## Connection Methods
 
 Ultravox supports multiple ways to connect to phone networks:
 
-### Telephony Providers
-- **Twilio** - Media Streams integration
-- **Telnyx** - Media Streaming integration  
-- **Plivo** - AudioStream integration
-- **jambonz** - Open-source platform with carrier flexibility
-- **Voximplant** - Native Ultravox connector
+<Columns cols={3}>
+  <Card title="Telephony Providers" href="./supported-providers">
+    Native support for Twilio, Telnyx, Plivo, and Exotel.
+  </Card>
+  <Card title="Voice Platforms" href="./supported-providers">
+    Integrations with Voximplant and jambonz.
+  </Card>
+  <Card title="SIP" href="./sip">
+    Connect your existing phone system through our SIP integration.
+  </Card>
+</Columns>
 
-Learn more: [Supported Providers](./supported-providers)
+Learn more: [Supported Providers →](./supported-providers)
 
-### SIP Integration
-- **Direct SIP calls** to existing phone systems and SIP clients
-- **Incoming calls** via SIP URI endpoints
-- **Outbound calls** to SIP destinations
-- **PCMA/PCMU codec** support
-
-Learn more: [SIP Guide](./sip) (Preview)
+Learn more: [SIP Guide →](./sip)
 
 ## Key Capabilities
-
-### Making and Receiving Calls
 Create AI agents that can handle both directions of phone communication:
-- [Outbound Calls](./outbound-calls) - AI agents initiate calls to users
-- [Incoming Calls](./incoming-calls) - AI agents answer calls from users
+- [Outbound Calls](/gettingstarted/examples/outbound-phone-call) - AI agents initiate calls to users.
+- [Incoming Calls](/gettingstarted/examples/inbound-phone-call) - AI agents answer calls from users.
 
-### Advanced Phone Features  
-- [Call Transfers](./call-transfers) - Route calls between agents and humans
-- [IVR Flows](./ivr-flows) - Interactive voice response with keypad input
-
-## How It Works
-
-1. **Create an Ultravox call** with your chosen medium
-2. **Connect the phone call** use the Ultravox `joinUrl` with your provider's streaming API
-3. **Your AI agent** handles the conversation through the phone network
-
-The integration uses your provider's media streaming capabilities to pipe audio between the phone network and Ultravox in real-time.
-
-## Getting Started
-
-1. **Choose a provider** based on your needs and existing relationships
-2. **Set up an account** with your chosen telephony provider
-3. **Purchase a phone number** from the provider
-4. **Follow the integration guide** for your specific provider
-
-## Learn More
-
-- [Supported Providers](./supported-providers) - Detailed provider comparison and setup
-- [SIP Guide](./sip) - Direct SIP integration for existing phone systems (Preview)
-- [Incoming Calls](./incoming-calls) - Handle calls from users
-- [Outbound Calls](./outbound-calls) - Make calls to users  
-- [Call Transfers](./call-transfers) - Advanced call routing
-- [IVR Flows](./ivr-flows) - Interactive voice response systems
+You can also enable your agents to handle more advanced tasks:
+- [Call Transfers](./call-transfers) - Route calls between agents and humans.
+- [IVR Flows](./ivr-flows) - Interactive voice response with keypad input using Ultravox's native support for DTMF.
 
 
-
-
-
-
-
-
-
-
-
-
-ODL CONTENT BELOW
-
-
-The Ultravox API allows you to create AI-powered voice applications that can interact through various protocols:
-
-- **WebRTC** → Default protocol for browser and mobile applications.
-- **Regular Phone Numbers** → Connect Ultravox to phone calls you make or receive (via Telnxy, Twilio, Plivo, or jambonz).
-- **WebSockets** → Direct server-to-server integration.
-
-## Choosing a Protocol
-Choose your integration method based on your needs:
-
-- **WebRTC**: Best for most integrations, especially for any client deployment (for example, browsers or mobile clients). This is the default. Get started with the Ultravox client [SDK](/apps/sdks).
-- **Phone**: For traditional phone network integration. Ultravox integrates directly with Telnyx, Twilio, Plivo, and jambonz (bring your own carrier).
-- **WebSocket**: For server-to-server integration, especially when you already have high-bandwidth connections between your server and clients. Check out the [WebSocket Integration](/apps/websockets) guide for more information.
-
-## Phone Integration
-Ultravox integrates with multiple telephony providers, enabling you to create AI-powered voice applications that can interact through regular phone networks. You can build AI agents that can make outbound calls and answer incoming calls, opening up possibilities for customer service, automated outreach, and other voice-based AI applications.
-
-### Supported Providers
-- **Twilio** → Uses Twilio [Media Streams](https://www.twilio.com/docs/voice/media-streams).
-- **Telnyx** → Uses Telnyx [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming).
-- **Plivo** → Uses Plivo [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/).
-- **jambonz** → Uses jambonz [llm verb](https://docs.jambonz.org/verbs/verbs/llm) and connects to the carrier of your choice.
-- **Voximplant** → See the [integration guide](/integrations/voximplant).
-
-### Prerequisites
-<Tip>
-<b>Prerequisites</b>
-<br />
-Make sure you have:
-1. An active account with your chosen provider (Telnyx, Twilio, Plivo, or any carrier when connecting via jambonz)
-2. A phone number purchased from your provider
-3. A jambonz account (if connecting via jambonz)
-</Tip>
-
-### Connecting Ultravox to a Phone Call
+## Connecting Ultravox to a Phone Call
 <Warning>
 <b>"Calls" is Overloaded</b>
 <br />
-It can be a bit confusing because Ultravox Realtime uses the concept of a "call" to mean a voice session between an AI agent and another party. For phone calls, you will accept incoming or make outbound calls via your chosen telephony provider and then connect those calls to an Ultravox call.
+It can be a bit confusing because Ultravox Realtime uses the concept of a "call" to mean a voice session between an AI agent and another party. For phone calls, you will accept inbound or make outbound calls via your chosen telephony provider and then connect those calls to an Ultravox call.
 </Warning>
 
-Creating an Ultravox call that you can connect with a phone call is similar to creating a WebRTC call, but requires specific parameters in the [Create Call](/api-reference/calls/calls-post) command:
+Creating an Ultravox call that you can connect with a phone call requires specific parameters in the [Create Call](/api-reference/calls/calls-post) command:
 
 <ParamField body="medium" type="object" default="{'webRtc': {}}">
   Tells Ultravox which protocol to use. For phone calls, must be set to one of:
@@ -136,339 +61,19 @@ Creating an Ultravox call that you can connect with a phone call is similar to c
   The default is `agent: {}`.
 </ParamField>
 
-```js Example: Outbound Call via Telnyx {4-7}
+```js Example: Outbound Call via Twilio {4-7}
 {
   "systemPrompt": "You are a helpful assistant...",
   ...
   "medium": {
-    "telnyx": {} // or "twilio": {} or "plivo": {}
+    "twilio": {} // or "telnyx": {} or "plivo": {} or "exotel": {}
   },
   "firstSpeakerSettings": { "user": {} }
 }
 ```
-<Tip>
-jambonz have integrated Ultravox into their `llm` verb, so you won't need to create an Ultravox call—this is all done for you. Just follow the instructions in the "Provider-Specific Integration" section below.
-</Tip>
 
-### Provider-Specific Integration
+## Learn More
 
-<Tabs>
-  <Tab title="Telnyx">
-    #### Outbound Calls with Telnyx
-    <Steps>
-      <Step title="Create an Ultravox Call">
-        Create a new call as shown above with `medium: { "telnyx": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
-      </Step>
-      <Step title="Connect Ultravox to the Telnyx Phone Call">
-        Use the `joinUrl` with a TeXML `<Stream>`:
-
-        ```javascript
-        // Example using the telnyx node library
-        const call = await telnyx.calls.create({
-          connection_id: "uuid",
-          to: phoneNumber,
-          from: telnyxPhoneNumber,
-          stream_url: joinUrl,
-          stream_track: "both_tracks",
-          stream_bidirectional_mode: "rtp"
-        });
-        ```
-
-        Or using TeXML:
-
-        ```xml
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-          <Connect>
-            <Stream url="${joinUrl}" bidirectionalMode="rtp"  codec="PCMU" bidirectionalCodec="PCMU"/>
-          </Connect>
-        </Response>
-        ```
-        </Step>
-    </Steps>
-
-    #### Incoming Calls with Telnyx
-    <Steps>
-      <Step title="Create an Ultravox Call">
-        Create a new call with `medium: { "telnyx": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
-      </Step>
-      <Step title="Connect the Inbound Telnyx Call to Ultravox">
-        Use the `joinUrl` with a TeXML `<Stream>`:
-
-        ```xml
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-          <Connect>
-            <Stream url="${joinUrl}" bidirectionalMode="rtp" codec="PCMU" bidirectionalCodec="PCMU"/>
-          </Connect>
-        </Response>
-        ```
-      </Step>
-    </Steps>
-
-    <Warning>
-      <b>Telnyx `codec`</b>
-      <br />
-      Telnyx allows setting both `codec` and `bidirectionalCodec`. The former controls user audio while the latter controls agent audio. When using with Ultravox, **these must have the same value** because Telnyx only tells us about one of them! If your users are mostly in Europe, you'll likely want to set both to PCMA. Otherwise setting both to PCMU is preferred but leaving them both unset is fine to get started.
-    </Warning>
-
-    For more details, see the [Telnyx documentation](https://developers.telnyx.com/).
-
-  </Tab>
-  <Tab title="Twilio">
-    #### Outbound Calls with Twilio
-    <Steps>
-      <Step title="Create an Ultravox Call">
-        Create a new call as shown above with `medium: { "twilio": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
-      </Step>
-      <Step title="Connect Ultravox to the Twilio Phone Call">
-        Use the `joinUrl` with a Twilio `<Stream>`:
-
-        ```javascript
-        // Example using the twilio node library
-        const call = await client.calls.create({
-            twiml: `<Response>
-                        <Connect>
-                            <Stream url="${joinUrl}"/>
-                        </Connect>
-                    </Response>`,
-            to: phoneNumber,
-            from: twilioPhoneNumber
-        });
-        ```
-      </Step>
-    </Steps>
-
-    #### Incoming Calls with Twilio
-    <Steps>
-      <Step title="Create an Ultravox Call">
-        Create a new call with `medium: { "twilio": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
-      </Step>
-      <Step title="Connect the Inbound Twilio Call to Ultravox">
-        Use the `joinUrl` with a Twilio `<Stream>`:
-
-        ```xml
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-            <Connect>
-                <Stream url="your_ultravox_join_url" />
-            </Connect>
-        </Response>
-        ```
-      </Step>
-    </Steps>
-
-    For more details, see the [Twilio documentation](https://www.twilio.com/docs).
-  </Tab>
-  <Tab title="Plivo">
-    #### Outbound Calls with Plivo
-    <Steps>
-      <Step title="Create an Ultravox Call">
-        Create a new call as shown above with `medium: { "plivo": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
-      </Step>
-      <Step title="Connect Ultravox to the Plivo Phone Call">
-        Use the `joinUrl` with AudioStream:
-
-        ```js
-        // Example using the plivo node library
-        // This assumes our server exposes an endpoint at `answerUrl`
-        const call = await plivo.calls.create({
-          to: phoneNumber,
-          from: plivoPhoneNumber,
-          answer_url: answerUrl, // URL that returns the XML below
-          answer_method: "GET"
-        });
-        ```
-
-        The answer URL should return:
-        ```xml
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-            <Stream keepCallAlive="true" 
-                    contentType="audio/x-l16;rate=16000"
-                    bidirectional="true">
-                ${joinUrl}
-            </Stream>
-        </Response>
-        ```
-
-        Note: For best audio quality, we recommend `audio/x-l16;rate=16000`. However, any contentType supported by Plivo will work with Ultravox.
-      </Step>
-    </Steps>
-
-    #### Incoming Calls with Plivo
-    <Steps>
-      <Step title="Create an Ultravox Call">
-        Create a new call with `medium: { "plivo": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
-      </Step>
-      <Step title="Connect the Inbound Twilio Call to Ultravox">
-        Use the `joinUrl` with AudioStream:
-
-        ```xml
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-            <Stream keepCallAlive="true"
-                    contentType="audio/x-l16;rate=16000" 
-                    bidirectional="true">
-                ${joinUrl}
-            </Stream>
-        </Response>
-        ```
-      </Step>
-    </Steps>
-
-    For more details, see the [Plivo documentation](https://www.plivo.com/docs/).
-  </Tab>
-  <Tab title="jambonz">
-    #### jambonz Portal Setup
-    jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
-    This gives you the flexibility to choose your carrier of choice, you'll just need to add it in your jambonz dashboard.
-
-    <Steps>
-      <Step title="Add Your Carrier in jambonz">
-        In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any sip network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
-      </Step>
-
-      <Step title="Add a Speech Provider in jambonz">
-        Next, you need to [add speech credentials](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-speech-credentials) for your chosen vendor.
-      </Step>
-
-      <Step title="Create a New jambonz Application">
-        ​A jambonz application configured via the jambonz portal defines how calls are handled by linking them to your custom logic through webhooks or WebSocket endpoints. When you create an application, you specify:​
-        - Call webhook URL: Where jambonz sends call events.​
-        - Call status webhook URL: For receiving call status updates.​
-        - Speech vendors: Your chosen TTS/STT providers.​
-
-        Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. This setup allows you to implement features like speech recognition, text-to-speech, call routing, and integration with AI services. 
-      </Step>
-
-      <Step title="Add a Phone Number in jambonz">
-        Finally, you need to [add a phone number](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-phone-numbers) provisioned from your carrier of choice. At the bottom of the page select the jambonz application you just created to link your new virtual number to that application.
-      </Step>
-    </Steps>
-
-    #### Incoming Calls with jambonz
-
-        ```javascript
-        // Example using the @jambonz/node-client-ws library
-        session
-        .pause({length: 1.5})
-        .llm({
-          vendor: 'ultravox',
-          model: 'fixie-ai/ultravox',
-          auth: {
-            apiKey
-          },
-          actionHook: '/final',
-          eventHook: '/event',
-          llmOptions: {
-            systemPrompt: 'You are an agent named Karen. Greet the user and ask how you can help.',
-            firstSpeakerSettings: { agent: {} },
-            initialMessages: [{
-              medium: 'MESSAGE_MEDIUM_VOICE',
-              role: 'MESSAGE_ROLE_USER'
-            }],
-            model: 'fixie-ai/ultravox',
-            voice: 'Tanya-English',
-            transcriptOptional: true,
-          }
-        })
-        .hangup()
-        .send();
-        ```
-        For more details see the `llm` verb in the [jambonz docs](https://docs.jambonz.org/verbs/verbs/llm). 
-    
-
-    #### Outbound Calls with jambonz
-    In addition to the inbound scenario, you'll have to create a call that connects to the destination number (`phoneNumber`) and points to the jambonz application that defines how the call should be handled. Find the `APPLICATION_SID` in the jambonz portal by clicking on the application you created during the setup process.
-
-      ```javascript
-        const JambonzClient = require('@jambonz/node-client');
-
-        const client = JambonzClient(
-          process.env.JAMBONZ_ACCOUNT_SID,
-          process.env.JAMBONZ_API_KEY,
-          {baseUrl: process.env.JAMBONZ_REST_API_BASE_URL || 'https://api.jambonz.cloud/v1'}
-        );
-
-        const call = await client.calls.create({
-            from: process.env.FROM_NUMBER,  
-              to: {
-                type : 'phone',
-                number: phoneNumber,
-                trunk: process.env.CARRIER
-                },
-            application_sid: process.env.APPLICATION_SID
-        });
-
-        ```
-        
-
-    For more details, see the [jambonz documentation](https://docs.jambonz.org/) and [example code](https://github.com/jambonz/ultravox-s2s-example).
-  </Tab>
-</Tabs>
-
-<Note>
-<b>Provider Support</b>
-<br />
-We currently integrate with Telnyx, Twilio, Plivo, and jambonz (bring your own carrier voice platform). Please [let us know](https://discord.com/channels/1240071833798184990/1315065334058713198) if there's another integration you'd like to see.
-</Note>
-
-### DTMF
-Ultravox provides comprehensive support for DTMF (Dual-Tone Multi-Frequency) tones, enabling both [sending](#sending-dtmf-tones) and [receiving](#receiving-dtmf-tones) tones during phone calls. This enables AI agents to interact with traditional phone systems and allows you to build voice applications that can respond to keypad inputs.
-
-<Note>
-<b>DTMF and WebRTC</b>
-<br />
-Due to the audio codec used in WebRTC connections, DTMF tones are inaudible when using WebRTC. The `playDtmfSounds` tool is intended for use with [telephony integrations](/telephony/overview).
-</Note>
-
-#### Receiving DTMF Tones
-Ultravox automatically converts incoming DTMF tones to text, making it easy to build interactive voice applications that respond to keypad input. When a caller presses keys on their phone keypad, the tones are converted to text that your AI agent can understand and respond to.
-
-For example, if a caller presses "5" on their keypad, your agent will receive this as text and can respond accordingly:
-
-```js
-// Example system prompt for an agent that handles DTMF input
-{
-  "systemPrompt": `You are an automated phone system.
-    When a caller joins, say: "Welcome! Press 1 for sales, 2 for support, or 3 for billing."
-    If they press 1, transfer them to sales using the transfer tool.
-    If they press 2, transfer them to support.
-    If they press 3, transfer them to billing.
-    If they press any other key, ask them to try again with a valid option."`
-}
-```
-
-#### Sending DTMF Tones
-The [built-in](/tools/built-in-tools#playdtmfsounds) `playDtmfSounds` tool allows your AI agent to send DTMF tones, which is useful for navigating Interactive Voice Response (IVR) systems or other phone trees. To enable the tool, add it to the `selectedTools` array when creating a call or call stage:
-
-```js
-// Example request body for creating a call with DTMF capability
-{
-  "systemPrompt": "You are a helpful assistant. When prompted to dial an extension, use the 'playDtmfSounds' tool to send the appropriate tones.",
-  "selectedTools": [
-    { "toolName": "playDtmfSounds" }
-  ]
-}
-```
-
-The `playDtmfSounds` tool accepts a string parameter named `digits` and works with the following tones: 0-9, *, #, A-D.
-
-For example:
-
-```js
-// Example of using the playDtmfSounds tool to dial an extension
-{
-  "digits": "123#"  // Will play tones for 1, 2, 3, and # in sequence
-}
-```
-
-Note: the `playDtmfSounds` tool uses an [automatic parameter](/tools/custom/parameters#automatic-parameters) that sends the proper sample rate of the source audio and should be treated as an implementation detail.
-
-#### Common Use Cases
-- Building interactive phone trees or IVR systems
-- Creating agents that can navigate existing phone systems
-- Enabling quick responses through keypad input
-- Collecting numeric input (e.g., account numbers, PIN codes)
-- Building hybrid voice/keypad interfaces
+- Discover how to get started with [Supported Providers](./supported-providers).
+- Learn how to integrate with your existing phone system in the [SIP Guide](./sip).
+- Set you agent up to receive [Inbound Calls](./inbound-calls) or make [Outbound Calls](./outbound-calls).

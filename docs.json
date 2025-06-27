@@ -62,6 +62,7 @@
           {
             "group": "Agents & Calls",
             "icon": "robot",
+            "tag": "NEW",
             "pages": [
               "agents/overview",
               "agents/building-and-editing-agents",
@@ -75,11 +76,10 @@
           {
             "group": "Telephony",
             "icon": "square-phone",
+            "tag": "NEW",
             "pages": [
               "telephony/overview", 
               "telephony/supported-providers", 
-              "telephony/outbound-calls", 
-              "telephony/incoming-calls", 
               "telephony/call-transfers",
               "telephony/ivr-flows",
               "telephony/sip"
@@ -88,11 +88,13 @@
           {
             "group": "Web, Apps, Websockets",
             "icon": "window",
+            "tag": "NEW",
             "pages": ["apps/overview", "/apps/sdks", "apps/websockets", "apps/datamessages"]
           },
           {
             "group": "Tools",
             "icon": "hammer",
+            "tag": "NEW",
             "pages": [
               "tools/overview",
               "tools/built-in-tools",
@@ -126,6 +128,7 @@
           {
             "group": "Voices",
             "icon": "microphone",
+            "tag": "NEW",
             "pages": [
               "voices/overview",
               "voices/cloning",
@@ -145,11 +148,10 @@
           {
             "group": "Noise & VAD",
             "icon": "waveform-lines",
+            "tag": "NEW",
             "pages": [
               "noise/overview",
-              "noise/understanding-vad",
-              "noise/handling-background-noise",
-              "noise/handling-background-speakers"
+              "noise/understanding-vad"
             ]
           }
         ]

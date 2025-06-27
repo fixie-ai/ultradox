@@ -1,205 +1,283 @@
 ---
-title: 'Supported Providers TODO'
+title: 'Supported Providers'
 description: 'Comprehensive guide to telephony providers that integrate with Ultravox.'
 icon: 'network-wired'
 ---
 
-[Under Construction]
+Ultravox integrates with multiple telephony providers and voice platforms.
 
-Ultravox integrates with multiple telephony providers, each with different strengths and capabilities. Choose the provider that best fits your needs and existing infrastructure.
+## Native Integrations
+Ultravox provides native integrations for the following. Each has their own unique call [`medium`](api-reference/schema/call-definition#schema-medium) that must be used when creating calls.
 
-## Supported Providers
-- **Twilio** → Uses Twilio [Media Streams](https://www.twilio.com/docs/voice/media-streams).
-- **Telnyx** → Uses Telnyx [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming).
-- **Plivo** → Uses Plivo [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/).
-- **jambonz** → Uses jambonz [llm verb](https://docs.jambonz.org/verbs/verbs/llm) and connects to the carrier of your choice.
-- **Voximplant** → See the [integration guide](/integrations/voximplant).
+| Provider   | Call Medium    | Streaming API                                                                                  |
+|------------|--------------- |------------------------------------------------------------------------------------------------|
+| **Twilio** | `"twilio": {}` | [Media Streams](https://www.twilio.com/docs/voice/media-streams)                               |
+| **Telnyx** | `"telnyx": {}` | [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming) |
+| **Plivo**  | `"plivo": {}`  | [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)                        |
+| **Exotel** | `"exotel": {}` | [Voice Streaming](https://developer.exotel.com/api/product-voice-version-3)                    |
 
+### SIP
+Ultravox Realtime has native support for SIP. See the [SIP Guide](./sip) for more.
 
-## Provider Comparison
+## Partner Integrations
+Our voice platform partners have native integrations for Ultravox:
 
-| Provider | Streaming API | Global Coverage | Pricing | Best For |
-|----------|---------------|-----------------|---------|----------|
-| **Twilio** | Media Streams | Excellent | Premium | Enterprise, reliability |
-| **Telnyx** | Media Streaming | Excellent | Competitive | Cost-conscious, global |
-| **Plivo** | AudioStream | Good | Mid-range | Balanced features/cost |
-| **jambonz** | LLM verb | Flexible | Variable | Custom carriers, open-source |
-| **Voximplant** | Custom integration | Good | Competitive | Existing Voximplant users |
+### Voximplant
+[Voximplant](https://voximplant.com/) provides a hosted voice platform. Check out the [Integration Guide →](/integrations/voximplant)
 
-## Provider Details
+### jambonz
+[jambonz](https://www.jambonz.org/) provides a voice platform that runs in a fully managed cloud or can be self-hosted. Details on how to make and receive calls using jambonz appear [below](#jambonz-2).
+
+## Provider-Specific Integration Examples
 
 ### Twilio
-**Enterprise-grade telephony with excellent reliability.**
+#### Outbound Calls with Twilio
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call as shown above with `medium: { "twilio": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
+  </Step>
+  <Step title="Connect Ultravox to the Twilio Phone Call">
+    Use the `joinUrl` with a Twilio `<Stream>`:
 
-**Strengths:**
-- Market leader with proven reliability
-- Extensive global coverage and phone number availability
-- Comprehensive documentation and developer resources
-- Strong SLA and enterprise support
+    ```js
+    // Example using the twilio node library
+    const call = await client.calls.create({
+        twiml: `<Response>
+                    <Connect>
+                        <Stream url="${joinUrl}"/>
+                    </Connect>
+                </Response>`,
+        to: phoneNumber,
+        from: twilioPhoneNumber
+    });
+    ```
+  </Step>
+</Steps>
 
-**Integration Method:** Uses Twilio [Media Streams](https://www.twilio.com/docs/voice/media-streams)
+#### Incoming Calls with Twilio
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call with `medium: { "twilio": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
+  </Step>
+  <Step title="Connect the Inbound Twilio Call to Ultravox">
+    Use the `joinUrl` with a Twilio `<Stream>`:
 
-**Best For:** Enterprise applications requiring maximum reliability and global reach.
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Connect>
+            <Stream url="your_ultravox_join_url" />
+        </Connect>
+    </Response>
+    ```
+  </Step>
+</Steps>
 
-**Getting Started:**
-1. Create a Twilio account
-2. Purchase a phone number
-3. Set up Media Streams in your TwiML application
-
----
+For more details, see the [Twilio documentation](https://www.twilio.com/docs).
 
 ### Telnyx
-**Modern, API-first telephony with competitive pricing.**
+#### Outbound Calls with Telnyx
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call as shown above with `medium: { "telnyx": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
+  </Step>
+  <Step title="Connect Ultravox to the Telnyx Phone Call">
+    Use the `joinUrl` with a TeXML `<Stream>`:
 
-**Strengths:**
-- Competitive pricing with transparent costs
-- Modern API design and developer experience
-- Good global coverage
-- High-quality voice networks
+    ```js
+    // Example using the telnyx node library
+    const call = await telnyx.calls.create({
+      connection_id: "uuid",
+      to: phoneNumber,
+      from: telnyxPhoneNumber,
+      stream_url: joinUrl,
+      stream_track: "both_tracks",
+      stream_bidirectional_mode: "rtp"
+    });
+    ```
 
-**Integration Method:** Uses Telnyx [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming)
+    Or using TeXML:
 
-**Best For:** Cost-conscious applications with global requirements.
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Connect>
+        <Stream url="${joinUrl}" bidirectionalMode="rtp"  codec="PCMU" bidirectionalCodec="PCMU"/>
+      </Connect>
+    </Response>
+    ```
+    </Step>
+</Steps>
 
-**Getting Started:**
-1. Create a Telnyx account
-2. Purchase a phone number
-3. Configure Media Streaming in your application
+#### Incoming Calls with Telnyx
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call with `medium: { "telnyx": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
+  </Step>
+  <Step title="Connect the Inbound Telnyx Call to Ultravox">
+    Use the `joinUrl` with a TeXML `<Stream>`:
 
-**Special Notes:**
-- Supports both PCMU and PCMA codecs
-- Codec settings must match for bidirectional audio
-- PCMA recommended for European users
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Connect>
+        <Stream url="${joinUrl}" bidirectionalMode="rtp" codec="PCMU" bidirectionalCodec="PCMU"/>
+      </Connect>
+    </Response>
+    ```
+  </Step>
+</Steps>
 
----
+<Warning>
+  <b>Telnyx `codec`</b>
+  <br />
+  Telnyx allows setting both `codec` and `bidirectionalCodec`. The former controls user audio while the latter controls agent audio. When using with Ultravox, **these must have the same value** because Telnyx only tells us about one of them! If your users are mostly in Europe, you'll likely want to set both to PCMA. Otherwise setting both to PCMU is preferred but leaving them both unset is fine to get started.
+</Warning>
 
-### Plivo
-**Balanced feature set with competitive pricing.**
+For more details, see the [Telnyx documentation](https://developers.telnyx.com/).
 
-**Strengths:**
-- Good balance of features and cost
-- Solid API and documentation
-- Reliable voice quality
-- Growing global presence
-
-**Integration Method:** Uses Plivo [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)
-
-**Best For:** Applications needing good features at moderate cost.
-
-**Getting Started:**
-1. Create a Plivo account
-2. Purchase a phone number
-3. Set up AudioStream in your XML application
-
-**Special Notes:**
-- Supports multiple audio formats
-- Recommended: `audio/x-l16;rate=16000` for best quality
-- Non-streaming integration (buffered text input)
-
----
-
-### jambonz
-**Open-source platform with carrier flexibility.**
-
-**Strengths:**
-- Bring your own carrier flexibility
-- Open-source platform you can self-host
-- Direct Ultravox integration via LLM verb
-- Cost control through carrier choice
-
-**Integration Method:** Uses jambonz [LLM verb](https://docs.jambonz.org/verbs/verbs/llm) with native Ultravox support
-
-**Best For:** Organizations wanting carrier flexibility or open-source solutions.
-
-**Getting Started:**
-1. Set up jambonz account (or self-host)
-2. Connect your chosen carrier
-3. Configure speech providers
-4. Use the LLM verb with Ultravox
-
-**Special Notes:**
-- Requires carrier relationship or SIP trunk
-- Built-in Ultravox integration simplifies setup
-- Most flexible but requires more configuration
-
----
-
-### Voximplant
-**Existing integration for current users.**
-
-**Strengths:**
-- Good for existing Voximplant customers
-- Comprehensive platform features
-- Global infrastructure
-
-**Integration Method:** Custom integration - see [Voximplant guide](/integrations/voximplant)
-
-**Best For:** Organizations already using Voximplant platform.
-
-## Prerequisites by Provider
-
-### Twilio
-- Active Twilio account
-- Purchased phone number from Twilio
-- TwiML application configured for Media Streams
-
-### Telnyx  
-- Active Telnyx account
-- Purchased phone number from Telnyx
-- Mission Control Portal access for configuration
 
 ### Plivo
-- Active Plivo account
-- Purchased phone number from Plivo
-- XML application configured for AudioStream
+#### Outbound Calls with Plivo
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call as shown above with `medium: { "plivo": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
+  </Step>
+  <Step title="Connect Ultravox to the Plivo Phone Call">
+    Use the `joinUrl` with AudioStream:
+
+    ```js
+    // Example using the plivo node library
+    // This assumes our server exposes an endpoint at `answerUrl`
+    const call = await plivo.calls.create({
+      to: phoneNumber,
+      from: plivoPhoneNumber,
+      answer_url: answerUrl, // URL that returns the XML below
+      answer_method: "GET"
+    });
+    ```
+
+    The answer URL should return:
+    
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Stream keepCallAlive="true" 
+                contentType="audio/x-l16;rate=16000"
+                bidirectional="true">
+            ${joinUrl}
+        </Stream>
+    </Response>
+    ```
+
+    Note: For best audio quality, we recommend `audio/x-l16;rate=16000`. However, any contentType supported by Plivo will work with Ultravox.
+  </Step>
+</Steps>
+
+#### Incoming Calls with Plivo
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call with `medium: { "plivo": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
+  </Step>
+  <Step title="Connect the Inbound Twilio Call to Ultravox">
+    Use the `joinUrl` with AudioStream:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Stream keepCallAlive="true"
+                contentType="audio/x-l16;rate=16000" 
+                bidirectional="true">
+            ${joinUrl}
+        </Stream>
+    </Response>
+    ```
+  </Step>
+</Steps>
+
+For more details, see the [Plivo documentation](https://www.plivo.com/docs/).
 
 ### jambonz
-- jambonz account (cloud or self-hosted)
-- Carrier/SIP trunk relationship
-- Speech provider credentials configured
+#### jambonz Portal Setup
+jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
+This gives you the flexibility to choose your carrier of choice, you'll just need to add it in your jambonz dashboard.
 
-### Voximplant
-- Active Voximplant account
-- Configured application and scenarios
+<Steps>
+  <Step title="Add Your Carrier in jambonz">
+    In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any sip network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
+  </Step>
 
-## Choosing a Provider
+  <Step title="Add a Speech Provider in jambonz">
+    Next, you need to [add speech credentials](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-speech-credentials) for your chosen vendor.
+  </Step>
 
-**Consider these factors when selecting a provider:**
+  <Step title="Create a New jambonz Application">
+    ​A jambonz application configured via the jambonz portal defines how calls are handled by linking them to your custom logic through webhooks or WebSocket endpoints. When you create an application, you specify:​
+    - Call webhook URL: Where jambonz sends call events.​
+    - Call status webhook URL: For receiving call status updates.​
+    - Speech vendors: Your chosen TTS/STT providers.​
 
-**Budget:** Telnyx often offers the most competitive pricing, while Twilio is premium-priced.
+    Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. This setup allows you to implement features like speech recognition, text-to-speech, call routing, and integration with AI services. 
+  </Step>
 
-**Reliability:** Twilio leads in enterprise reliability and SLAs.
+  <Step title="Add a Phone Number in jambonz">
+    Finally, you need to [add a phone number](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-phone-numbers) provisioned from your carrier of choice. At the bottom of the page select the jambonz application you just created to link your new virtual number to that application.
+  </Step>
+</Steps>
 
-**Global Reach:** Both Twilio and Telnyx offer excellent global coverage.
+#### Incoming Calls with jambonz
 
-**Existing Relationships:** Use providers you already have accounts with for faster setup.
+```js
+// Example using the @jambonz/node-client-ws library
+session
+.pause({length: 1.5})
+.llm({
+  vendor: 'ultravox',
+  model: 'fixie-ai/ultravox',
+  auth: {
+    apiKey
+  },
+  actionHook: '/final',
+  eventHook: '/event',
+  llmOptions: {
+    systemPrompt: 'You are an agent named Karen. Greet the user and ask how you can help.',
+    firstSpeakerSettings: { agent: {} },
+    initialMessages: [{
+      medium: 'MESSAGE_MEDIUM_VOICE',
+      role: 'MESSAGE_ROLE_USER'
+    }],
+    model: 'fixie-ai/ultravox',
+    voice: 'Tanya-English',
+    transcriptOptional: true,
+  }
+})
+.hangup()
+.send();
+```
+For more details see the `llm` verb in the [jambonz docs](https://docs.jambonz.org/verbs/verbs/llm). 
 
-**Technical Requirements:** jambonz offers the most flexibility for custom carrier arrangements.
 
-**Integration Complexity:** Providers with native streaming (Twilio, Telnyx) offer the best performance.
+#### Outbound Calls with jambonz
+In addition to the inbound scenario, you'll have to create a call that connects to the destination number (`phoneNumber`) and points to the jambonz application that defines how the call should be handled. Find the `APPLICATION_SID` in the jambonz portal by clicking on the application you created during the setup process.
 
-## Getting Provider Support
+```js
+  const JambonzClient = require('@jambonz/node-client');
 
-**Twilio:** Extensive documentation, community support, and enterprise support tiers.
+  const client = JambonzClient(
+    process.env.JAMBONZ_ACCOUNT_SID,
+    process.env.JAMBONZ_API_KEY,
+    {baseUrl: process.env.JAMBONZ_REST_API_BASE_URL || 'https://api.jambonz.cloud/v1'}
+  );
 
-**Telnyx:** Developer-focused support with comprehensive API documentation.
+  const call = await client.calls.create({
+      from: process.env.FROM_NUMBER,  
+        to: {
+          type : 'phone',
+          number: phoneNumber,
+          trunk: process.env.CARRIER
+          },
+      application_sid: process.env.APPLICATION_SID
+  });
+  ```
 
-**Plivo:** Standard support channels with good documentation.
-
-**jambonz:** Open-source community support plus commercial support options.
-
-**Voximplant:** Standard support for platform customers.
-
-## Regional Considerations
-
-**North America:** All providers work well, with Twilio and Telnyx having the strongest presence.
-
-**Europe:** Telnyx and Twilio both offer good coverage. Consider PCMA codec for optimal quality.
-
-**Asia-Pacific:** Twilio has the broadest coverage, Telnyx is expanding.
-
-**Other Regions:** Check provider-specific coverage maps for availability.
-
-## Need Another Provider?
-
-We're continuously expanding our telephony integrations. If you need support for a specific provider not listed here, please [let us know on Discord](https://discord.com/channels/1240071833798184990/1315065334058713198) and we'll consider adding it to our roadmap.
+For more details, see the [jambonz documentation](https://docs.jambonz.org/) and [example code](https://github.com/jambonz/ultravox-s2s-example).
