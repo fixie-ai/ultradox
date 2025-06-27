@@ -9,7 +9,24 @@ You can use files as sources for any of your corpora.
 Files can be added via the [Web App](https://app.ultravox.ai/rag) or via the [Create Corpus File Upload API](/api-reference/corpora/corpora-uploads-post).
 
 ## Upload Files via Web App
-[Under Construction]
+
+<Steps>
+  <Step title="Create New Source">
+    * Go to [RAG](https://app.ultravox.ai/rag) in the Ultravox web application.
+    * Click `New Source` in the top right corner.
+  </Step>
+  <Step title="Add Details and Files">
+    * Select the `Collection` to which you want to add the content.
+    * (Optionally) Add a `Name` and `Description` for the new source.
+    * Select `Document` and add files.
+
+    <img className="block dark:hidden" src="/images/screenshots/corpus/add-source-from-document-light.png" />
+    <img className="hidden dark:block" src="/images/screenshots/corpus/add-source-from-document-dark.png" />
+  </Step>
+  <Step title="Save">
+    * Click `Save` and wait a few moments for your content to be uploaded and ingested.
+  </Step>
+</Steps>
 
 ## Upload Files via API
 To upload files using the API, follow these steps:

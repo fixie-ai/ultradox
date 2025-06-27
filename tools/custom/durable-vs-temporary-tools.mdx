@@ -2,24 +2,45 @@
 title: 'Durable vs. Temporary Tools'
 description: 'Understand when to use durable tools versus temporary tools for different development stages and use cases.'
 icon: 'timer'
-tag: "NEW"
 ---
 
-[Under Construction]
-
-Custom tools in Ultravox come in two varieties: **durable** and **temporary**. Understanding when to use each type is crucial for effective development and production deployment.
+Custom tools in Ultravox come in two varieties: **durable** and **temporary**. Understanding when to use each type is crucial for effective development and production deployment. Choose the approach that fits your development stage and team structure. Consider starting with temporary tools for rapid development, then graduate to durable tools for production stability and team collaboration.
 
 ## Quick Comparison
 
 | Aspect | Temporary Tools | Durable Tools |
 |--------|----------------|---------------|
-| **Creation** | In call request body | Via [Tools API](/api-reference/tools/tools-post) |
+| **Creation** | In call request body | Via [Tools API](/api-reference/tools/tools-post) or the [Web app](https://app.ultravox.ai/tools) |
 | **Persistence** | Call-scoped only | Permanently stored |
 | **Reusability** | Single call | Across calls and agents |
-| **Iteration Speed** | Very fast | Requires API calls |
-| **Production Use** | Development only | Recommended |
-| **Web App Agents** | Not supported | Full support |
-| **Team Collaboration** | Limited | Excellent |
+
+### Ultravox Web App Integration
+<Warning>
+**Web App Compatibility**
+
+If you plan to use agents in the Ultravox web app or share them with team members who use the web app, you must use durable tools. Temporary tools are only available for agents created via API.
+</Warning>
+
+#### Agents Created in Web App
+- **✅ Durable Tools**: Can be selected and used
+- **❌ Temporary Tools**: Not supported
+
+#### Agents Created via API
+- **✅ Durable Tools**: Can be referenced by name or ID
+- **✅ Temporary Tools**: Can be defined inline
+
+```js
+// API-created agent with both tool types
+{
+  "name": "Hybrid Agent",
+  "callTemplate": {
+    "selectedTools": [
+      { "toolName": "durableTool" },        // Durable tool
+      { "temporaryTool": { /* definition */ } } // Temporary tool
+    ]
+  }
+}
+```
 
 ## Temporary Tools
 
@@ -27,10 +48,16 @@ Temporary tools are defined inline when creating a call and exist only for that 
 
 ### When to Use Temporary Tools
 
-✅ **Early Development**: Rapid prototyping and experimentation  
-✅ **Testing New Ideas**: Quick iteration without API overhead  
-✅ **One-off Use Cases**: Tools needed for a single specific call  
-✅ **Development Environment**: Testing before creating durable versions  
+✅ **Early Development**: Rapid prototyping and experimentation.  
+✅ **Testing New Ideas**: Quick iteration without overhead of separately creating or updating the tool.  
+✅ **One-off Use Cases**: Tools needed for a single specific call.  
+✅ **Development Environment**: Testing before creating durable versions.
+
+<Warning>
+**Web App Compatibility**
+
+If you plan to use agents in the Ultravox web app or share them with team members who use the web app, you must use durable tools. Temporary tools are only available for agents created via API.
+</Warning>
 
 ### Creating Temporary Tools
 
@@ -64,36 +91,30 @@ Temporary tools are defined inline when creating a call and exist only for that 
 }
 ```
 
-### Temporary Tool Advantages
-
-✅ **Fast Iteration**: No need to create/update/delete tools during development  
-✅ **Immediate Testing**: Test tool changes with every new call  
-✅ **No API Overhead**: Define tools directly in your application code  
-✅ **Version Control**: Tool definitions live in your application codebase  
-
 ### Temporary Tool Limitations
 
-❌ **Not Reusable**: Must redefine for every call  
-❌ **No Web App Support**: Can't be used with agents created in Ultravox web app  
-❌ **API Creation Only**: Only work with agents created via API  
-❌ **No Team Sharing**: Can't share tools across team members easily  
+❌ **Not Reusable**: Must redefine for every call.  
+❌ **No Web App Support**: Can't be used with agents created in Ultravox web app.  
+❌ **API Creation Only**: Only work with agents created via API.  
+❌ **No Team Sharing**: Can't share tools across team members easily.  
 
 ## Durable Tools
 
-Durable tools are created once via the Tools API and can be reused across multiple calls and agents.
+Durable tools are created once via the Ultravox web app or Tools API and can be reused across multiple calls and agents.
 
 ### When to Use Durable Tools
 
-✅ **Production Applications**: Stable, tested functionality  
-✅ **Web App Agents**: Required for agents created in Ultravox web app  
-✅ **Team Collaboration**: Share tools across team members  
-✅ **Reusable Functionality**: Use same tool across multiple agents  
-✅ **Stable APIs**: When tool definitions won't change frequently  
+✅ **Production Applications**: Stable, tested functionality.  
+✅ **Web App Agents**: Required for agents created in Ultravox web app.  
+✅ **Team Collaboration**: Share tools across team members or split ownership of tools from the rest of your agent.  
+✅ **Reusable Functionality**: Use same tool across multiple agents.  
+✅ **Stable APIs**: When tool definitions won't change frequently.  
 
 ### Creating Durable Tools
 
-```bash
-# Create a durable tool via API
+See the [Tools Quickstart →](gettingstarted/quickstart/tools#creating-a-custom-tool) for an introduction to creating a durable tool using the Ultravox web app.
+
+```bash Creating a durable tool via API
 curl -X POST "https://api.ultravox.ai/api/tools" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
@@ -123,8 +144,9 @@ curl -X POST "https://api.ultravox.ai/api/tools" \
 
 ### Using Durable Tools
 
-```js
-// Reference durable tool by name or ID
+Durable tools are added at call creation time via the `selectedTools` array and can be added by name or ID.
+
+```js Reference durable tool by name or ID
 {
   "systemPrompt": "You are a helpful assistant...",
   "selectedTools": [
@@ -135,23 +157,13 @@ curl -X POST "https://api.ultravox.ai/api/tools" \
 }
 ```
 
-### Durable Tool Advantages
-
-✅ **Reusable**: Use across multiple calls and agents  
-✅ **Web App Compatible**: Works with agents created in Ultravox web app  
-✅ **Team Sharing**: Visible to all team members  
-✅ **Version Control**: Update once, affects all usage  
-✅ **Organized**: Manage tools separately from application logic  
-
 ### Durable Tool Limitations
 
-❌ **Slower Iteration**: Requires API calls to create/update  
-❌ **API Dependency**: Need to manage tool lifecycle via API  
-❌ **Update Overhead**: Changes affect all existing usage  
+❌ **Slower Iteration**: Requires API calls or using the web app to create/update.  
+❌ **API Dependency**: Need to manage tool lifecycle via the Ultravox web app or API.  
+❌ **Update Overhead**: Changes affect all existing usage.  
 
-## Development Workflow
-
-### Recommended Development Path
+## Recommended Development Workflow
 
 <Steps>
   <Step title="Prototype with Temporary Tools">
@@ -201,97 +213,3 @@ curl -X POST "https://api.ultravox.ai/api/tools" \
     ```
   </Step>
 </Steps>
-
-## Web App Integration
-
-### Agents Created in Web App
-- **✅ Durable Tools**: Can be selected and used
-- **❌ Temporary Tools**: Not supported
-
-### Agents Created via API
-- **✅ Durable Tools**: Can be referenced by name or ID
-- **✅ Temporary Tools**: Can be defined inline
-
-```js
-// API-created agent with both tool types
-{
-  "name": "Hybrid Agent",
-  "callTemplate": {
-    "selectedTools": [
-      { "toolName": "durableTool" },        // Durable tool
-      { "temporaryTool": { /* definition */ } } // Temporary tool
-    ]
-  }
-}
-```
-
-<Warning>
-**Web App Compatibility**
-
-If you plan to use agents in the Ultravox web app or share them with team members who use the web app, you must use durable tools. Temporary tools are only available for agents created via API.
-</Warning>
-
-## Team Collaboration Scenarios
-
-### Small Team / Solo Development
-```js
-// Temporary tools work well for small teams
-{
-  "selectedTools": [
-    { "temporaryTool": { /* definition in codebase */ } }
-  ]
-}
-```
-
-### Large Team / Production
-```bash
-# Durable tools enable better collaboration
-# Tool team creates tools
-curl -X POST "https://api.ultravox.ai/api/tools" -d '{ /* tool definition */ }'
-
-# Application teams use tools
-{
-  "selectedTools": [
-    { "toolName": "teamSharedTool" }
-  ]
-}
-```
-
-## Best Practices
-
-### For Temporary Tools
-1. **Document Well**: Since they're not centrally managed, ensure good documentation
-2. **Version in Code**: Keep tool definitions in your version control system
-3. **Test Thoroughly**: Each call gets a fresh instance, so test edge cases
-4. **Graduate to Durable**: Move stable tools to durable when ready
-
-### For Durable Tools
-1. **Semantic Versioning**: Use clear naming conventions (e.g., `toolName_v2`)
-2. **Deprecation Strategy**: Plan how to retire old tool versions
-3. **Team Communication**: Coordinate changes that affect multiple users
-4. **Testing Environment**: Test changes before updating production tools
-
-### Migration Strategy
-
-When moving from temporary to durable tools:
-
-1. **Create Durable Version**:
-   ```bash
-   curl -X POST "https://api.ultravox.ai/api/tools" \
-     -d '{ "name": "myTool_v1", "definition": { /* from temporary */ } }'
-   ```
-
-2. **Update Call Creation**:
-   ```js
-   // Before (temporary)
-   { "temporaryTool": { /* definition */ } }
-   
-   // After (durable)
-   { "toolName": "myTool_v1" }
-   ```
-
-3. **Test and Validate**: Ensure the durable version works identically
-
-4. **Deploy**: Update your application to use the durable tool
-
-Choose the approach that fits your development stage and team structure. Start with temporary tools for rapid development, then graduate to durable tools for production stability and team collaboration.

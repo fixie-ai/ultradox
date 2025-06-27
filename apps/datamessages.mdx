@@ -6,7 +6,7 @@ tag: "NEW"
 ---
 
 Data messages are used to communicate non-audio information between your client and an Ultravox server during calls.
-These messages work across [WebRTC](/apps/webrtc) data channels and [WebSocket](/guides/websockets) connections.
+These messages work across WebRTC data channels (used by our [SDKs](/apps/sdks) and [WebSocket](/apps/websockets) connections.
 Messages can also be received by adding a [data connection](/api-reference/calls/calls-post#body-data-connection) to your call, which is especially useful for telephony.
 
 All messages are JSON objects with camelCase keys containing:
@@ -83,7 +83,7 @@ Sent by the server to ask the client to invoke a client-implemented tool with th
 ## ClientToolResult
 Contains the result of a client-implemented tool invocation.
 - `type: "client_tool_result"`
-- `agentReaction`: String. Optional. Must be one of the following: "speaks" (the default), "listens", or "speaks-once". See [Controlling Agent Responses to Tools](/essentials/tools#controlling-agent-responses-to-tools) for more.
+- `agentReaction`: String. Optional. Must be one of the following: "speaks" (the default), "listens", or "speaks-once". See [Agent Responses to Tools](/tools/custom/agent-responses) for more.
 - `invocationId`: String. Matches corresponding invocation.
 - `result`: String. Tool execution result. Often a JSON string. May be omitted for errors.
 - `responseType`: String. Defaults to "tool-response".

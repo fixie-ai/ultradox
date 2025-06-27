@@ -39,6 +39,7 @@
               },
               {
                 "group": "Examples",
+                "tag": "NEW",
                 "icon": "code",
                 "pages": [
                   "gettingstarted/examples",
@@ -63,7 +64,6 @@
             "icon": "robot",
             "pages": [
               "agents/overview",
-              "agents/overview-old",
               "agents/building-and-editing-agents",
               "agents/making-calls",
               "agents/call-management",
@@ -88,7 +88,7 @@
           {
             "group": "Web, Apps, Websockets",
             "icon": "window",
-            "pages": ["apps/overview", "/apps/webrtc", "/apps/sdks", "apps/websockets", "apps/datamessages"]
+            "pages": ["apps/overview", "/apps/sdks", "apps/websockets", "apps/datamessages"]
           },
           {
             "group": "Tools",
@@ -105,6 +105,8 @@
                   "tools/custom/overview",
                   "tools/custom/parameters",
                   "tools/custom/authentication",
+                  "tools/custom/agent-responses",
+                  "tools/custom/changing-call-state",
                   "tools/custom/http-vs-client-tools",
                   "tools/custom/durable-vs-temporary-tools",
                   "tools/custom/parameter-overrides"
@@ -115,7 +117,6 @@
                 "icon": "books",
                 "pages": [
                   "tools/rag/overview",
-                  "tools/rag/rag",
                   "tools/rag/crawling-websites",
                   "tools/rag/using-static-documents"
                 ]

@@ -21,7 +21,7 @@ We're kicking off 2025 with exciting improvements and community-driven developme
 ##### Model Upgrades and Performance Improvements
 * **Model Upgrade** → Upgraded Ultravox 0.4.1 to run on the newest Llama 3.3 model, delivering significantly improved instruction following and tool usage capabilities. This new model is now the default in the Ultravox Realtime service and the [HF model](https://huggingface.co/fixie-ai) and model card are available.
 * **Improved Tool Performance** → Updated our vLLM tool parser with more lenient processing to better handle Llama's tool calling patterns, resulting in more consistent performance. We fixed an issue with large tool calls being unstable.
-* **More Improvements** → Added [`vadSettings`](/api-reference/calls/calls-post) parameters for more control, new public [`hang-up`](/tools/overview#changing-call-state) tool, and added [`timeout`](/api-reference/schema/base-tool-definition) for tools.
+* **More Improvements** → Added [`vadSettings`](/api-reference/calls/calls-post) parameters for more control, new public [`hang-up`](/tools/built-in-tools#hangUp) tool, and added [`timeout`](/api-reference/schema/base-tool-definition) for tools.
 
 ##### New Dashboard Features and Documentation
 * **Call History** → Introducing the [Call History](https://app.ultravox.ai/calls) page at app.ultravox.ai - dive deep into detailed call analytics, including tool error tracking. This is just the first of many dashboard improvements coming your way.
@@ -50,8 +50,8 @@ We're excited to announce several new features and improvements to the Ultravox 
 1. Docs Updates (Including "News" and "Deprecation" pages)
 
 ##### New Features: WebSockets, Telnyx, and Plivo
-* **WebSockets:** You can now integrate on the server side via [WebSockets](/guides/connectionoptions/#websocket-integration).
-* **Telnyx & Plivo:** New telephony integrations for Telnyx and Plivo are now available in addition to our existing support for Twilio. Check the [docs](/guides/connectionoptions/#phone-integration).
+* **WebSockets:** You can now integrate on the server side via [WebSockets](/apps/websockets).
+* **Telnyx & Plivo:** New telephony integrations for Telnyx and Plivo are now available in addition to our existing support for Twilio. Check the [docs](/telephony/overview).
 
 ##### SDK and Other Improvements
 * **SDK Updates:** New [client version](/apps/sdks/#joincall) tracking allows you to set an arbitrary value that is tied to calls (retrieve with GET on /calls endpoint).
@@ -59,11 +59,11 @@ We're excited to announce several new features and improvements to the Ultravox 
 * **Bug Fix:** Fixed an issue where errant connections could affect proper call termination.
 
 ##### Docs Updates
-* Introduced new pages for [News](/updates/news/) and [Deprecations](/updates/deprecation/) to help you stay informed.
-* Added comprehensive documentation for [initialMessages](/api/calls/#initialmessages) and [inactivityMessages](/api/calls/#inactivitymessages).
+* Introduced new pages for [News](/changelog/news) and [Deprecations](/changelog/deprecation) to help you stay informed.
+* Added comprehensive documentation for [initialMessages](/api-reference/calls/calls-post#body-initial-messages) and [inactivityMessages](/api-reference/calls/calls-post#body-inactivity-messages).
 
 #### What's Not
-We have one active deprecation: `initiator` will be deleted at the end of the month. This has been replaced with `firstSpeaker`. Not using `initiator`? You can ignore this. Otherwise, check out the [migration guide](/migration/firstspeaker/).
+We have one active deprecation: `initiator` will be deleted at the end of the month. This has been replaced with `firstSpeaker`. Not using `initiator`? You can ignore this. Otherwise, check out the [migration guide](/changelog/migration/firstspeaker/).
 
 #### What's Next
 We're actively working on several exciting features and improvements:
@@ -107,7 +107,7 @@ For insights into our roadmap and strategy and to see a live demonstration of th
 There's now a web-based console application at https://app.ultravox.ai that you can use for keeping track of usage, generating API keys, managing your subscription, and playing around with different voices and system prompts. The console is a work-in-progress so don't hesitate to reach out with requests for new features!
 
 ##### initialOutputMedium
-This new property can be set at call creation to have the agent's initial output be text (voice remains the default). This enables text-based scenarios and can be used with the SDK's [`setOutputMedium()`](/apps/sdks/#setoutputmedium) to toggle between text and voice. Check out the Create Call docs for more info.
+This new property can be set at call creation to have the agent's initial output be text (voice remains the default). This enables text-based scenarios and can be used with the SDK's [`setOutputMedium()`](/sdk-reference/introduction#setoutputmedium) to toggle between text and voice. Check out the Create Call docs for more info.
 
 #### What's Next
 We're already working on the next major release of Ultravox with even more exciting features. Your feedback has been invaluable in shaping our development, and we'd love to hear your thoughts on these latest improvements.
@@ -125,16 +125,16 @@ We're thrilled to share the latest updates we've made to the Ultravox APIs. All 
 * **What's new:** Stages enable more complex and nuanced agent interactions, giving you fine-grained control over the conversation flow.
 * **Why it matters:** Each stage can have a new system prompt, a different set of tools, a new voice, an updated conversation history, and more.
 * **Where to use:** Stages are designed for complex conversational flows like data gathering (job applications, medical intake forms, applying for a mortgage) or context switching (customer support escalation, triaging IT issues).
-* **Where to start:** Check our [docs](../guides/stages/) for the details on how to get started.
+* **Where to start:** Check our [docs](/agents/call-stages) for the details on how to get started.
 
 ##### Client-Implemented Tools: Implement Tools in Your App
 * **What's new:** In our previous update we added support for tools. Those were “server” tools and required you to implement the logic on a server and expose things via a URL. Client-implemented tools enable putting all the logic in your client application and are still called by your agent.
 * **Why it matters:** Enable dynamic UI or other interactivity in your app without having to rely on putting all the logic on a server.
-* **Learn more:** Visit our [SDK page](/apps/sdks/#client-tools) for more info.
+* **Learn more:** Visit our [SDK page](/sdk-reference/introduction#client-tools) for more info.
 
 ##### More Improvements: setOutputMedium + Webhooks
-* **setOutputMedium():** Added to our SDKs to give you more control over how your agents respond. Allows toggling the agent's output between text and voice. See the [docs](/apps/sdks/#setoutputmedium).
-* **Webhooks:** Ultravox now has [webhooks](../api/webhooks/) for two key events: `call.started` and `call.ended`. This opens up new opportunities for triggering external processes when calls start/end, logging call data in real-time to your own systems, or integrating Ultravox more deeply with other workflows.
+* **setOutputMedium():** Added to our SDKs to give you more control over how your agents respond. Allows toggling the agent's output between text and voice. See the [docs](/sdk-reference/introduction#setoutputmedium).
+* **Webhooks:** Ultravox now has [webhooks](/api-reference/webhooks/webhooks-list) for two key events: `call.started` and `call.ended`. This opens up new opportunities for triggering external processes when calls start/end, logging call data in real-time to your own systems, or integrating Ultravox more deeply with other workflows.
 
 #### What's Not
 1. Breaking Change: SDK SessionState
@@ -172,26 +172,26 @@ We are continuing to get great feedback (thank you!) and have been working to ad
 
 ##### 2. Tools: Your AI's New Superpowers
 * **What's new:** Durable tools (create once, use often) and Temporary tools (perfect for iterating)
-* **Where to start:** Check our [docs](../tools/) for the how-to
+* **Where to start:** Check our [docs](/tools/overview) for the how-to
 * **See it in action:** Try our [tools demo](https://demo.ultravox.ai/) on our website
 
 ##### 3. New SDKs: Code Your Way
 * **New additions:** Flutter, Kotlin, and Python join our JavaScript SDK
-* **Cool features:** [Debug Messages](/apps/sdks/#debug-messages), mic/speaker controls
-* **Learn more:** Visit our [SDK page](/apps/sdks/) for details
+* **Cool features:** [Debug Messages](/sdk-reference/introduction/#debug-messages), mic/speaker controls
+* **Learn more:** Visit our [SDK page](/apps/sdks) for details
 
 #### In Case You Missed It
 * **Price drop:** Now just $0.05/minute (cheaper than coffee, and way more talkative!)
-* **Voice cloning:** Create [customized voices](../api/voices/#create-clone-voice) for your agents
-* **Conversation continuity:** Because [why start over](../api/calls/#create-call)?
+* **Voice cloning:** Create [customized voices](/api-reference/voices/#create-clone-voice) for your agents
+* **Conversation continuity:** Because [why start over](/api-reference/calls/calls-post)?
 
 #### What's Next?
 You tell us! We're all ears for your suggestions to make Ultravox even better for you.
 
 ### 2024-09-04 - Price Reduction, Resume Calls, Voice Cloning
 * Our managed Ultravox APIs are getting _much_ cheaper. We're decreasing our price to **$0.05/min**. That's full-on, real-time, speech-to-speech voice chat. We think this is the highest quality, lowest cost system out there.
-* We continue to offer 30 minutes of free usage to try it out for yourself. If you'd like to continue using our managed APIs after that, you'll need to set up a Stripe subscription. You can now do that by accessing the billingUrl from the new [/accounts API](../api/accounts/).
-* We've added the ability to seamlessly continue a prior conversation. This is as simple as passing in a priorCallId parameter when [starting a call](../api/calls/).
-* We've added support for [Voice Cloning](../api/voices/#create-clone-voice).
+* We continue to offer 30 minutes of free usage to try it out for yourself. If you'd like to continue using our managed APIs after that, you'll need to set up a Stripe subscription. You can now do that by accessing the billingUrl from the new [/accounts API](/api-reference/accounts).
+* We've added the ability to seamlessly continue a prior conversation. This is as simple as passing in a priorCallId parameter when [starting a call](/api-reference/calls).
+* We've added support for [Voice Cloning](/api-reference/voices/voices-post#create-clone-voice).
 * We released a new version of the Ultravox Model, [v0.4](https://github.com/fixie-ai/ultravox/releases/tag/v0.4).
 * Tool support is coming very soon!

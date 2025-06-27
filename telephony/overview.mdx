@@ -57,7 +57,6 @@ The integration uses your provider's media streaming capabilities to pipe audio 
 
 ## Learn More
 
-- [All About Ultravox](./about-ultravox) - Understanding Ultravox protocols and connection methods
 - [Supported Providers](./supported-providers) - Detailed provider comparison and setup
 - [SIP Guide](./sip) - Direct SIP integration for existing phone systems (Preview)
 - [Incoming Calls](./incoming-calls) - Handle calls from users
@@ -90,7 +89,7 @@ Choose your integration method based on your needs:
 
 - **WebRTC**: Best for most integrations, especially for any client deployment (for example, browsers or mobile clients). This is the default. Get started with the Ultravox client [SDK](/apps/sdks).
 - **Phone**: For traditional phone network integration. Ultravox integrates directly with Telnyx, Twilio, Plivo, and jambonz (bring your own carrier).
-- **WebSocket**: For server-to-server integration, especially when you already have high-bandwidth connections between your server and clients. Check out the [WebSocket Integration](/guides/websockets) guide for more information.
+- **WebSocket**: For server-to-server integration, especially when you already have high-bandwidth connections between your server and clients. Check out the [WebSocket Integration](/apps/websockets) guide for more information.
 
 ## Phone Integration
 Ultravox integrates with multiple telephony providers, enabling you to create AI-powered voice applications that can interact through regular phone networks. You can build AI agents that can make outbound calls and answer incoming calls, opening up possibilities for customer service, automated outreach, and other voice-based AI applications.
@@ -442,7 +441,7 @@ For example, if a caller presses "5" on their keypad, your agent will receive th
 ```
 
 #### Sending DTMF Tones
-The [built-in](/essentials/tools#built-in-tools) `playDtmfSounds` tool allows your AI agent to send DTMF tones, which is useful for navigating Interactive Voice Response (IVR) systems or other phone trees. To enable the tool, add it to the `selectedTools` array when creating a call or call stage:
+The [built-in](/tools/built-in-tools#playdtmfsounds) `playDtmfSounds` tool allows your AI agent to send DTMF tones, which is useful for navigating Interactive Voice Response (IVR) systems or other phone trees. To enable the tool, add it to the `selectedTools` array when creating a call or call stage:
 
 ```js
 // Example request body for creating a call with DTMF capability
@@ -465,7 +464,7 @@ For example:
 }
 ```
 
-Note: the `playDtmfSounds` tool uses an [automatic parameter](/essentials/tools#automatic-parameters) that sends the proper sample rate of the source audio and should be treated as an implementation detail.
+Note: the `playDtmfSounds` tool uses an [automatic parameter](/tools/custom/parameters#automatic-parameters) that sends the proper sample rate of the source audio and should be treated as an implementation detail.
 
 #### Common Use Cases
 - Building interactive phone trees or IVR systems
