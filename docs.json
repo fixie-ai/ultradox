@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "maple",
   "name": "Ultradox",
   "colors": {
     "primary": "#5E92FF",
@@ -26,12 +26,14 @@
               "gettingstarted/concurrency",
               {
                 "group": "Quickstarts",
+                "tag": "NEW",
                 "icon": "person-running-fast",
                 "pages": [
                   "gettingstarted/quickstart/agent-console",
                   "gettingstarted/quickstart/telephony-outbound",
                   "gettingstarted/quickstart/telephony-inbound",
                   "gettingstarted/quickstart/web-app",
+                  "gettingstarted/quickstart/tools",
                   "gettingstarted/quickstart/apikeys"
                 ]
               },
@@ -61,8 +63,10 @@
             "icon": "robot",
             "pages": [
               "agents/overview",
+              "agents/overview-old",
               "agents/building-and-editing-agents",
               "agents/making-calls",
+              "agents/call-management",
               "agents/guiding-agents",
               "agents/call-stages",
               "agents/testing-and-debugging"
@@ -82,9 +86,9 @@
             ]
           },
           {
-            "group": "Web & Apps",
+            "group": "Web, Apps, Websockets",
             "icon": "window",
-            "pages": ["apps/overview", "/apps/webrtc", "/apps/sdks"]
+            "pages": ["apps/overview", "/apps/webrtc", "/apps/sdks", "apps/websockets", "apps/datamessages"]
           },
           {
             "group": "Tools",
@@ -92,9 +96,20 @@
             "pages": [
               "tools/overview",
               "tools/built-in-tools",
-              "tools/http-vs-client-tools",
-              "tools/durable-vs-temporary-tools",
               "tools/async-tools",
+              {
+                "group": "Custom Tools",
+                "tag": "NEW",
+                "icon": "gear-complex-code",
+                "pages": [
+                  "tools/custom/overview",
+                  "tools/custom/parameters",
+                  "tools/custom/authentication",
+                  "tools/custom/http-vs-client-tools",
+                  "tools/custom/durable-vs-temporary-tools",
+                  "tools/custom/parameter-overrides"
+                ]
+              },
               {
                 "group": "RAG",
                 "icon": "books",
@@ -103,13 +118,6 @@
                   "tools/rag/rag",
                   "tools/rag/crawling-websites",
                   "tools/rag/using-static-documents"
-                ]
-              },
-              {
-                "group": "Advanced topics",
-                "icon": "gear-complex-code",
-                "pages": [
-                  "tools/advanced/parameter-overrides"
                 ]
               }
             ]
@@ -128,17 +136,9 @@
             "icon": "webhook",
             "pages": [
               "webhooks/overview",
-              "webhooks/availablewebhooks",
-              "webhooks/securingwebhooks"
-            ]
-          },
-          {
-            "group": "Ultravox Protocol",
-            "icon": "network-wired",
-            "pages": [
-              "protocol/overview",
-              "protocol/websockets",
-              "protocol/datamessages"
+              "webhooks/available-webhooks",
+              "webhooks/errors-and-retries",
+              "webhooks/securing-webhooks"
             ]
           },
           {

@@ -52,7 +52,7 @@ The `event` field contains the exact event name you subscribed to:
 - `"call.joined"`
 
 #### Call Object
-The `call` object contains the complete [call data](/api-reference/schema/call-definition), identical to what you'd receive from the [Get Call API endpoint](/api-reference/calls/calls-get). This ensures consistency across your application whether you're receiving webhook data or making API requests.
+The `call` object contains the complete [call definition](/api-reference/schema/call-definition), identical to what you'd receive from the [Get Call API endpoint](/api-reference/calls/calls-get). This ensures consistency across your application whether you're receiving webhook data or making API requests.
 
 **Key call object fields:**
 - `callId`: Unique call identifier
@@ -91,9 +91,35 @@ Your webhook endpoint must meet these requirements:
 
 **Handle JSON**: Parse the JSON payload from the request body.
 
+```js Example: Handling Webhook Events
+// Express.js webhook handler example
+app.post('/ultravox-webhook', (req, res) => {
+  const event = req.body;
+  
+  switch (event.event) {
+    case 'call.started':
+      console.log('Call started:', event.call.callId);
+      // Initialize any required resources
+      break;
+      
+    case 'call.joined':
+      console.log('User joined call:', event.call.callId);
+      // Update UI, start monitoring, etc.
+      break;
+      
+    case 'call.ended':
+      console.log('Call ended:', event.call.callId, 'Reason:', event.call.endReason);
+      // Clean up resources, analyze results, etc.
+      break;
+  }
+  
+  res.status(200).send('OK');
+});
+```
+
 ## Error Responses
 
-If your endpoint returns a non-2xx status code (e.g. 4xx or 5xx), Ultravox will retry delivery. See [Error Handling and Retries](./overview#error-handling-and-retries) for more details.
+If your endpoint returns a non-2xx status code (e.g. 4xx or 5xx), Ultravox will retry delivery. See [Error Handling & Retries](./errors-and-retries) for more details.
 
 ## Testing Webhooks
 

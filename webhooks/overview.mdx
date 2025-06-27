@@ -6,26 +6,16 @@ icon: 'compass'
 
 Webhooks provide a powerful way to receive real-time notifications about events in your Ultravox Realtime account. Instead of repeatedly polling our API to check for updates, webhooks push event data directly to your application as soon as something happens.
 
-## How Webhooks Work
-
-When you configure a webhook in Ultravox, we'll send an HTTP POST request to your specified URL whenever a subscribed event occurs. This allows your application to react immediately to important events like call starts, call ends, etc.
-
-### The Webhook Flow
-
-1. **Event Occurs**: Something happens in your Ultravox account (e.g., a call starts)
-2. **Webhook Triggered**: Ultravox prepares a webhook payload containing event details
-3. **HTTP Request Sent**: We send a POST request to your configured webhook URL
-4. **Your Server Responds**: Your application processes the event and returns a status code
-5. **Confirmation**: A 2xx status code confirms successful receipt. Any 4xx or 5xx response will result in a [retry]()
+When you configure a webhook in Ultravox, we'll send an HTTP POST request to your specified URL whenever a subscribed event occurs. This allows your application to react immediately to important events like call starts, call ends, etc. Your server needs to respond with a 2xx to confirm receipt. If delivery fails, we will [retry delivery](./errors-and-retries).
 
 ## Getting Started
 
 To start using webhooks with Ultravox:
 
-1. **Set up an endpoint**: Create a URL on a server that can receive POST requests
-2. **Create a webhook**: Use the Ultravox API to register the URL that will receive webhook events and select events you want to receive
-3. **Handle events**: Process incoming webhook data in your application
-4. **Secure your webhook**: Implement signature verification for security (recommended)
+1. **Set up an endpoint**: Create a URL on a server that can receive POST requests.
+2. **Create a webhook**: Use the Ultravox API to register the URL that will receive webhook events and select events you want to receive.
+3. **Handle events**: Process incoming webhook data in your application.
+4. **Secure your webhook**: Implement signature verification for security (recommended).
 
 ## Webhook Payload Structure
 
@@ -38,7 +28,7 @@ All webhooks follow a consistent structure and return the event and details abou
 }
 ```
 
-See [Event Payload Reference](./availablewebhooks#event-payload-reference).
+See [Event Payload Reference](./available-webhooks#event-payload-reference).
 
 
 ## Best Practices
@@ -47,25 +37,15 @@ See [Event Payload Reference](./availablewebhooks#event-payload-reference).
 
 **Handle Duplicates**: In rare cases, you might receive the same webhook twice. Make your processing idempotent.
 
-**Implement Security**: Always verify webhook signatures to ensure requests are from Ultravox.
+**Implement Security**: Always verify webhook signatures to ensure requests are from Ultravox Realtime.
 
 **Monitor Failures**: Keep track of failed webhook deliveries and have a backup plan to retrieve missed data via our API.
 
 **Use HTTPS**: Always use HTTPS endpoints for webhooks to protect sensitive data in transit.
 
-## Error Handling and Retries
-
-If your webhook endpoint is temporarily unavailable or returns an error status code (e.g. 4xx or 5xx), Ultravox will automatically retry delivery using an exponential backoff strategy. We'll make up to 10 retry attempts over several hours as follows:
-
-* First retry will occur approximately 30 seconds later.
-* Subsequent retries will double the retry interval. (e.g. second retry again after 1m, third retry after 2m, etc.)
-* Total of 10 retries.
-
-For permanent failures or extended downtime, you can always use our REST API to retrieve information about any calls/events you may have missed.
-
-
 ## Keep Building
 
-- Learn about all [Available Webhooks](./availablewebhooks) you can subscribe to
-- Implement [Webhook Security](./securingwebhooks) to protect your endpoints
-- Check out our [API reference](/api-reference/webhooks/webhooks-list) for webhook management endpoints
+- Learn about all [Available Webhooks](./available-webhooks) you can subscribe to.
+- Learn about webhook [errors and our retry strategy](./errors-and-retries).
+- Implement [Webhook Security](./securing-webhooks) to protect your endpoints.
+- Check out our [API reference](/api-reference/webhooks/webhooks-list) for webhook management endpoints.

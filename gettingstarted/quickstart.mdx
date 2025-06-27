@@ -38,7 +38,7 @@ const response = await fetch('https://api.ultravox.ai/api/calls', {
   body: JSON.stringify({
     systemPrompt: "You are Steve, a friendly AI assistant calling to check in.",
     medium: { "twilio": {} },
-    firstSpeaker: "FIRST_SPEAKER_USER"
+    firstSpeakerSettings: { user: {} }
   })
 });
 

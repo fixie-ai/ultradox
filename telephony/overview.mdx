@@ -4,6 +4,8 @@ description: 'Connect Ultravox to traditional phone networks for AI-powered voic
 icon: 'compass'
 ---
 
+[Under Construction]
+
 Ultravox Realtime is a "BYOT" (bring your own telephony) platform and integrates with major telephony providers to enable AI-powered voice applications that work with regular phone numbers. Your AI agents can make outbound calls and answer incoming calls through traditional phone networks.
 
 ## Connection Methods
@@ -127,12 +129,12 @@ Creating an Ultravox call that you can connect with a phone call is similar to c
   Defaults to `{"webRtc": {}}`.
 </ParamField>
 
-<ParamField body="firstSpeaker" type="string" default="FIRST_SPEAKER_AGENT">
+<ParamField body="firstSpeakerSettings" type="object" default="agent: {}">
   Tells Ultravox who should speak first.
   
-  For outbound calls, typically set to `"FIRST_SPEAKER_USER"`.
+  For outbound calls, typically set to `user: {}`.
   
-  The default is `"FIRST_SPEAKER_AGENT"`.
+  The default is `agent: {}`.
 </ParamField>
 
 ```js Example: Outbound Call via Telnyx {4-7}
@@ -142,7 +144,7 @@ Creating an Ultravox call that you can connect with a phone call is similar to c
   "medium": {
     "telnyx": {} // or "twilio": {} or "plivo": {}
   },
-  "firstSpeaker": "FIRST_SPEAKER_USER"
+  "firstSpeakerSettings": { "user": {} }
 }
 ```
 <Tip>
@@ -156,7 +158,7 @@ jambonz have integrated Ultravox into their `llm` verb, so you won't need to cre
     #### Outbound Calls with Telnyx
     <Steps>
       <Step title="Create an Ultravox Call">
-        Create a new call as shown above with `medium: { "telnyx": {} }`, `firstSpeaker: "FIRST_SPEAKER_USER"`, and get a `joinUrl`.
+        Create a new call as shown above with `medium: { "telnyx": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
       </Step>
       <Step title="Connect Ultravox to the Telnyx Phone Call">
         Use the `joinUrl` with a TeXML `<Stream>`:
@@ -189,7 +191,7 @@ jambonz have integrated Ultravox into their `llm` verb, so you won't need to cre
     #### Incoming Calls with Telnyx
     <Steps>
       <Step title="Create an Ultravox Call">
-        Create a new call with `medium: { "telnyx": {} }` and `firstSpeaker` set to `"FIRST_SPEAKER_AGENT"`.
+        Create a new call with `medium: { "telnyx": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
       </Step>
       <Step title="Connect the Inbound Telnyx Call to Ultravox">
         Use the `joinUrl` with a TeXML `<Stream>`:
@@ -218,7 +220,7 @@ jambonz have integrated Ultravox into their `llm` verb, so you won't need to cre
     #### Outbound Calls with Twilio
     <Steps>
       <Step title="Create an Ultravox Call">
-        Create a new call as shown above with `medium: { "twilio": {} }`, `firstSpeaker: "FIRST_SPEAKER_USER"`, and get a `joinUrl`.
+        Create a new call as shown above with `medium: { "twilio": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
       </Step>
       <Step title="Connect Ultravox to the Twilio Phone Call">
         Use the `joinUrl` with a Twilio `<Stream>`:
@@ -241,7 +243,7 @@ jambonz have integrated Ultravox into their `llm` verb, so you won't need to cre
     #### Incoming Calls with Twilio
     <Steps>
       <Step title="Create an Ultravox Call">
-        Create a new call with `medium: { "twilio": {} }` and `firstSpeaker` set to `"FIRST_SPEAKER_AGENT"`.
+        Create a new call with `medium: { "twilio": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
       </Step>
       <Step title="Connect the Inbound Twilio Call to Ultravox">
         Use the `joinUrl` with a Twilio `<Stream>`:
@@ -263,12 +265,12 @@ jambonz have integrated Ultravox into their `llm` verb, so you won't need to cre
     #### Outbound Calls with Plivo
     <Steps>
       <Step title="Create an Ultravox Call">
-        Create a new call as shown above with `medium: { "plivo": {} }`, `firstSpeaker: "FIRST_SPEAKER_USER"`, and get a `joinUrl`.
+        Create a new call as shown above with `medium: { "plivo": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
       </Step>
       <Step title="Connect Ultravox to the Plivo Phone Call">
         Use the `joinUrl` with AudioStream:
 
-        ```javascript
+        ```js
         // Example using the plivo node library
         // This assumes our server exposes an endpoint at `answerUrl`
         const call = await plivo.calls.create({
@@ -298,7 +300,7 @@ jambonz have integrated Ultravox into their `llm` verb, so you won't need to cre
     #### Incoming Calls with Plivo
     <Steps>
       <Step title="Create an Ultravox Call">
-        Create a new call with `medium: { "plivo": {} }` and `firstSpeaker` set to `"FIRST_SPEAKER_AGENT"`.
+        Create a new call with `medium: { "plivo": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
       </Step>
       <Step title="Connect the Inbound Twilio Call to Ultravox">
         Use the `joinUrl` with AudioStream:
@@ -362,7 +364,7 @@ jambonz have integrated Ultravox into their `llm` verb, so you won't need to cre
           eventHook: '/event',
           llmOptions: {
             systemPrompt: 'You are an agent named Karen. Greet the user and ask how you can help.',
-            firstSpeaker: 'FIRST_SPEAKER_AGENT',
+            firstSpeakerSettings: { agent: {} },
             initialMessages: [{
               medium: 'MESSAGE_MEDIUM_VOICE',
               role: 'MESSAGE_ROLE_USER'

@@ -1,5 +1,125 @@
 ---
-title: 'Asynchronous Tools'
-description: 'TODO'
-icon: 'hotdog'
+title: 'Async Tools'
+description: 'Handle long-running operations and optimize tool performance for real-time conversations.'
+icon: 'clock'
+tag: "NEW"
 ---
+
+## The Latency Challenge
+
+In real-time conversations, tool performance is critical. When adding your own tools, it's important to keep in mind that there's always a user actively waiting for your tool to respond. Some operations naturally take time but tools need to be (or at least appear) fast to make sense in a real-time context.
+
+During tool execution, conversations are essentially frozen. Users can continue talking, but the agent won't respond until the tool completes. This creates several challenges:
+
+- **User Experience**: Long waits feel like connection problems.
+- **Conversation Flow**: Delays break natural conversation rhythm.
+- **Tool Timeout**: Tools are limited to 2.5 seconds by default (max of 40 seconds).
+
+### Tool Invocation Timing
+By default, tool invocations are always included in the conversation history. This is done so that you can always understand the timing and context of all tool invocations. In cases when the LLM produces a combination of an agent utterance + a tool call, maintaining this conversation history requires delaying tool invocations until after the agent is done speaking speaking. Otherwise, there's no way to ensure the agent wouldn't be interrupted by the user (and potentially render the queued tool call irrelevant).
+
+This is essential for tools that modify state since there's no good way to revert changes if the agent is interrupted. However, it's obviously suboptimal for tools like `queryCorpus` where we'd like to look up information while the agent is speaking and simply ignore the response if the agent is interrupted. Tools like this can be marked `precomputable`.
+
+## Precomputable Tools
+The most effective way to handle latency is to execute tools speculatively while the agent is speaking.
+
+Any tool marked `precomputable` will be speculatively invoked as soon as the model produces the tool call. When the model produces both an agent utterance and the tool call, the tool's latency will be masked by the agent speaking, but if the agent is interrupted there will be no record of the invocation.
+
+### How Precomputable Tools Work
+
+1. Agent generates both speech and a tool call
+2. Precomputable tool executes immediately while agent speaks
+3. Tool result is available when speech finishes
+4. If agent is interrupted, tool result is discarded
+
+**Example:**
+```js Marking Tool as Precomputable
+{
+  "name": "lookupProduct",
+  "definition": {
+    "modelToolName": "lookupProduct",
+    "description": "Look up product information",
+    "precomputable": true, // ← Key property
+    "dynamicParameters": [
+      {
+        "name": "productId",
+        "location": "PARAMETER_LOCATION_QUERY",
+        "schema": { "type": "string" },
+        "required": true
+      }
+    ],
+    "http": {
+      "baseUrlPattern": "https://api.example.com/products/{productId}",
+      "httpMethod": "GET"
+    }
+  }
+}
+```
+
+In order to safely be marked `precomputable`, a tool should have three properties:
+1. *No state changes*. For `http` tools, GET requests are usually safe while methods like POST are not.
+1. *No side effects*. Even a GET request is not safe to precompute if it has a side effect! (It's up to you to decide what counts here though. Side effects like logging probably don't matter to you for example while any database write likely does.)
+1. *Idempotent*. The tool must return the same result when called with the same parameters, regardless of when or how many times it is called.
+
+If your tool meets these requirements, you can mark it `precomputable` using the [corresponding field](/api-reference/tools/tools-post#body-definition-precomputable).
+
+
+### Requirements for Precomputable Tools
+For a tool to be safely marked `precomputable`, it must be:
+
+✅ **Read-only**: No state changes (GET requests are usually safe, POST requests are not).
+
+✅ **No Side Effects**: No logging critical events, sending notifications, etc.
+
+✅ **Idempotent**: Same input always produces same output, regardless of when or how many times it's called.
+
+### Examples
+
+**✅ Good Precomputable Tools:**
+- Database lookups
+- API queries for reference data
+- File reads or cache retrievals
+- Mathematical calculations
+
+**❌ Bad Precomputable Tools:**
+- Sending emails or notifications
+- Database writes or updates
+- Payment processing
+- File uploads
+
+## Custom Tool Timeouts
+While tools are executing, the conversation is essentially frozen. The user can continue talking all they like, but the agent will never respond until after the tool invocation completes. (The agent does have access to anything the user said during tool execution once execution completes.)
+
+To users this may feel like the call was disconnected or that there was an unnatural delay. In order to avoid these causes of perceived latency, tools are limited to a default execution time of 2.5 seconds. If your tool needs longer (and you can't make it faster), you can increase the timeout up to 40 seconds by setting the tool's [timeout field](/api-reference/tools/tools-post#body-definition-timeout). You can also reduce your tool's timeout. The value is a duration in seconds, like `5s` for 5 seconds or `0.1s` for 100 milliseconds.
+
+**Example:**
+```js Increasing Tool Timeout
+{
+  "name": "complexAnalysis",
+  "definition": {
+    "modelToolName": "complexAnalysis",
+    "description": "Perform complex data analysis",
+    "timeout": "10s", // ← Custom timeout (up to 40s max)
+    "dynamicParameters": [
+      {
+        "name": "dataset",
+        "location": "PARAMETER_LOCATION_BODY",
+        "schema": { "type": "string" },
+        "required": true
+      }
+    ],
+    "http": {
+      "baseUrlPattern": "https://api.example.com/analyze",
+      "httpMethod": "POST"
+    }
+  }
+}
+```
+
+For tools that take even longer, consider responding immediately and later using an [input_text_message](/apps/datamessages#inputtextmessage) data message with `deferResponse` with the real tool result. This is easiest with a `dataConnection` implementation since data connections are also able to send input text messages (and the response is always deferred in that case). Keep in mind that the model will see whatever response you send back initially, so you'll want to make it clear to the model what's going on by initially responding with some text like "Tool started. The full response will be available soon."
+
+**Custom Timeout Considerations**
+
+- **Start Small**: Begin with default 2.5s, increase only if needed.
+- **Set User Expectations**: Tell users when operations will take time.
+- **Fallback Plans**: Handle timeout failures gracefully.

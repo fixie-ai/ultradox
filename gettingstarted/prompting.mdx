@@ -62,14 +62,19 @@ Tools are how your model interacts with the outside world, but you have to help 
 Text to speech engines can sometimes have trouble with numbers, but we can help them by asking the LLM to output numbers in a more voice-friendly format. A pattern that we see that works well is to ask the LLM to separate numbers into individual digits, separated by a hyphen.
 
 ```text Example: Speaking Numbers
-Output account numbers, codes, or phone numbers as individual digits, separated by hyphens (e.g. 1234 → '1-2-3-4'). For decimals, say 'point' and then each digit (e.g., 3.14 → 'three point one four')."
+Output account numbers, codes, or phone numbers as individual digits, 
+separated by hyphens (e.g. 1234 → '1-2-3-4'). For decimals, 
+say 'point' and then each digit (e.g., 3.14 → 'three point one four')."
 ```
 
 ### Dates & Times
 Similar to numbers, dates and times can be tricky for speech generation, so it can be helpful to provide clearer guidance on how to produce the correct date/time format for effective speech generation.
 
 ```text Example: Reading Out Dates
-Output dates as individual components (e.g. 12/25/2022 → "December twenty-fifth twenty twenty-two"). For times, "10:00 AM" should be outputted as "10 AM". Read years naturally (e.g., 2024 → 'twenty twenty-four').
+Output dates as individual components (e.g. 12/25/2022 → "December 
+twenty-fifth twenty twenty-two"). For times, "10:00 AM" should be 
+outputted as "10 AM". Read years naturally (e.g., 2024 → 'twenty 
+twenty-four').
 ```
 
 ### Jailbreaks

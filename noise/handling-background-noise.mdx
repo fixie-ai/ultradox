@@ -1,5 +1,216 @@
 ---
 title: 'Handling Background Noise'
-description: 'TODO'
-icon: 'hotdog'
+description: 'Strategies for managing environmental noise, audio interference, and challenging acoustic environments.'
+icon: 'volume-slash'
 ---
+
+[Under Construction]
+
+# Handling Background Noise
+
+Background noise is one of the most common challenges in voice applications. Ultravox includes built-in noise cancellation, but certain environments may require additional strategies or VAD adjustments.
+
+## Types of Background Noise
+
+Understanding different noise types helps you choose the right approach:
+
+### Constant Background Noise
+**Examples:** Air conditioning, traffic, machinery, office ambiance
+**Characteristics:** Consistent volume and frequency, predictable patterns
+
+**Built-in Handling:** Ultravox's noise cancellation models excel at filtering constant background noise.
+
+### Variable Environmental Noise  
+**Examples:** Construction, outdoor environments, busy public spaces
+**Characteristics:** Unpredictable volume changes, varying frequencies
+
+**Challenges:** Sudden loud noises can trigger false VAD activation or mask speech.
+
+### Electronic Interference
+**Examples:** Phone notifications, computer fans, electrical hum
+**Characteristics:** Often in specific frequency ranges, may be intermittent
+
+**Solutions:** Usually require hardware-level filtering or environment changes.
+
+### Audio System Noise
+**Examples:** Microphone static, echo, feedback, compression artifacts
+**Characteristics:** Introduced by the audio capture/transmission chain
+
+**Prevention:** Address at the source through better hardware or audio setup.
+
+## Ultravox's Built-in Noise Handling
+
+Ultravox automatically handles many noise scenarios:
+
+### Noise Cancellation Models
+- **Spectral filtering** → Removes consistent background frequencies
+- **Adaptive filtering** → Adjusts to changing noise patterns  
+- **Voice isolation** → Enhances human speech frequencies
+- **Real-time processing** → Works during live conversations
+
+### Intelligent VAD Integration
+- **Context-aware decisions** → Uses conversation state to filter noise-triggered events
+- **Multi-model validation** → Cross-checks VAD triggers against other models
+- **Adaptive thresholds** → Adjusts sensitivity based on detected noise levels
+
+## When to Adjust VAD for Noise
+
+Consider VAD adjustments when built-in noise cancellation isn't sufficient:
+
+### Extremely Noisy Environments
+
+For industrial settings, construction sites, or very busy public spaces:
+
+```javascript
+vadSettings: {
+  frameActivationThreshold: 0.3,  // Less sensitive to background noise
+  minimumTurnDuration: "0.2s",    // Ignore very brief noise spikes
+  turnEndpointDelay: "0.5s"       // Wait longer to ensure user is done
+}
+```
+
+**Trade-offs:**
+- Reduces false triggers from noise
+- May miss quiet speech or brief responses
+- Slightly higher response latency
+
+### Intermittent Loud Noises
+
+For environments with occasional loud interruptions (sirens, announcements, machinery):
+
+```javascript
+vadSettings: {
+  minimumInterruptionDuration: "0.2s",  // Prevent false interruptions
+  frameActivationThreshold: 0.2         // Moderate noise filtering
+}
+```
+
+**Trade-offs:**
+- Prevents noise from interrupting agent speech
+- May delay legitimate user interruptions
+- Balances sensitivity with noise tolerance
+
+## Environmental Solutions
+
+Hardware and environment improvements often work better than VAD adjustments:
+
+### Microphone Selection
+**Directional microphones** → Focus on speech from specific directions
+**Noise-canceling microphones** → Hardware-level noise reduction
+**Close-proximity setup** → Reduces noise-to-speech ratio
+
+### Environmental Control
+**Quiet zones** → Designate low-noise areas for voice interactions
+**Sound dampening** → Carpets, curtains, and soft furnishings reduce echo and noise
+**Noise source management** → Turn off unnecessary fans, machines, or audio sources
+
+### Audio Processing Pipeline
+**Pre-processing** → Client-side noise reduction before sending to Ultravox
+**Audio quality optimization** → Proper gain levels, sample rates, and encoding
+**Network considerations** → Stable connections prevent compression artifacts
+
+## Troubleshooting Common Noise Issues
+
+### Agent Responds to Background Noise
+
+**Symptoms:** Agent starts speaking when only background noise is present
+
+**Diagnosis:**
+1. Test in a quiet environment to isolate the issue
+2. Check if noise is consistent or intermittent
+3. Verify microphone positioning and settings
+
+**Solutions:**
+```javascript
+// Increase activation threshold
+vadSettings: {
+  frameActivationThreshold: 0.4,
+  minimumTurnDuration: "0.3s"
+}
+```
+
+### Agent Misses Quiet Speech
+
+**Symptoms:** Agent doesn't respond to soft-spoken or distant users
+
+**Diagnosis:**
+1. Test with normal speaking volume at close range
+2. Check microphone sensitivity and gain settings
+3. Verify no audio processing is reducing input levels
+
+**Solutions:**
+- Improve microphone setup rather than lowering VAD thresholds
+- Use directional microphones to focus on the speaker
+- Educate users about optimal speaking distance and volume
+
+### Noise Interrupts Agent Speech
+
+**Symptoms:** Agent stops talking when background noise occurs
+
+**Diagnosis:**
+1. Identify if interruptions correlate with specific noise events
+2. Test the duration and volume of interrupting sounds
+3. Check if the noise has speech-like characteristics
+
+**Solutions:**
+```javascript
+// Require longer duration for interruptions
+vadSettings: {
+  minimumInterruptionDuration: "0.3s"
+}
+```
+
+## Testing Noise Handling
+
+### Systematic Testing Approach
+
+1. **Baseline Testing** → Establish performance in ideal conditions
+2. **Controlled Noise Introduction** → Add specific types of noise gradually
+3. **Real-world Validation** → Test in actual deployment environments
+4. **User Feedback Collection** → Gather subjective experience data
+
+### Noise Testing Scenarios
+
+**Constant Background Noise**
+- Test with different volume levels of consistent noise
+- Verify speech recognition accuracy
+- Check for false VAD triggers
+
+**Variable Noise**
+- Introduce sudden loud sounds
+- Test with overlapping noise sources
+- Verify agent speech isn't interrupted inappropriately
+
+**Edge Cases**
+- Very quiet environments (echo effects)
+- Very loud environments (masking effects)
+- Noise with speech-like characteristics
+
+## Best Practices
+
+### Start with Environment, Not Settings
+
+1. **Optimize hardware** → Use quality microphones with noise reduction
+2. **Control environment** → Reduce noise sources when possible
+3. **Educate users** → Teach optimal speaking practices
+4. **Monitor performance** → Use real-world testing to validate
+
+### When VAD Adjustment Is Necessary
+
+<Note>
+  <b>Conservative Approach</b>
+  
+  Make minimal, incremental changes to VAD settings. Every adjustment is a trade-off that affects the overall conversation experience.
+</Note>
+
+**Safe Starting Points:**
+- Increase `frameActivationThreshold` by 0.1 increments
+- Add 100-200ms to `minimumTurnDuration` for noisy environments
+- Extend `minimumInterruptionDuration` to prevent false interruptions
+
+**Test Thoroughly:**
+- Use real users in realistic conditions
+- Test edge cases (very quiet speech, multiple speakers, etc.)
+- Monitor both subjective experience and objective metrics
+
+Remember: Ultravox's built-in noise handling is sophisticated and effective for most scenarios. Environmental and hardware improvements often provide better results than VAD adjustments, with fewer trade-offs.

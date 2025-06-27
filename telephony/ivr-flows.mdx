@@ -4,6 +4,8 @@ description: 'Build interactive voice response systems with keypad input and DTM
 icon: 'grid'
 ---
 
+[Under Construction]
+
 Interactive Voice Response (IVR) systems allow callers to navigate phone menus using keypad input. Ultravox provides comprehensive DTMF (Dual-Tone Multi-Frequency) support for both receiving keypad input and sending tones to navigate external systems.
 
 ## DTMF Capabilities
@@ -51,7 +53,7 @@ const callConfig = {
   systemPrompt,
   selectedTools: [{ "toolName": "transfer" }],
   medium: { "twilio": {} },
-  firstSpeaker: "FIRST_SPEAKER_AGENT"
+  firstSpeakerSettings: { agent: {} }
 };
 ```
 
@@ -152,7 +154,7 @@ const callConfig = {
     { "toolName": "playDtmfSounds" }
   ],
   medium: { "twilio": {} },
-  firstSpeaker: "FIRST_SPEAKER_AGENT"
+  firstSpeakerSettings: { agent: {} }
 };
 ```
 

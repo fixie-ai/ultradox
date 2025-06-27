@@ -1,16 +1,8 @@
 ---
-title: 'WebSocket Integration TODO'
+title: 'WebSocket Integration'
 description: 'Integrate with your server via direct WebSocket connections.'
 icon: 'plug'
 ---
-
-The Ultravox API allows you to create AI-powered voice applications that can interact through various protocols:
-
-- **WebRTC** → Default protocol for browser and mobile applications.
-- **Regular Phone Numbers** → Connect Ultravox to phone calls you make or receive (via Telnxy, Twilio, or Plivo).
-- **WebSockets** → Direct server-to-server integration.
-
-For more information about WebRTC and Phone, consult the [Telephony](/telephony/overview) guide.
 
 <Warning>
 <b>Server-to-Server Only</b>
@@ -24,7 +16,7 @@ Creating a WebSocket-based call with Ultravox requires setting `medium` to `serv
 
 - **inputSampleRate** (required): Sample rate for input (user) audio (e.g., 48000).
 - **outputSampleRate** (optional): Sample rate for output (agent) audio (defaults to inputSampleRate).
-- **clientBufferSizeMs** (optional): Size of the client-side audio buffer in milliseconds. Smaller buffers allow for faster interruptions but may cause audio underflow if network latency fluctuates too greatly. For the best of both worlds, set this to some large value (e.g. 30000) and implement support for [PlaybackClearBuffer](/protocol/datamessages#playbackclearbuffer) messages. (Defaults to 60).
+- **clientBufferSizeMs** (optional): Size of the client-side audio buffer in milliseconds. Smaller buffers allow for faster interruptions but may cause audio underflow if network latency fluctuates too greatly. For the best of both worlds, set this to some large value (e.g. 30000) and implement support for [PlaybackClearBuffer](/apps/datamessages#playbackclearbuffer) messages. (Defaults to 60).
 
 ```js Example: Creating an Ultravox Call for WebSockets
     const response = await fetch('https://api.ultravox.ai/api/calls', {
@@ -68,10 +60,10 @@ async def _send_audio(socket: websockets.WebSocketClientProtocol):
         self._socket.send(chunk)
 ```
 
-See [Data Messages](/protocol/datamessages) for more information on all available messages.
+See [Data Messages](/apps/datamessages) for more information on all available messages.
 
 <Note>
 <b>Data Messages</b>
 <br />
-WebSocket connections use the same message format as WebRTC data channels. See our [Data Messages](/protocol/datamessages) documentation for detailed message specifications.
+WebSocket connections use the same message format as WebRTC data channels. See our [Data Messages](/apps/datamessages) documentation for detailed message specifications.
 </Note>

@@ -1,0 +1,528 @@
+---
+title: 'Parameter Overrides'
+description: 'Advanced parameter customization for fine-tuned tool behavior across different agents and calls.'
+icon: 'sliders'
+---
+
+[Under Construction]
+
+Parameter overrides allow you to customize tool behavior without modifying the base tool definition. This powerful feature enables tool reuse across different contexts while maintaining specific configurations for each use case.
+
+## Understanding Parameter Types
+
+Before diving into overrides, it's important to understand the three types of tool parameters:
+
+### Dynamic Parameters
+Set by the AI model during tool invocation based on conversation context.
+
+```js
+{
+  "name": "customerLookup",
+  "dynamicParameters": [
+    {
+      "name": "phoneNumber",
+      "location": "PARAMETER_LOCATION_BODY",
+      "schema": {
+        "type": "string",
+        "description": "Customer's phone number for lookup"
+      },
+      "required": true
+    }
+  ]
+}
+```
+
+### Static Parameters
+Fixed values set when the tool is defined, never changed by the model.
+
+```js
+{
+  "staticParameters": [
+    {
+      "name": "apiVersion",
+      "location": "PARAMETER_LOCATION_QUERY",
+      "value": "v2"
+    }
+  ]
+}
+```
+
+### Automatic Parameters
+System-populated values like call ID or conversation history.
+
+```js
+{
+  "automaticParameters": [
+    {
+      "name": "callId",
+      "location": "PARAMETER_LOCATION_QUERY",
+      "knownValue": "KNOWN_PARAM_CALL_ID"
+    }
+  ]
+}
+```
+
+## Parameter Override Capabilities
+
+### Override Dynamic Parameters
+
+Convert dynamic parameters to static values for specific use cases:
+
+```js
+// Base tool: Generic stock lookup
+{
+  "name": "stockPrice",
+  "definition": {
+    "modelToolName": "stockPrice",
+    "description": "Get current stock price for any symbol",
+    "dynamicParameters": [
+      {
+        "name": "symbol",
+        "location": "PARAMETER_LOCATION_QUERY",
+        "schema": {
+          "type": "string",
+          "description": "Stock symbol (e.g., AAPL, GOOGL)"
+        },
+        "required": true
+      }
+    ]
+  }
+}
+
+// Override for NVIDIA-specific agent
+{
+  "selectedTools": [
+    {
+      "toolName": "stockPrice",
+      "nameOverride": "nvidiaStockPrice",
+      "descriptionOverride": "Get current NVIDIA stock price",
+      "parameterOverrides": {
+        "symbol": "NVDA" // AI won't see this parameter anymore
+      }
+    }
+  ]
+}
+```
+
+### Override Static Parameters
+
+Modify static parameter values for different environments or configurations:
+
+```js
+// Base tool with production API endpoint
+{
+  "name": "processPayment",
+  "staticParameters": [
+    {
+      "name": "environment",
+      "location": "PARAMETER_LOCATION_BODY",
+      "value": "production"
+    },
+    {
+      "name": "timeout",
+      "location": "PARAMETER_LOCATION_BODY", 
+      "value": 30
+    }
+  ]
+}
+
+// Override for testing environment
+{
+  "selectedTools": [
+    {
+      "toolName": "processPayment",
+      "parameterOverrides": {
+        "environment": "sandbox", // Override static value
+        "timeout": 10 // Shorter timeout for testing
+      }
+    }
+  ]
+}
+```
+
+## Required Parameter Overrides
+
+Some tools require certain parameters to be overridden at call creation time. This is common with built-in tools that need context-specific configuration.
+
+### Example: queryCorpus Tool
+
+The built-in `queryCorpus` tool requires the corpus ID to be specified:
+
+```js
+{
+  "selectedTools": [
+    {
+      "toolName": "queryCorpus",
+      "parameterOverrides": {
+        "corpusId": "your-corpus-id-here" // Required override
+      }
+    }
+  ]
+}
+```
+
+### Creating Tools with Required Overrides
+
+```js
+{
+  "name": "customerQuery",
+  "definition": {
+    "modelToolName": "customerQuery",
+    "description": "Query customer database",
+    "requirements": {
+      "requiredParameterOverrides": ["databaseId"] // Must be overridden
+    },
+    "dynamicParameters": [
+      {
+        "name": "databaseId",
+        "location": "PARAMETER_LOCATION_QUERY",
+        "schema": { "type": "string" },
+        "required": true
+      },
+      {
+        "name": "searchTerm", 
+        "location": "PARAMETER_LOCATION_BODY",
+        "schema": { "type": "string" },
+        "required": true
+      }
+    ]
+  }
+}
+
+// Usage requires databaseId override
+{
+  "selectedTools": [
+    {
+      "toolName": "customerQuery",
+      "parameterOverrides": {
+        "databaseId": "prod-customers" // Required
+        // searchTerm remains dynamic for the AI to set
+      }
+    }
+  ]
+}
+```
+
+## Advanced Override Patterns
+
+### Multi-Environment Tool Configuration
+
+```js
+// Base tool definition
+{
+  "name": "emailService",
+  "definition": {
+    "modelToolName": "sendEmail",
+    "staticParameters": [
+      {
+        "name": "apiEndpoint",
+        "location": "PARAMETER_LOCATION_HEADER",
+        "value": "https://api.production-email.com"
+      },
+      {
+        "name": "fromAddress",
+        "location": "PARAMETER_LOCATION_BODY",
+        "value": "noreply@production.com"
+      }
+    ]
+  }
+}
+
+// Development environment override
+const devEmailConfig = {
+  "toolName": "emailService",
+  "parameterOverrides": {
+    "apiEndpoint": "https://api.dev-email.com",
+    "fromAddress": "noreply@dev.com"
+  }
+};
+
+// Staging environment override  
+const stagingEmailConfig = {
+  "toolName": "emailService",
+  "parameterOverrides": {
+    "apiEndpoint": "https://api.staging-email.com",
+    "fromAddress": "noreply@staging.com"
+  }
+};
+```
+
+### Feature-Specific Tool Variants
+
+```js
+// Base search tool
+{
+  "name": "searchProducts",
+  "dynamicParameters": [
+    {
+      "name": "query",
+      "location": "PARAMETER_LOCATION_BODY",
+      "schema": { "type": "string" },
+      "required": true
+    },
+    {
+      "name": "category",
+      "location": "PARAMETER_LOCATION_BODY", 
+      "schema": { "type": "string" },
+      "required": false
+    },
+    {
+      "name": "maxResults",
+      "location": "PARAMETER_LOCATION_BODY",
+      "schema": { "type": "integer" },
+      "required": false
+    }
+  ]
+}
+
+// Electronics-focused agent
+{
+  "selectedTools": [
+    {
+      "toolName": "searchProducts",
+      "nameOverride": "searchElectronics",
+      "descriptionOverride": "Search for electronic products",
+      "parameterOverrides": {
+        "category": "electronics", // Lock to electronics
+        "maxResults": 5 // Limit results
+      }
+    }
+  ]
+}
+
+// Quick search variant
+{
+  "selectedTools": [
+    {
+      "toolName": "searchProducts", 
+      "nameOverride": "quickSearch",
+      "descriptionOverride": "Quick product search (top 3 results)",
+      "parameterOverrides": {
+        "maxResults": 3 // Quick results only
+      }
+    }
+  ]
+}
+```
+
+### Authentication Context Overrides
+
+```js
+// Multi-tenant tool
+{
+  "name": "databaseQuery",
+  "staticParameters": [
+    {
+      "name": "tenantId",
+      "location": "PARAMETER_LOCATION_HEADER",
+      "value": "default"
+    }
+  ],
+  "automaticParameters": [
+    {
+      "name": "authToken",
+      "location": "PARAMETER_LOCATION_HEADER", 
+      "knownValue": "KNOWN_PARAM_CALL_STATE"
+    }
+  ]
+}
+
+// Tenant-specific override
+{
+  "selectedTools": [
+    {
+      "toolName": "databaseQuery",
+      "parameterOverrides": {
+        "tenantId": "customer-abc-123"
+      }
+    }
+  ]
+}
+```
+
+## Template Variables in Overrides
+
+When using agents, parameter overrides can include template variables:
+
+```js
+// Agent with template-based overrides
+{
+  "name": "Customer Service Agent",
+  "callTemplate": {
+    "selectedTools": [
+      {
+        "toolName": "customerLookup",
+        "parameterOverrides": {
+          "customerId": "{{customerId}}", // Template variable
+          "region": "{{customerRegion}}"
+        }
+      }
+    ]
+  }
+}
+
+// Call creation with template context
+{
+  "templateContext": {
+    "customerId": "cust-456789",
+    "customerRegion": "us-west"
+  }
+}
+```
+
+## Override Validation
+
+Parameter overrides are validated when tools are used:
+
+### Type Validation
+```js
+// Tool expects integer
+{
+  "name": "maxResults",
+  "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+}
+
+// Valid override
+{ "maxResults": 10 }
+
+// Invalid override (will cause error)
+{ "maxResults": "ten" }
+```
+
+### Required Parameter Coverage
+```js
+// Tool has required parameter
+{
+  "dynamicParameters": [
+    {
+      "name": "userId",
+      "required": true,
+      "schema": { "type": "string" }
+    }
+  ]
+}
+
+// Valid: Parameter remains dynamic (AI will provide)
+{ } // No override needed
+
+// Valid: Parameter becomes static
+{ "parameterOverrides": { "userId": "user-123" } }
+
+// Invalid: Can't remove required parameter without override
+// This would cause an error during tool execution
+```
+
+## Override Debugging
+
+### Viewing Effective Parameters
+
+Use the [List Call Tools](/api-reference/calls/calls-tools-list) API to see final parameter configuration after overrides:
+
+```bash
+curl "https://api.ultravox.ai/api/calls/{callId}/tools" \
+  -H "X-API-Key: your-api-key"
+```
+
+Response shows the final tool configuration with all overrides applied:
+
+```json
+{
+  "results": [
+    {
+      "name": "customerLookup",
+      "description": "Look up customer by account number",
+      "dynamicParameters": [
+        // Only non-overridden parameters shown
+      ],
+      "staticParameters": [
+        // Includes original static + overridden parameters
+      ]
+    }
+  ]
+}
+```
+
+### Tool Call Debugging
+
+Tool calls in conversation history show actual parameters sent:
+
+```js
+// Tool call message in conversation
+{
+  "role": "MESSAGE_ROLE_TOOL_CALL",
+  "toolName": "customerLookup",
+  "text": '{"phoneNumber": "555-1234", "region": "us-west"}', // Actual parameters
+  "invocationId": "inv-123"
+}
+```
+
+## Best Practices
+
+### 1. Strategic Override Usage
+
+✅ **Environment Configuration**: Different endpoints per environment  
+✅ **Feature Specialization**: Lock parameters for specific use cases  
+✅ **Security Context**: Set tenant/user context  
+✅ **Performance Tuning**: Adjust timeouts and limits  
+
+❌ **Avoid Over-Specialization**: Don't create too many single-purpose variants  
+❌ **Don't Break Semantics**: Overrides should maintain tool's core purpose  
+
+### 2. Naming and Documentation
+
+```js
+// Good: Clear naming and description
+{
+  "toolName": "searchProducts",
+  "nameOverride": "searchElectronics", 
+  "descriptionOverride": "Search for electronic products only",
+  "parameterOverrides": {
+    "category": "electronics"
+  }
+}
+
+// Bad: Unclear purpose
+{
+  "toolName": "searchProducts",
+  "nameOverride": "search2",
+  "parameterOverrides": {
+    "category": "electronics"
+  }
+}
+```
+
+### 3. Validation and Testing
+
+```js
+// Test overrides in development
+const testOverride = {
+  "toolName": "paymentProcessor",
+  "parameterOverrides": {
+    "environment": "sandbox",
+    "webhookUrl": "https://dev.example.com/webhook"
+  }
+};
+
+// Validate schema compliance
+function validateOverrides(tool, overrides) {
+  // Check that override values match expected schemas
+  // Verify required overrides are present
+  // Ensure no undefined parameters are overridden
+}
+```
+
+### 4. Version Management
+
+```js
+// Version your tool variants
+{
+  "toolName": "customerLookup_v2",
+  "nameOverride": "fastCustomerLookup",
+  "parameterOverrides": {
+    "timeout": 1, // Faster timeout
+    "cacheEnabled": true
+  }
+}
+```
+
+Parameter overrides provide powerful flexibility for tool reuse while maintaining clean separation between tool logic and configuration. Use them strategically to create specialized tool variants without duplicating core functionality.

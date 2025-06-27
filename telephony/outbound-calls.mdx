@@ -4,6 +4,8 @@ description: 'Configure AI agents to make outbound phone calls to users.'
 icon: 'phone-arrow-up-right'
 ---
 
+[Under Construction]
+
 Enable your AI agents to initiate phone calls to users. This is ideal for appointment reminders, customer outreach, surveys, or proactive customer service.
 
 ## How Outgoing Calls Work
@@ -31,7 +33,7 @@ const response = await fetch('https://api.ultravox.ai/api/calls', {
     medium: {
       "twilio": {}  // or "telnyx": {}, "plivo": {}
     },
-    firstSpeaker: "FIRST_SPEAKER_USER"  // Wait for user to answer
+    firstSpeakerSettings: { user: {} }  // Wait for user to answer
   })
 });
 
@@ -40,7 +42,7 @@ const { joinUrl } = await response.json();
 
 **Key Parameters:**
 - `medium`: Set to your telephony provider
-- `firstSpeaker`: Set to `"FIRST_SPEAKER_USER"` to wait for the user to say "Hello"
+- `firstSpeakerSettings`: Set to `{ user: {} }` to wait for the user to say "Hello"
 - `joinUrl`: Use this to connect the phone call to Ultravox
 
 ## Provider-Specific Implementation
@@ -65,7 +67,7 @@ const { joinUrl } = await response.json();
         body: JSON.stringify({
           systemPrompt: message,
           medium: { "twilio": {} },
-          firstSpeaker: "FIRST_SPEAKER_USER"
+          firstSpeakerSettings: { user: {} }
         })
       });
       
@@ -116,7 +118,7 @@ const { joinUrl } = await response.json();
         body: JSON.stringify({
           systemPrompt: callDetails.message,
           medium: { "twilio": {} },
-          firstSpeaker: "FIRST_SPEAKER_USER"
+          firstSpeakerSettings: { user: {} }
         })
       });
       
@@ -161,7 +163,7 @@ const { joinUrl } = await response.json();
         body: JSON.stringify({
           systemPrompt: message,
           medium: { "telnyx": {} },
-          firstSpeaker: "FIRST_SPEAKER_USER"
+          firstSpeakerSettings: { user: {} }
         })
       });
       
@@ -209,7 +211,7 @@ const { joinUrl } = await response.json();
         body: JSON.stringify({
           systemPrompt: callDetails.message,
           medium: { "telnyx": {} },
-          firstSpeaker: "FIRST_SPEAKER_USER"
+          firstSpeakerSettings: { user: {} }
         })
       });
       
@@ -259,7 +261,7 @@ const { joinUrl } = await response.json();
         body: JSON.stringify({
           systemPrompt: message,
           medium: { "plivo": {} },
-          firstSpeaker: "FIRST_SPEAKER_USER"
+          firstSpeakerSettings: { user: {} }
         })
       });
       
@@ -354,7 +356,7 @@ const { joinUrl } = await response.json();
           eventHook: '/event',
           llmOptions: {
             systemPrompt: message || 'You are a helpful assistant calling the customer.',
-            firstSpeaker: 'FIRST_SPEAKER_USER',
+            firstSpeakerSettings: { user: {} },
             initialMessages: [{
               medium: 'MESSAGE_MEDIUM_VOICE',
               role: 'MESSAGE_ROLE_USER'
@@ -530,7 +532,7 @@ async function makeOutboundCall(phoneNumber, message) {
       body: JSON.stringify({
         systemPrompt: message,
         medium: { "twilio": {} },
-        firstSpeaker: "FIRST_SPEAKER_USER"
+        firstSpeakerSettings: { user: {} }
       })
     });
     
