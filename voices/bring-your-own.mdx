@@ -37,8 +37,7 @@ be fulfilled reliably and quickly, you can be confident that Ultravox knows how 
 
 If you'd like to use some other TTS provider, you may be able to get by with our "generic" integration option.
 This route gives you much more flexibility to define requests to your provider. Any provider that accepts json
-post requests and that returns either WAV or raw PCM audio ought to workable. While very flexible, this means
-even more of the onus is on you to make it work!
+post requests and that returns either WAV or raw PCM audio (including within JSON bodies) ought to work.
 
 Since generic integrations don't stream text in (but can stream audio out) Ultravox has to buffer input text
 before sending it to your provider, which means slightly higher agent response times and possible audio
@@ -139,6 +138,36 @@ in their streaming API yet and Ultravox has no special integration with it yet a
       "text": "{text}"
     },
     "responseSampleRate": 48000
+  }
+}
+```
+
+### Google
+
+Google's TTS API returns json, so it requires an extra `jsonAudioFieldPath` in your generic ExternalVoice.
+
+```json
+"externalVoice": {
+  "generic": {
+    "url": "https://texttospeech.googleapis.com/v1/text:synthesize",
+    "headers": {
+      "Authorization": "Bearer YOUR_GOOGLE_SERVICE_ACCOUNT_CREDENTIALS",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "input": {"text": "{text}"},
+      "voice": {
+        "languageCode": "en-US",
+        "name": "en-US-Chirp3-HD-Charon"
+      },
+      "audioConfig": {
+        "audioEncoding": "LINEAR16",
+        "speakingRate": 1.0,
+        "sampleRateHertz": 48000
+      }
+    },
+    "responseSampleRate": 48000,
+    "jsonAudioFieldPath": "audioContent"
   }
 }
 ```
