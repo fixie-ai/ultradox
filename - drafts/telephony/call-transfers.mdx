@@ -1,0 +1,347 @@
+---
+title: 'Call Transfers TODO'
+description: 'Transfer calls between AI agents and human operators.'
+icon: 'phone-arrow-right'
+tag: "COMING SOON"
+---
+
+[Under Construction]
+
+Call transfers allow you to seamlessly move conversations between AI agents and human operators, or between different AI agents with specialized capabilities.
+
+## When to Use Call Transfers
+
+**Escalation to Human Agents:**
+- Customer requests to speak with a human
+- AI agent encounters a complex issue beyond its capabilities
+- Sensitive situations requiring human empathy
+- Legal or compliance issues
+
+**Specialized AI Agents:**
+- Transfer to domain-specific agents (billing, technical support, sales)
+- Route to agents with different language capabilities
+- Hand off to agents with different tools or knowledge bases
+
+**Departmental Routing:**
+- Route calls to appropriate departments based on customer needs
+- Transfer between business units or specialties
+- Queue management for busy periods
+
+## How Call Transfers Work
+
+1. **AI agent identifies** the need for transfer during conversation
+2. **Transfer tool is invoked** with destination details
+3. **Current call is placed on hold** (optional)
+4. **New call is established** to the transfer destination
+5. **Calls are bridged** or handed off completely
+6. **Original call ends** or continues based on transfer type
+
+## Built-in Transfer Tool
+
+Ultravox provides a built-in `transfer` tool for handling call transfers. Enable it when creating your call:
+
+```javascript
+const response = await fetch('https://api.ultravox.ai/api/calls', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    systemPrompt: `You are a customer service agent. If a customer asks to speak with a human or if you encounter an issue you cannot resolve, use the transfer tool to connect them with a human agent.`,
+    selectedTools: [
+      { "toolName": "transfer" }
+    ],
+    medium: { "twilio": {} },
+    firstSpeakerSettings: { agent: {} }
+  })
+});
+```
+
+## Transfer Tool Usage
+
+The transfer tool accepts these parameters:
+
+```javascript
+// Example transfer tool invocation
+{
+  "phoneNumber": "+1234567890",  // Required: destination phone number
+  "description": "Transferring you to our billing department"  // Optional: explanation
+}
+```
+
+**Parameters:**
+- `phoneNumber`: The phone number to transfer the call to
+- `description`: Optional message explaining the transfer to the caller
+
+## Implementation Examples
+
+### Basic Human Escalation
+
+```javascript
+const systemPrompt = `
+You are a customer service AI assistant. Help customers with their questions and issues.
+
+If a customer:
+- Explicitly asks to speak with a human
+- Has a complex issue you cannot resolve
+- Seems frustrated or upset
+- Has account-specific problems requiring verification
+
+Use the transfer tool to connect them with a human agent at +1-555-0123.
+
+Always explain what you're doing: "I'm going to transfer you to one of our human agents who can better assist you."
+`;
+
+const callConfig = {
+  systemPrompt,
+  selectedTools: [{ "toolName": "transfer" }],
+  medium: { "twilio": {} },
+  firstSpeakerSettings: { agent: {} }
+};
+```
+
+### Department-Specific Transfers
+
+```javascript
+const systemPrompt = `
+You are a customer service AI assistant. Route customers to the appropriate department:
+
+- For billing questions: Transfer to +1-555-0100 (billing department)
+- For technical support: Transfer to +1-555-0200 (tech support)  
+- For sales inquiries: Transfer to +1-555-0300 (sales team)
+- For general complaints: Transfer to +1-555-0400 (customer relations)
+
+Always explain which department you're transferring them to and why.
+
+Examples:
+- "I'm transferring you to our billing department who can help with payment questions."
+- "Let me connect you with our technical support team who specializes in this issue."
+`;
+
+const callConfig = {
+  systemPrompt,
+  selectedTools: [{ "toolName": "transfer" }],
+  medium: { "twilio": {} },
+  firstSpeakerSettings: { agent: {} }
+};
+```
+
+### Conditional Transfers Based on Business Hours
+
+```javascript
+const currentHour = new Date().getHours();
+const isBusinessHours = currentHour >= 9 && currentHour < 17;
+
+const systemPrompt = isBusinessHours 
+  ? `
+    You are a customer service AI assistant. For complex issues or when customers request human help, transfer them to our live agents at +1-555-0123.
+    
+    Say: "I'm connecting you with one of our human agents who is available now."
+  `
+  : `
+    You are an after-hours customer service AI assistant. Our human agents are currently unavailable (business hours: 9 AM - 5 PM).
+    
+    Try to resolve issues yourself. If you cannot help, offer to:
+    1. Take a detailed message for follow-up during business hours
+    2. Schedule a callback for tomorrow
+    3. Transfer to our 24/7 emergency line (+1-555-0911) for urgent issues only
+    
+    Only use the transfer tool for true emergencies during off-hours.
+  `;
+
+const callConfig = {
+  systemPrompt,
+  selectedTools: [{ "toolName": "transfer" }],
+  medium: { "twilio": {} },
+  firstSpeakerSettings: { agent: {} }
+};
+```
+
+## Advanced Transfer Patterns
+
+### Warm Transfers with Context
+Provide context to the receiving agent:
+
+```javascript
+const systemPrompt = `
+You are a customer service AI assistant. When transferring calls, always provide context.
+
+Before transferring, gather:
+- Customer name and account number (if available)
+- Brief description of their issue
+- Any troubleshooting steps already attempted
+- Customer's preferred resolution
+
+Then say: "I'm going to transfer you to [department/agent name]. I'll make sure they have all the details about your [brief issue description] so you don't have to repeat everything."
+
+Use the transfer tool with a description that includes the context.
+
+Example: "Transferring customer John Smith (account #12345) to billing. Issue: wants to dispute $50 charge from last month. Already verified account details."
+`;
+```
+
+### Priority-Based Routing
+
+```javascript
+const systemPrompt = `
+You are a customer service AI assistant. Route customers based on their issue priority:
+
+HIGH PRIORITY (transfer to +1-555-0911):
+- Service outages affecting business operations
+- Billing disputes over $1000
+- Security concerns or suspected fraud
+- VIP customer accounts (ask for account level)
+
+NORMAL PRIORITY (transfer to +1-555-0123):
+- General account questions
+- Standard billing inquiries
+- Product information requests
+- Technical support for non-critical issues
+
+Always ask about the urgency and impact of the issue before deciding on transfer priority.
+`;
+```
+
+### Multi-Language Support
+
+```javascript
+const systemPrompt = `
+You are a multilingual customer service AI assistant. If customers prefer to speak in a language other than English:
+
+- Spanish: Transfer to +1-555-0150 (Spanish support)
+- French: Transfer to +1-555-0160 (French support)  
+- German: Transfer to +1-555-0170 (German support)
+
+Say: "I'm connecting you with an agent who speaks [language] fluently."
+
+If the requested language isn't available, explain our available options and offer to continue in English or schedule a callback when a [language] speaker is available.
+`;
+```
+
+## Provider-Specific Considerations
+
+### Twilio
+Twilio handles transfers through their call control API. The transfer tool will:
+1. Place the current call on hold
+2. Dial the destination number
+3. Bridge the calls when answered
+
+### Telnyx
+Telnyx supports call transfers through their call control commands:
+1. Current call is held
+2. New call leg is created to destination
+3. Calls are bridged upon answer
+
+### Plivo
+Plivo handles transfers through their call transfer API:
+1. Original call is placed on hold
+2. Transfer call is initiated
+3. Bridge occurs when destination answers
+
+### jambonz
+jambonz supports transfers through their transfer verb:
+1. Current session is held
+2. New call is placed to destination
+3. Sessions are bridged or replaced
+
+## Error Handling
+
+Handle transfer failures gracefully:
+
+```javascript
+const systemPrompt = `
+You are a customer service AI assistant with transfer capabilities.
+
+If a transfer fails (busy, no answer, etc.):
+1. Apologize for the inconvenience
+2. Offer alternatives:
+   - Try again in a few minutes
+   - Leave a detailed message for callback
+   - Schedule a specific callback time
+   - Provide direct contact information
+   - Continue helping with the AI assistant
+
+Example response: "I'm sorry, but our agents are currently busy. I can either try the transfer again in a few minutes, take a detailed message for a callback, or continue helping you myself. What would you prefer?"
+
+Always remain helpful and offer multiple options when transfers fail.
+`;
+```
+
+## Transfer Analytics and Monitoring
+
+Track transfer patterns to improve your service:
+
+```javascript
+// Monitor transfer usage
+app.post('/ultravox/webhook', (req, res) => {
+  const { event, call } = req.body;
+  
+  if (event === 'call.ended') {
+    // Check if transfers were used during the call
+    const transfers = call.transcript?.filter(msg => 
+      msg.text?.includes('transfer tool')
+    ) || [];
+    
+    if (transfers.length > 0) {
+      // Log transfer metrics
+      logTransferMetrics({
+        callId: call.id,
+        transferCount: transfers.length,
+        callDuration: call.duration,
+        outcome: call.outcome
+      });
+    }
+  }
+  
+  res.sendStatus(200);
+});
+
+async function logTransferMetrics(metrics) {
+  // Save to your analytics system
+  await saveToAnalytics('call_transfers', {
+    ...metrics,
+    timestamp: new Date()
+  });
+}
+```
+
+## Best Practices
+
+### When to Transfer
+- **Be proactive**: Transfer before customers get frustrated
+- **Set clear expectations**: Explain what the human agent can do that you cannot
+- **Gather information**: Collect relevant details before transferring
+- **Confirm intent**: Make sure the customer actually wants to be transferred
+
+### Transfer Communication
+- **Explain the process**: "I'm going to connect you with..."
+- **Set expectations**: "This may take a moment..."
+- **Provide context**: Brief the receiving agent about the issue
+- **Follow up**: Ensure the transfer was successful
+
+### System Design
+- **Fallback options**: Always have alternatives if transfers fail
+- **Queue management**: Consider wait times and agent availability
+- **Context preservation**: Pass relevant information to receiving agents
+- **Monitoring**: Track transfer success rates and customer satisfaction
+
+## Testing Transfers
+
+### Development Testing
+1. **Set up test phone numbers** for different departments
+2. **Use test scenarios** to trigger transfers
+3. **Monitor call flows** to ensure proper handoffs
+4. **Test failure cases** (busy, no answer, invalid numbers)
+
+### Production Monitoring
+1. **Track transfer success rates**
+2. **Monitor customer satisfaction** after transfers
+3. **Analyze transfer patterns** to identify improvement opportunities
+4. **Alert on transfer failures** for quick resolution
+
+## Next Steps
+
+- Implement [IVR Flows](/telephony/ivr-flows) for more complex call routing
+- Learn about [Incoming Calls](/telephony/inbound-calls) and [Outbound Calls](/telephony/outbound-calls)
+- Explore webhook integrations for transfer analytics and monitoring

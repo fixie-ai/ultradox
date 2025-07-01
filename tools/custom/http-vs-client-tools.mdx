@@ -1,0 +1,238 @@
+---
+title: 'HTTP vs. Client Tools'
+description: 'Choose the right tool implementation for your use case.'
+icon: 'code-compare'
+---
+<Info>
+  <b>Real Tool Execution</b>
+
+  Unlike using tools with single-generation LLM APIs, Ultravox Realtime actually calls your tool. This means you need to do a bit more work upfront in defining tools with the proper authentication and parameters.
+</Info>
+
+Ultravox supports three primary types of tool implementations: HTTP tools, Client tools, and Data Connection tools. Each has distinct advantages and use cases.
+
+## HTTP Tools
+HTTP tools (AKA "server tools") are the most common and flexible option. Your tool runs on your server, and Ultravox calls it via HTTP requests during conversations.
+
+### How HTTP Tools Work
+1. Agent triggers tool during conversation.
+2. Ultravox sends HTTP request to your server.
+3. Your server processes the request and returns a response.
+4. Agent continues conversation with the tool result.
+
+```js Example HTTP tool definition
+{
+  "temporaryTool": {
+    "modelToolName": "lookupCustomer",
+    "description": "Look up customer information by phone number",
+    "dynamicParameters": [
+      {
+        "name": "phoneNumber",
+        "location": "PARAMETER_LOCATION_BODY",
+        "schema": {
+          "type": "string",
+          "description": "Customer's phone number"
+        },
+        "required": true
+      }
+    ],
+    "http": {
+      "baseUrlPattern": "https://your-api.com/customers/lookup",
+      "httpMethod": "POST"
+    }
+  }
+}
+```
+
+### HTTP Tool Advantages
+
+✅ **Server-side logic**: Full access to databases, APIs, and business logic  
+✅ **Any call medium**: Works with WebRTC, telephony, and websockets  
+✅ **Scalable**: Runs on your infrastructure with your scaling strategies  
+✅ **Secure**: Keep sensitive data and credentials on your servers  
+✅ **Language agnostic**: Implement in any programming language  
+
+### HTTP Tool Implementation
+
+```js Example of a simple API endpoint for HTTP tool
+// Express.js example
+app.post('/customers/lookup', async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+    
+    // Look up customer in database
+    const customer = await db.customers.findByPhone(phoneNumber);
+    
+    if (!customer) {
+      return res.status(200).json({
+        message: "No customer found with that phone number. Please verify the number and try again."
+      });
+    }
+    
+    return res.status(200).json({
+      message: `Found customer: ${customer.name}, Account type: ${customer.tier}, Last contact: ${customer.lastContact}`
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Unable to look up customer information at this time."
+    });
+  }
+});
+```
+
+### Error Handling
+Return appropriate HTTP status codes:
+```js
+// Success
+res.status(200).json({ message: "Operation completed" });
+
+// Client error  
+res.status(400).json({ message: "Invalid input provided" });
+
+// Server error
+res.status(500).json({ message: "Internal server error" });
+```
+
+## Client Tools
+
+Client tools run directly in the client application using our SDKs. They're perfect for UI interactions and client-side operations.
+
+Client tools work best with our client SDKs, which are designed for the webrtc call medium. See [Client Tools](/sdk-reference/introduction#client-tools) to learn how those are registered and used with the [Ultravox Client SDK](/sdk-reference/).
+
+You can also use client tools with a websocket medium. See the `ClientToolInvocation` and `ClientToolResult` [data messages](/apps/datamessages).
+
+If you want a similar experience to client tools with a telephony medium, you have two options:
+
+  * Handle telephony using [voximplant](/integrations/voximplant) and define your tools in your voximplant session code.
+  * Use a [Data Connection Tool](#data-connection-tools).
+
+
+
+### How Client Tools Work
+
+1. Agent triggers tool during conversation.
+2. Ultravox sends tool invocation to your client.
+3. Your client code executes the tool logic.
+4. Client sends result back to Ultravox.
+5. Agent continues conversation with the tool result.
+
+```js Example client tool definition
+{
+  "temporaryTool": {
+    "modelToolName": "updateUserInterface",
+    "description": "Update the user interface to show relevant information",
+    "dynamicParameters": [
+      {
+        "name": "content",
+        "location": "PARAMETER_LOCATION_BODY",
+        "schema": {
+          "type": "string",
+          "description": "Content to display in the UI"
+        },
+        "required": true
+      }
+    ],
+    "client": {}
+  }
+}
+```
+
+### Client Tool Advantages
+
+✅ **UI integration**: Direct access to update interface elements  
+✅ **Low latency**: No network round trip to your servers  
+✅ **Client-side data**: Access to local storage, camera, microphone  
+✅ **Real-time updates**: Immediate visual feedback  
+
+### Client Tool Implementation
+
+```js Example of client tool implementation
+// Using Ultravox Client SDK
+import { UltravoxSession } from 'ultravox-client';
+
+const session = new UltravoxSession();
+
+// Register client tool handler
+session.registerClientTool("updateUserInterface", (parameters) => {
+  const { content } = parameters;
+  
+  // Update your UI
+  document.getElementById('chat-display').innerHTML = content;
+  
+  return {
+    responseText: "Interface updated successfully",
+    responseType: "tool-response"
+  };
+});
+```
+
+
+### Error Handling
+Return error information in the response:
+```js
+return {
+  responseText: "Unable to update interface: element not found",
+  responseType: "tool-response"
+};
+```
+
+## Data Connection Tools
+
+A third option combines benefits of both: Data Connection tools run on your server but communicate via websocket, enabling both server-side logic and real-time capabilities.
+
+Data connections are like another participant in your call. Like the client, they can receive tool invocation messages and can send back tool result messages. Implementation lives in your websocket server and can be used regardless of the call medium used.
+
+```js Example Data Connection tool definition
+{
+  "temporaryTool": {
+    "modelToolName": "processPayment",
+    "description": "Process a payment transaction",
+    "dataConnection": {}
+  }
+}
+```
+
+Data connection tools are ideal for:
+- Long-running operations
+- Real-time data streaming
+- Complex server operations that need immediate feedback
+
+## Choosing the Right Tool Type
+
+**Use HTTP Tools When:**
+- Accessing databases or external APIs
+- Processing sensitive data
+- Performing server-side calculations
+- Sending emails or notifications
+- Working with telephony (Twilio, etc.)
+- Need authentication with external services
+
+**Use Client Tools When:**
+- Updating user interface elements
+- Accessing client device features (camera, microphone)
+- Performing client-side validation
+- Managing local application state
+- Need immediate visual feedback
+- Working with WebRTC calls primarily
+
+**Use Data Connection Tools When:**
+- Need both server logic and real-time feedback
+- Handling long-running operations
+- Streaming real-time data
+- Complex workflows requiring immediate updates
+
+## Call Medium Compatibility
+
+| Tool Type       | WebRTC  | Websocket | Telephony |
+|-----------------|---------|-----------|-----------|
+| HTTP            | ✅      | ✅        | ✅        |
+| Client          | ✅      | ✅        | ❌        |
+| Data Connection | ✅      | ✅        | ✅        |
+
+## Authentication
+
+**HTTP Tools**: Full authentication support including API keys, tokens, and custom headers. See [Tools Authentication →](./authentication)
+
+**Client Tools**: No built-in authentication - handle security in your client application.
+
+**Data Connection Tools**: Authentication handled via websocket connection setup.

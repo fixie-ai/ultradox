@@ -1,0 +1,283 @@
+---
+title: 'Supported Providers'
+description: 'Comprehensive guide to telephony providers that integrate with Ultravox.'
+icon: 'network-wired'
+---
+
+Ultravox integrates with multiple telephony providers and voice platforms.
+
+## Native Integrations
+Ultravox provides native integrations for the following. Each has their own unique call [`medium`](api-reference/schema/call-definition#schema-medium) that must be used when creating calls.
+
+| Provider   | Call Medium    | Streaming API                                                                                  |
+|------------|--------------- |------------------------------------------------------------------------------------------------|
+| **Twilio** | `"twilio": {}` | [Media Streams](https://www.twilio.com/docs/voice/media-streams)                               |
+| **Telnyx** | `"telnyx": {}` | [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming) |
+| **Plivo**  | `"plivo": {}`  | [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)                        |
+| **Exotel** | `"exotel": {}` | [Voice Streaming](https://developer.exotel.com/api/product-voice-version-3)                    |
+
+### SIP
+Ultravox Realtime has native support for SIP. See the [SIP Guide](./sip) for more.
+
+## Partner Integrations
+Our voice platform partners have native integrations for Ultravox:
+
+### Voximplant
+[Voximplant](https://voximplant.com/) provides a hosted voice platform. Check out the [Integration Guide →](/integrations/voximplant)
+
+### jambonz
+[jambonz](https://www.jambonz.org/) provides a voice platform that runs in a fully managed cloud or can be self-hosted. Details on how to make and receive calls using jambonz appear [below](#jambonz-2).
+
+## Provider-Specific Integration Examples
+
+### Twilio
+#### Outbound Calls with Twilio
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call as shown above with `medium: { "twilio": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
+  </Step>
+  <Step title="Connect Ultravox to the Twilio Phone Call">
+    Use the `joinUrl` with a Twilio `<Stream>`:
+
+    ```js
+    // Example using the twilio node library
+    const call = await client.calls.create({
+        twiml: `<Response>
+                    <Connect>
+                        <Stream url="${joinUrl}"/>
+                    </Connect>
+                </Response>`,
+        to: phoneNumber,
+        from: twilioPhoneNumber
+    });
+    ```
+  </Step>
+</Steps>
+
+#### Incoming Calls with Twilio
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call with `medium: { "twilio": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
+  </Step>
+  <Step title="Connect the Inbound Twilio Call to Ultravox">
+    Use the `joinUrl` with a Twilio `<Stream>`:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Connect>
+            <Stream url="your_ultravox_join_url" />
+        </Connect>
+    </Response>
+    ```
+  </Step>
+</Steps>
+
+For more details, see the [Twilio documentation](https://www.twilio.com/docs).
+
+### Telnyx
+#### Outbound Calls with Telnyx
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call as shown above with `medium: { "telnyx": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
+  </Step>
+  <Step title="Connect Ultravox to the Telnyx Phone Call">
+    Use the `joinUrl` with a TeXML `<Stream>`:
+
+    ```js
+    // Example using the telnyx node library
+    const call = await telnyx.calls.create({
+      connection_id: "uuid",
+      to: phoneNumber,
+      from: telnyxPhoneNumber,
+      stream_url: joinUrl,
+      stream_track: "both_tracks",
+      stream_bidirectional_mode: "rtp"
+    });
+    ```
+
+    Or using TeXML:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Connect>
+        <Stream url="${joinUrl}" bidirectionalMode="rtp"  codec="PCMU" bidirectionalCodec="PCMU"/>
+      </Connect>
+    </Response>
+    ```
+    </Step>
+</Steps>
+
+#### Incoming Calls with Telnyx
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call with `medium: { "telnyx": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
+  </Step>
+  <Step title="Connect the Inbound Telnyx Call to Ultravox">
+    Use the `joinUrl` with a TeXML `<Stream>`:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Connect>
+        <Stream url="${joinUrl}" bidirectionalMode="rtp" codec="PCMU" bidirectionalCodec="PCMU"/>
+      </Connect>
+    </Response>
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  <b>Telnyx `codec`</b>
+  <br />
+  Telnyx allows setting both `codec` and `bidirectionalCodec`. The former controls user audio while the latter controls agent audio. When using with Ultravox, **these must have the same value** because Telnyx only tells us about one of them! If your users are mostly in Europe, you'll likely want to set both to PCMA. Otherwise setting both to PCMU is preferred but leaving them both unset is fine to get started.
+</Warning>
+
+For more details, see the [Telnyx documentation](https://developers.telnyx.com/).
+
+
+### Plivo
+#### Outbound Calls with Plivo
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call as shown above with `medium: { "plivo": {} }`, `firstSpeakerSettings: { user: {} }`, and get a `joinUrl`.
+  </Step>
+  <Step title="Connect Ultravox to the Plivo Phone Call">
+    Use the `joinUrl` with AudioStream:
+
+    ```js
+    // Example using the plivo node library
+    // This assumes our server exposes an endpoint at `answerUrl`
+    const call = await plivo.calls.create({
+      to: phoneNumber,
+      from: plivoPhoneNumber,
+      answer_url: answerUrl, // URL that returns the XML below
+      answer_method: "GET"
+    });
+    ```
+
+    The answer URL should return:
+    
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Stream keepCallAlive="true" 
+                contentType="audio/x-l16;rate=16000"
+                bidirectional="true">
+            ${joinUrl}
+        </Stream>
+    </Response>
+    ```
+
+    Note: For best audio quality, we recommend `audio/x-l16;rate=16000`. However, any contentType supported by Plivo will work with Ultravox.
+  </Step>
+</Steps>
+
+#### Incoming Calls with Plivo
+<Steps>
+  <Step title="Create an Ultravox Call">
+    Create a new call with `medium: { "plivo": {} }` and `firstSpeakerSettings` set to `{ agent: {} }`.
+  </Step>
+  <Step title="Connect the Inbound Twilio Call to Ultravox">
+    Use the `joinUrl` with AudioStream:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Stream keepCallAlive="true"
+                contentType="audio/x-l16;rate=16000" 
+                bidirectional="true">
+            ${joinUrl}
+        </Stream>
+    </Response>
+    ```
+  </Step>
+</Steps>
+
+For more details, see the [Plivo documentation](https://www.plivo.com/docs/).
+
+### jambonz
+#### jambonz Portal Setup
+jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
+This gives you the flexibility to choose your carrier of choice, you'll just need to add it in your jambonz dashboard.
+
+<Steps>
+  <Step title="Add Your Carrier in jambonz">
+    In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any sip network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
+  </Step>
+
+  <Step title="Add a Speech Provider in jambonz">
+    Next, you need to [add speech credentials](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-speech-credentials) for your chosen vendor.
+  </Step>
+
+  <Step title="Create a New jambonz Application">
+    ​A jambonz application configured via the jambonz portal defines how calls are handled by linking them to your custom logic through webhooks or WebSocket endpoints. When you create an application, you specify:​
+    - Call webhook URL: Where jambonz sends call events.​
+    - Call status webhook URL: For receiving call status updates.​
+    - Speech vendors: Your chosen TTS/STT providers.​
+
+    Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. This setup allows you to implement features like speech recognition, text-to-speech, call routing, and integration with AI services. 
+  </Step>
+
+  <Step title="Add a Phone Number in jambonz">
+    Finally, you need to [add a phone number](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-phone-numbers) provisioned from your carrier of choice. At the bottom of the page select the jambonz application you just created to link your new virtual number to that application.
+  </Step>
+</Steps>
+
+#### Incoming Calls with jambonz
+
+```js
+// Example using the @jambonz/node-client-ws library
+session
+.pause({length: 1.5})
+.llm({
+  vendor: 'ultravox',
+  model: 'fixie-ai/ultravox',
+  auth: {
+    apiKey
+  },
+  actionHook: '/final',
+  eventHook: '/event',
+  llmOptions: {
+    systemPrompt: 'You are an agent named Karen. Greet the user and ask how you can help.',
+    firstSpeakerSettings: { agent: {} },
+    initialMessages: [{
+      medium: 'MESSAGE_MEDIUM_VOICE',
+      role: 'MESSAGE_ROLE_USER'
+    }],
+    model: 'fixie-ai/ultravox',
+    voice: 'Tanya-English',
+    transcriptOptional: true,
+  }
+})
+.hangup()
+.send();
+```
+For more details see the `llm` verb in the [jambonz docs](https://docs.jambonz.org/verbs/verbs/llm). 
+
+
+#### Outbound Calls with jambonz
+In addition to the inbound scenario, you'll have to create a call that connects to the destination number (`phoneNumber`) and points to the jambonz application that defines how the call should be handled. Find the `APPLICATION_SID` in the jambonz portal by clicking on the application you created during the setup process.
+
+```js
+  const JambonzClient = require('@jambonz/node-client');
+
+  const client = JambonzClient(
+    process.env.JAMBONZ_ACCOUNT_SID,
+    process.env.JAMBONZ_API_KEY,
+    {baseUrl: process.env.JAMBONZ_REST_API_BASE_URL || 'https://api.jambonz.cloud/v1'}
+  );
+
+  const call = await client.calls.create({
+      from: process.env.FROM_NUMBER,  
+        to: {
+          type : 'phone',
+          number: phoneNumber,
+          trunk: process.env.CARRIER
+          },
+      application_sid: process.env.APPLICATION_SID
+  });
+  ```
+
+For more details, see the [jambonz documentation](https://docs.jambonz.org/) and [example code](https://github.com/jambonz/ultravox-s2s-example).

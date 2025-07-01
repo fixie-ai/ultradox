@@ -1,0 +1,122 @@
+---
+title: 'Tools Quickstart'
+description: 'Learn how to start using built-in tools and how to create custom tools.'
+icon: 'bolt'
+tag: "NEW"
+---
+
+This quickstart contains two parts. This guide will use the [Ultravox Web App](https://app.ultravox.ai) but you can also use the [Ultravox API](/api-reference/introduction) if you prefer (not covered in this guide).
+
+
+<CardGroup cols={1}>
+  <Card title="Part 1: Using the Built-in Hang Up Tool" icon="screwdriver-wrench" href="#using-the-built-in-hangup-tool">
+    Add the `hangUp` tool so the agent can end the call at the right time.
+  </Card>
+  <Card title="Part 2: Creating a Custom Tool" icon="wand-magic-sparkles" href="#creating-a-custom-tool">
+    Create a custom tool that retrieves information from a 3rd party API and provides the information to the user.
+  </Card>
+</CardGroup>
+
+## Using the Built-in `hangUp` Tool
+<Steps>
+  <Step title="Start with the Ultravox Console">
+    Go to [Agents](https://app.ultravox.ai/agents).
+    <img className="block dark:hidden" src="/images/screenshots/quickstart-agent-light.png" />
+    <img className="hidden dark:block" src="/images/screenshots/quickstart-agent-dark.png" />
+  </Step>
+  <Step title="Create a New Agent">
+    Click on `New Agent` in the top right corner.
+  </Step>
+  <Step title="Enter a Name and Prompt">
+    Copy & paste the following for the name of your agent:
+
+    ```text
+    Tools_Agent
+    ```
+
+    Next, copy and paste this system prompt:
+
+    ```text
+    If the user says "Oklahoma" you must immediately call the 'hangUp' tool.
+    ```
+  </Step>
+  <Step title="Add the hangUp Tool">
+    Use the `Tools` drop-down and select the `hangUp` tool.
+
+    <img className="block dark:hidden" src="/images/screenshots/quickstart-tools-add-light.png" />
+    <img className="hidden dark:block" src="/images/screenshots/quickstart-tools-add-dark.png" />
+  
+  </Step>
+  <Step title="Save & Test the Agent">
+    * Save the agent using the `Save` button. This agent will be used in part two of this quickstart.
+
+    * Start a call with your agent by clicking the `Test Agent` button on the bottom right.
+
+    * When you say the word "Oklahoma", the agent will call the tool and the call will end and you will see the call state change to `DISCONNECTED`.
+  </Step>
+</Steps>
+
+## Creating a Custom Tool
+<Info>
+  This part uses the `Tools_Agent` we created above in [Using Built-in Tools](#using-built-in-tools).
+</Info>
+
+<Steps>
+  <Step title="Create the getAdvice Tool">
+    <img className="block dark:hidden" src="/images/screenshots/quickstart-tools-custom-light.png" />
+    <img className="hidden dark:block" src="/images/screenshots/quickstart-tools-custom-dark.png" />
+
+    Under `Tools` click on [New Tool](https://app.ultravox.ai/tools/new). Set properties as follows and then click on `Save`:
+
+    **Tool Name:**
+    ```text
+    getAdvice
+    ```
+
+    **Description:**
+    ```text
+    This tool provides random advice.
+    ```
+
+    **Custom Endpoint URL:**
+    ```text
+    api.adviceslip.com/advice
+    ```
+
+    <Note>We are using the public adviceslip API as a quick example.</Note>
+  </Step>
+  <Step title="Edit Tools_Agent">
+    * Go to [Agents](https://app.ultravox.ai/agents)
+    * Click `...` on the right side of our `Tools_Agent`
+    * Choose `Edit`
+  </Step>
+  <Step title="Add the getAdvice Tool">
+    Use the `Tools` drop-down and select the `getAdvice` tool. You can keep the `hangUp` tool selected.
+  </Step>
+  <Step title="Update Prompt">
+    Copy & paste the following for the system prompt:
+
+    ```text
+    You are the world's best companion. You love talking to people.
+    
+    If someone asks for or needs advice, you must use the 'getAdvice' tool. 
+    When you receive advice from the tool call, relay it back to the user.
+
+    If the user says "Oklahoma" you must immediately call the 'hangUp' tool.
+    ```
+  </Step>
+  <Step title="Save & Test the Agent">
+    * Save the agent using the `Save` button.
+
+    * Start a call with your agent by clicking the `Test Agent` button on the bottom right.
+
+    * If you ask for advice, the agent will now use the tool to get random advice from the adviceslip API.
+
+    * Saying "Oklahoma" will continue to trigger the hangUp tool.
+  </Step>
+</Steps>
+
+## Next Steps
+1. Learn more about [Built-in Tools](/tools/built-in-tools) you can use.
+1. Dig into [HTTP vs. Client Tools](/tools/custom/http-vs-client-tools) to understand the differences.
+1. Read about [Durable vs. Temp Tools](/tools/custom/durable-vs-temporary-tools).

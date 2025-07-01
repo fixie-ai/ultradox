@@ -1,0 +1,250 @@
+---
+title: 'Building & Editing Agents'
+description: 'Create and manage reusable voice assistant templates for consistent experiences.'
+icon: 'hammer'
+---
+
+## Planning Your Agent
+
+Before creating an agent, consider these key design decisions:
+
+<Steps>
+  <Step title="Define Purpose & Personality">
+    What is your agent's role? Customer support, sales assistant, information provider? Define the personality, tone, and expertise level.
+  </Step>
+  <Step title="Identify Required Capabilities">
+    What tools and integrations does your agent need? Knowledge base access, CRM integration, payment processing?
+  </Step>
+  <Step title="Plan Dynamic Content">
+    What information changes between calls? Customer names, account details, product catalogs? These become template variables.
+  </Step>
+  <Step title="Choose Voice & Language">
+    Select appropriate voice characteristics and language settings for your target audience.
+  </Step>
+</Steps>
+
+## Creating Agents
+<Tip>
+  <b>Agent Quickstart</b>
+  <br />
+  Want to dive right in? Use our [Agent Quickstart](/gettingstarted/quickstart/agent-console) to build your first agent now.
+</Tip>
+<Note>
+  The web app and API are fully compatible. Agents created in either can be managed through both interfaces.
+</Note>
+
+### Using the No-Code Web App
+For teams preferring visual interfaces, Ultravox provides a [web-based agent builder](https://app.ultravox.ai/agents/new):
+
+**When to Use the Web App:**
+- Rapid prototyping and experimentation
+- Non-technical team members need to create agents
+- Visual configuration is preferred over code
+- Quick testing of voice and personality combinations
+
+**When to Use the API:**
+- Production deployments, CI/CD integration, and version control
+- Complex template variable schemas
+- Advanced tool configurations
+
+**Transitioning Between Approaches:**
+- Start with the web app for rapid prototyping
+- Export configurations to API calls for production
+- Use the web app for quick edits, API for deployment
+
+### Using the API
+
+Create agents programmatically for full control and integration with your development workflow:
+
+```js Example: Creating a New Customer Support Agent
+// Note: we are using a template variable for customerName
+const createAgent = async () => {
+  const response = await fetch('https://api.ultravox.ai/api/agents', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'your-api-key'
+    },
+    body: JSON.stringify({
+      name: 'Customer Support Agent',
+      callTemplate: {
+        systemPrompt: "You are Anna, a friendly customer support agent for Acme Inc. You are talking to {{customerName}}. You should help them with their questions about our products and services. If you can't answer a question, offer to connect them with a human support agent.",
+        voice: "Jessica",
+        temperature: 0.4,
+        recordingEnabled: true,
+        firstSpeakerSettings: {
+          agent: {
+            text: "Hello! This is Anna from Acme customer support. How can I help you today?"
+          }
+        },
+        selectedTools: [
+          { toolName: 'knowledgebaseLookup' },
+          { toolName: 'orderStatus' },
+          { toolName: 'transferToHuman' }
+        ]
+      }
+    })
+  });
+  
+  return await response.json();
+};
+```
+
+## Call Template Configuration
+
+The call template is the heart of your agent, defining all behavior and capabilities:
+
+### System Prompt
+
+Design effective system prompts that define your agent's personality and knowledge. Here's an example prompt using various template variables that will be populated at call creation time using the [templateContext](/api-reference/agents/agents-calls-post#body-template-context) property:
+
+```text Example: Defining an Agent System Prompt
+You are {{agentName}}, a {{role}} for {{companyName}}. 
+
+Your personality: {{personality}}
+Your expertise: {{expertise}}
+
+Guidelines:
+- Always be {{tone}} and professional
+- If you don't know something, offer to transfer the call to a human agent using the 'transferToHuman' tool
+- Keep responses concise but helpful
+- Reference the customer as {{customerName}} when appropriate
+
+Context about this conversation:
+- Customer type: {{customerTier}}
+- Previous interaction: {{lastInteraction}}
+```
+
+For more, see our [Prompting Guide →](/gettingstarted/prompting)
+
+### Voice Configuration
+
+Choose a voice that matches your brand and audience. 
+
+```js Example: Built-in vs. External Voice
+// Built-in Ultravox voice
+voice: "Jessica"  // Professional, friendly
+
+// External voice providers (requires API keys)
+externalVoice: {
+  elevenLabs: {
+    voiceId: "your-elevenlabs-voice-id",
+    model: "eleven_turbo_v2_5",
+    speed: 1.0,
+    stability: 0.8
+  }
+}
+```
+
+Learn more in the [Voices Overview →](/voices/overview)
+
+
+
+### Tool Selection and Configuration
+
+Connect your agent to external capabilities using tools:
+
+```js Example: Defining Selected Tools
+selectedTools: [
+  {
+    toolName: 'knowledgebaseLookup',
+    descriptionOverride: 'Search our product documentation and FAQ',
+    parameterOverrides: {
+      maxResults: 3
+    }
+  },
+  {
+    toolName: 'orderStatus',
+    authTokens: {
+      apiKey: 'your-order-system-key'
+    }
+  },
+  {
+    toolName: 'transferToHuman'
+  }
+]
+```
+
+Dig into more in the [Tools Overview →](/tools/overview)
+
+## Agent Management
+
+### Updating Agents
+
+You can update the agent via the [Ultravox web app](https://app.ultravox.ai/agents) or via the [Update Agent](/api-reference/agents/agents-patch) API.
+
+```js Example: Updating Agent via API
+const updateAgent = async (agentId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/agents/${agentId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'your-api-key'
+    },
+    body: JSON.stringify({
+      callTemplate: {
+        systemPrompt: "Updated system prompt...",
+        temperature: 0.4  // Only fields you want to change
+      }
+    })
+  });
+  
+  return await response.json();
+};
+```
+
+<Warning>
+  Agent changes only affect new calls. Active calls continue using the configuration they started with.
+</Warning>
+
+### Monitoring and Analytics
+
+Track agent performance and usage:
+
+```js Example: Getting Agent Stats & Calls
+// Get agent statistics
+const getAgentStats = async (agentId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/agents/${agentId}`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  const agent = await response.json();
+  console.log('Total calls:', agent.statistics.calls);
+};
+
+// Get recent calls for this agent
+const getAgentCalls = async (agentId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/agents/${agentId}/calls`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return await response.json();
+};
+```
+
+## When to Use Advanced Features
+
+**Start Simple:** Begin with mono prompts that handle your core use case in a single system prompt. This approach works well for:
+- Straightforward customer support
+- Information lookup
+- Basic transaction flows
+
+**Add Complexity When Needed:** If mono prompting isn't sufficient for your use case, gradually add:
+- **Inline instructions** for multi-step processes → [Guiding Agents](/agents/guiding-agents)
+- **Call stages** for completely different conversation phases → [Call Stages](/agents/call-stages)
+
+**Don't Over-Engineer:** Resist the temptation to add complexity early. Most voice applications can be built successfully with simple agent configurations.
+
+
+
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Start Making Calls" icon="phone" href="/agents/making-calls">
+    Use your agents to create conversations with users.
+  </Card>
+  <Card title="Advanced Conversation Control" icon="steering-wheel" href="/agents/guiding-agents">
+    Learn how to use inline instructions for complex workflows.
+  </Card>
+</CardGroup>

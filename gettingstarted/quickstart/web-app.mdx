@@ -1,0 +1,183 @@
+---
+title: 'Web Quickstart'
+description: 'Create calls with an agent in the browser in under 2 minutes'
+icon: 'browser'
+tag: "NEW"
+---
+
+<Danger>
+  This quickstart uses [X-Unsafe-API-Key](/api-reference/introduction#x-api-key-header) which is not safe for production.
+
+  See the [nextjs-ts](https://github.com/fixie-ai/ultravox-examples/tree/main/web/nextjs-ts) example for a more robust example.
+</Danger>
+## TL;DR
+<Steps>
+  <Step title="Steal this code">Save the following code locally as `index.html`.</Step>
+  <Step title="Open in browser">Open `index.html` in your browser.</Step>
+  <Step title="Add API key">Add your Ultravox API key.</Step>
+  <Step title="Start call">Click the button.</Step>
+</Steps>
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultravox Web Quickstart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <!-- WARNING: DO NOT USE IN PRODUCTION -->
+      <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+        <div class="flex">
+          <div class="flex-shrink-0 fas fa-exclamation-triangle text-yellow-400"></div>
+          <div class="ml-3">
+            <h3 class="text-sm text-yellow-800">DEVELOPMENT ONLY - DO NOT USE IN PRODUCTION</h3>
+            <p class="mt-1 text-sm text-yellow-700">This interface exposes API keys in client-side code and uses unsafe headers to bypass CORS.</p>
+            <p class="mt-1 text-sm text-yellow-700">For a robust example, see the <a href="https://github.com/fixie-ai/ultravox-examples/tree/main/web/nextjs-ts">nextjs-ts</a> example.</p>
+          </div>
+        </div>
+      </div>
+      <form class="space-y-6">
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h3 class="text-sm text-gray-900 mb-2">Call Status</h3>
+          <div id="callStatus" class="text-sm text-gray-600">Ready</div>
+        </div>
+        <div>
+          <label for="apiKey" class="block text-sm text-gray-700 mb-2">Ultravox API Key:</label>
+          <input type="password" id="apiKey" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter your Ultravox API key">
+          <p class="mt-1 text-sm text-gray-500">Your API key will be used to create the call. Keep this secure!</p>
+        </div>
+        <div>
+          <label for="systemPrompt" class="block text-sm text-gray-700 mb-2">System Prompt:</label>
+          <textarea id="systemPrompt" rows="3" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter system prompt for the AI assistant">You are a helpful assistant.</textarea>
+          <p class="mt-1 text-sm text-gray-500">This prompt will define how the AI assistant behaves during the call.</p>
+        </div>
+        <div class="flex space-x-3">
+          <button type="button" id="startCall"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+            Start Call
+          </button>
+          <button type="button" id="endCall"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+            End Call
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script type="module">
+    import { UltravoxSession } from 'https://esm.sh/ultravox-client@0.3.6';
+    
+    let uvSession = new UltravoxSession();
+    
+    function appendUpdate(target, message) {
+        const updateTarget = document.getElementById(target);
+        if(target === 'callTranscript') {
+            let transcriptText = '';
+            message.map((transcript, index) => (
+                transcriptText += '<div class="p-2 bg-gray-50 rounded border-l-4 border-blue-400"><span class="font-semibold text-gray-800">' + transcript.speaker + ':</span> <span class="text-gray-700">' + transcript.text + '</span></div>'
+            ));
+            updateTarget.innerHTML = transcriptText;
+            updateTarget.scrollTop = updateTarget.scrollHeight;
+        } else {
+            updateTarget.innerHTML = message;
+        }
+    }
+    
+    // ⚠️ WARNING: DO NOT USE IN PRODUCTION! ⚠️
+    // This function makes API calls directly from the client with API keys exposed
+    // API keys should never be handled in client-side code in production
+    // In production, API calls should be made from a secure server
+    // Here we are using unsafe API endpoint to bypass CORS - this is a security risk
+    async function createCall(apiKey, systemPrompt) {
+      try {
+        appendUpdate('callStatus', '<span class="text-blue-600">Creating call...</span>');
+        
+        const payload = {
+          temperature: 0.3,
+          systemPrompt: systemPrompt
+        };
+        
+        console.log('Creating call with payload:', payload);
+        
+        // ⚠️ WARNING: X-Unsafe-API-Key header is used to bypass CORS ⚠️
+        // This is NOT secure and should NEVER be used in production
+        const response = await fetch('https://api.ultravox.ai/api/calls', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-Unsafe-API-Key': apiKey  // ⚠️ UNSAFE - DO NOT USE IN PROD ⚠️
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const callData = await response.json();
+        console.log('Call created successfully:', callData);
+        
+        return callData.joinUrl;
+          
+      } catch (error) {
+          console.error('Error creating call:', error);
+          appendUpdate('callStatus', `<span class="text-red-600">Error creating call: ${error.message}</span>`);
+          throw error;
+      }
+    }
+    
+    // Start Call button click event handler
+    document.getElementById('startCall').onclick = async function() {
+      const apiKey = document.getElementById('apiKey').value;
+      const systemPrompt = document.getElementById('systemPrompt').value || 'You are a helpful assistant.';
+      
+      if (!apiKey) {
+        appendUpdate('callStatus', '<span class="text-red-600">Please enter your Ultravox API key</span>');
+        return;
+      }
+      
+      try {
+        const joinUrl = await createCall(apiKey, systemPrompt);
+        
+        if (!joinUrl) {
+          appendUpdate('callStatus', '<span class="text-red-600">Failed to get join URL from API</span>');
+          return;
+        }
+        
+        appendUpdate('callStatus', '<span class="text-blue-600">Joining call...</span>');
+        
+        uvSession.addEventListener('status', (event) => {
+          let statusClass = 'text-blue-600';
+          if (uvSession.status === 'connected') statusClass = 'text-green-600';
+          if (uvSession.status === 'disconnected') statusClass = 'text-gray-600';
+          appendUpdate('callStatus', `<span class="${statusClass}">Session status: ${uvSession.status}</span>`);
+        });
+        
+        uvSession.joinCall(joinUrl);
+          
+      } catch (error) {
+          appendUpdate('callStatus', `<span class="text-red-600">Failed to start call: ${error.message}</span>`);
+      }
+    };
+    
+    // End Call button click event handler
+    document.getElementById('endCall').onclick = async function() {
+      appendUpdate('callStatus', '<span class="text-yellow-600">Ending call...</span>');
+      uvSession.leaveCall();
+    };
+  </script>
+</body>
+</html>
+```
+
+## Next Steps
+1. Check out the [nextjs-ts](https://github.com/fixie-ai/ultravox-examples/tree/main/web/nextjs-ts) example for a more complete, production ready web app.

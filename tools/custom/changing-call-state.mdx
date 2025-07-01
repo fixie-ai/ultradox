@@ -1,0 +1,19 @@
+---
+title: 'Changing Call State'
+description: 'Learn how to programmatically end calls or transition between call stages using special tool response types.'
+icon: 'right-left'
+---
+
+## Special Tool Response Types
+For most tools, the response will include data you want the model to use (e.g. the results of a lookup). However, Ultravox has support for special tool actions that can end the call or change the call stage.
+
+These tool actions require setting a special response type.
+
+| Response Type | Tool Action |
+|------|------|
+| hang-up | Terminates the call. In addition to having Ultravox end the call after [periods of user inactivity](/api-reference/calls/overview#inactivitymessages), your custom tool can end the call. |
+| new-stage | Creates a new call stage. See [here](/agents/call-stages) for more. |
+
+How you set the response type depends on your tool implementation.
+HTTP tools set the response type via the `X-Ultravox-Response-Type` header.
+Client and data connection tools should set the responseType field in their tool result message.

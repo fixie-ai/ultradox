@@ -1,0 +1,608 @@
+---
+title: 'Outgoing Calls TODO'
+description: 'Configure AI agents to make outbound phone calls to users.'
+icon: 'phone-arrow-up-right'
+---
+
+[Under Construction]
+
+Enable your AI agents to initiate phone calls to users. This is ideal for appointment reminders, customer outreach, surveys, or proactive customer service.
+
+## How Outgoing Calls Work
+
+1. **Your application triggers** an outbound call (user action, scheduled event, etc.)
+2. **Create an Ultravox call** configured for outgoing calls
+3. **Initiate the phone call** using your telephony provider's API
+4. **Connect the call** to Ultravox using the `joinUrl`
+5. **User answers** and the AI agent begins the conversation
+
+## Basic Configuration
+
+Create an Ultravox call configured for outgoing calls:
+
+```javascript
+// Create call for outgoing phone calls
+const response = await fetch('https://api.ultravox.ai/api/calls', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    systemPrompt: "You are calling to remind the customer about their appointment tomorrow at 2 PM. Be friendly and confirm they can still make it.",
+    medium: {
+      "twilio": {}  // or "telnyx": {}, "plivo": {}
+    },
+    firstSpeakerSettings: { user: {} }  // Wait for user to answer
+  })
+});
+
+const { joinUrl } = await response.json();
+```
+
+**Key Parameters:**
+- `medium`: Set to your telephony provider
+- `firstSpeakerSettings`: Set to `{ user: {} }` to wait for the user to say "Hello"
+- `joinUrl`: Use this to connect the phone call to Ultravox
+
+## Provider-Specific Implementation
+
+<Tabs>
+  <Tab title="Twilio">
+    ### Making Outbound Calls
+    Use the Twilio API to initiate calls and connect them to Ultravox:
+
+    ```javascript
+    const twilio = require('twilio');
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+    async function makeOutboundCall(phoneNumber, message) {
+      // 1. Create Ultravox call
+      const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.ULTRAVOX_API_KEY
+        },
+        body: JSON.stringify({
+          systemPrompt: message,
+          medium: { "twilio": {} },
+          firstSpeakerSettings: { user: {} }
+        })
+      });
+      
+      const { joinUrl } = await callResponse.json();
+      
+      // 2. Make phone call with Twilio
+      const call = await client.calls.create({
+        twiml: `
+          <Response>
+            <Connect>
+              <Stream url="${joinUrl}"/>
+            </Connect>
+          </Response>
+        `,
+        to: phoneNumber,
+        from: process.env.TWILIO_PHONE_NUMBER
+      });
+      
+      console.log(`Call initiated: ${call.sid}`);
+      return call.sid;
+    }
+
+    // Example usage
+    await makeOutboundCall(
+      '+1234567890', 
+      'You are calling to remind the customer about their appointment tomorrow.'
+    );
+    ```
+
+    ### Advanced TwiML
+    For more complex scenarios, you can serve TwiML from an endpoint:
+
+    ```javascript
+    // Endpoint to serve dynamic TwiML
+    app.get('/twilio/outbound-twiml/:callId', async (req, res) => {
+      const { callId } = req.params;
+      
+      // Get call details from your database
+      const callDetails = await getCallDetails(callId);
+      
+      // Create Ultravox call
+      const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.ULTRAVOX_API_KEY
+        },
+        body: JSON.stringify({
+          systemPrompt: callDetails.message,
+          medium: { "twilio": {} },
+          firstSpeakerSettings: { user: {} }
+        })
+      });
+      
+      const { joinUrl } = await callResponse.json();
+      
+      const twiml = `
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Connect>
+            <Stream url="${joinUrl}"/>
+          </Connect>
+        </Response>
+      `;
+      
+      res.type('text/xml').send(twiml);
+    });
+
+    // Make call with dynamic TwiML
+    const call = await client.calls.create({
+      url: `https://yourapp.com/twilio/outbound-twiml/${callId}`,
+      to: phoneNumber,
+      from: twilioPhoneNumber
+    });
+    ```
+  </Tab>
+
+  <Tab title="Telnyx">
+    ### Making Outbound Calls
+    Use the Telnyx API to initiate calls:
+
+    ```javascript
+    const telnyx = require('telnyx')(process.env.TELNYX_API_KEY);
+
+    async function makeOutboundCall(phoneNumber, message) {
+      // 1. Create Ultravox call
+      const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.ULTRAVOX_API_KEY
+        },
+        body: JSON.stringify({
+          systemPrompt: message,
+          medium: { "telnyx": {} },
+          firstSpeakerSettings: { user: {} }
+        })
+      });
+      
+      const { joinUrl } = await callResponse.json();
+      
+      // 2. Make phone call with Telnyx
+      const call = await telnyx.calls.create({
+        connection_id: process.env.TELNYX_CONNECTION_ID,
+        to: phoneNumber,
+        from: process.env.TELNYX_PHONE_NUMBER,
+        stream_url: joinUrl,
+        stream_track: "both_tracks",
+        stream_bidirectional_mode: "rtp"
+      });
+      
+      console.log(`Call initiated: ${call.data.call_control_id}`);
+      return call.data.call_control_id;
+    }
+
+    // Example usage
+    await makeOutboundCall(
+      '+1234567890', 
+      'You are calling to remind the customer about their appointment tomorrow.'
+    );
+    ```
+
+    ### Using TeXML
+    Alternatively, you can use TeXML for more complex call flows:
+
+    ```javascript
+    // Endpoint to serve TeXML
+    app.get('/telnyx/outbound-texml/:callId', async (req, res) => {
+      const { callId } = req.params;
+      
+      // Get call details
+      const callDetails = await getCallDetails(callId);
+      
+      // Create Ultravox call
+      const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.ULTRAVOX_API_KEY
+        },
+        body: JSON.stringify({
+          systemPrompt: callDetails.message,
+          medium: { "telnyx": {} },
+          firstSpeakerSettings: { user: {} }
+        })
+      });
+      
+      const { joinUrl } = await callResponse.json();
+      
+      const texml = `
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Connect>
+            <Stream url="${joinUrl}" 
+                    bidirectionalMode="rtp" 
+                    codec="PCMU" 
+                    bidirectionalCodec="PCMU"/>
+          </Connect>
+        </Response>
+      `;
+      
+      res.type('text/xml').send(texml);
+    });
+
+    // Make call with TeXML URL
+    const call = await telnyx.calls.create({
+      connection_id: process.env.TELNYX_CONNECTION_ID,
+      to: phoneNumber,
+      from: telnyxPhoneNumber,
+      webhook_url: `https://yourapp.com/telnyx/outbound-texml/${callId}`
+    });
+    ```
+  </Tab>
+
+  <Tab title="Plivo">
+    ### Making Outbound Calls
+    Use the Plivo API to initiate calls:
+
+    ```javascript
+    const plivo = require('plivo');
+    const client = new plivo.Client(process.env.PLIVO_AUTH_ID, process.env.PLIVO_AUTH_TOKEN);
+
+    async function makeOutboundCall(phoneNumber, message) {
+      // 1. Create Ultravox call
+      const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.ULTRAVOX_API_KEY
+        },
+        body: JSON.stringify({
+          systemPrompt: message,
+          medium: { "plivo": {} },
+          firstSpeakerSettings: { user: {} }
+        })
+      });
+      
+      const { joinUrl } = await callResponse.json();
+      
+      // 2. Make phone call with Plivo
+      const call = await client.calls.create({
+        to: phoneNumber,
+        from: process.env.PLIVO_PHONE_NUMBER,
+        answer_url: `https://yourapp.com/plivo/outbound-xml?joinUrl=${encodeURIComponent(joinUrl)}`,
+        answer_method: "GET"
+      });
+      
+      console.log(`Call initiated: ${call.callUuid}`);
+      return call.callUuid;
+    }
+
+    // Endpoint to serve Plivo XML
+    app.get('/plivo/outbound-xml', (req, res) => {
+      const { joinUrl } = req.query;
+      
+      const xml = `
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Stream keepCallAlive="true" 
+                  contentType="audio/x-l16;rate=16000"
+                  bidirectional="true">
+            ${joinUrl}
+          </Stream>
+        </Response>
+      `;
+      
+      res.type('text/xml').send(xml);
+    });
+
+    // Example usage
+    await makeOutboundCall(
+      '+1234567890', 
+      'You are calling to remind the customer about their appointment tomorrow.'
+    );
+    ```
+  </Tab>
+
+  <Tab title="jambonz">
+    ### Making Outbound Calls
+    jambonz requires creating calls through their API:
+
+    ```javascript
+    const JambonzClient = require('@jambonz/node-client');
+
+    const client = JambonzClient(
+      process.env.JAMBONZ_ACCOUNT_SID,
+      process.env.JAMBONZ_API_KEY,
+      {baseUrl: process.env.JAMBONZ_REST_API_BASE_URL || 'https://api.jambonz.cloud/v1'}
+    );
+
+    async function makeOutboundCall(phoneNumber, message) {
+      const call = await client.calls.create({
+        from: process.env.FROM_NUMBER,  
+        to: {
+          type: 'phone',
+          number: phoneNumber,
+          trunk: process.env.CARRIER
+        },
+        application_sid: process.env.APPLICATION_SID,
+        // Pass custom data to your application
+        tag: {
+          message: message,
+          callType: 'outbound'
+        }
+      });
+      
+      console.log(`Call initiated: ${call.call_sid}`);
+      return call.call_sid;
+    }
+
+    // Your jambonz application handles the call
+    // The message can be accessed via req.body.tag.message
+    app.post('/jambonz/outbound-app', (req, res) => {
+      const session = req.session;
+      const { message } = req.body.tag || {};
+      
+      session
+        .pause({length: 1.5})
+        .llm({
+          vendor: 'ultravox',
+          model: 'fixie-ai/ultravox',
+          auth: {
+            apiKey: process.env.ULTRAVOX_API_KEY
+          },
+          actionHook: '/final',
+          eventHook: '/event',
+          llmOptions: {
+            systemPrompt: message || 'You are a helpful assistant calling the customer.',
+            firstSpeakerSettings: { user: {} },
+            initialMessages: [{
+              medium: 'MESSAGE_MEDIUM_VOICE',
+              role: 'MESSAGE_ROLE_USER'
+            }],
+            model: 'fixie-ai/ultravox',
+            voice: 'Tanya-English',
+            transcriptOptional: true,
+          }
+        })
+        .hangup()
+        .send();
+    });
+
+    // Example usage
+    await makeOutboundCall(
+      '+1234567890', 
+      'You are calling to remind the customer about their appointment tomorrow.'
+    );
+    ```
+  </Tab>
+</Tabs>
+
+## Common Use Cases
+
+### Appointment Reminders
+Automated reminders for scheduled appointments:
+
+```javascript
+async function sendAppointmentReminder(appointment) {
+  const message = `
+    You are calling ${appointment.customerName} to remind them about their 
+    ${appointment.type} appointment tomorrow at ${appointment.time}. 
+    Be friendly and confirm they can still make it. If they need to reschedule, 
+    let them know they can call back or ask to transfer to scheduling.
+  `;
+  
+  await makeOutboundCall(appointment.phoneNumber, message);
+}
+```
+
+### Customer Surveys
+Collect feedback after service interactions:
+
+```javascript
+async function conductSurvey(customer) {
+  const message = `
+    You are calling ${customer.name} to conduct a brief satisfaction survey 
+    about their recent experience with our service. Keep it short (2-3 questions) 
+    and thank them for their time. Ask about overall satisfaction and if they 
+    would recommend us to others.
+  `;
+  
+  await makeOutboundCall(customer.phoneNumber, message);
+}
+```
+
+### Payment Reminders
+Gentle reminders for overdue payments:
+
+```javascript
+async function paymentReminder(account) {
+  const message = `
+    You are calling about an overdue payment for account ${account.id}. 
+    Be professional and helpful. Inform them of the overdue amount of $${account.balance} 
+    and offer payment options. If they have questions, offer to transfer to billing.
+  `;
+  
+  await makeOutboundCall(account.phoneNumber, message);
+}
+```
+
+### Lead Follow-up
+Follow up on sales inquiries:
+
+```javascript
+async function followUpLead(lead) {
+  const message = `
+    You are following up on ${lead.name}'s interest in our ${lead.product}. 
+    They submitted an inquiry ${lead.daysAgo} days ago. Be helpful and answer 
+    any questions they have. If they're ready to proceed, offer to transfer 
+    to sales.
+  `;
+  
+  await makeOutboundCall(lead.phoneNumber, message);
+}
+```
+
+## Scheduling Outbound Calls
+
+### Using Cron Jobs
+Schedule regular outbound call campaigns:
+
+```javascript
+const cron = require('node-cron');
+
+// Daily appointment reminders at 10 AM
+cron.schedule('0 10 * * *', async () => {
+  const tomorrowAppointments = await getTomorrowAppointments();
+  
+  for (const appointment of tomorrowAppointments) {
+    await sendAppointmentReminder(appointment);
+    // Add delay between calls to avoid overwhelming
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  }
+});
+
+// Weekly customer satisfaction surveys on Fridays at 2 PM
+cron.schedule('0 14 * * 5', async () => {
+  const recentCustomers = await getRecentCustomers();
+  
+  for (const customer of recentCustomers) {
+    await conductSurvey(customer);
+    await new Promise(resolve => setTimeout(resolve, 10000));
+  }
+});
+```
+
+### Event-Triggered Calls
+Make calls based on specific events:
+
+```javascript
+// After order completion
+app.post('/order-completed', async (req, res) => {
+  const { order } = req.body;
+  
+  // Schedule follow-up call for next day
+  setTimeout(async () => {
+    const message = `
+      You are calling to follow up on ${order.customerName}'s recent order #${order.id}. 
+      Check if they received it and if everything was satisfactory. 
+      Thank them for their business.
+    `;
+    
+    await makeOutboundCall(order.customerPhone, message);
+  }, 24 * 60 * 60 * 1000); // 24 hours
+  
+  res.json({ success: true });
+});
+```
+
+## Best Practices
+
+### Timing Considerations
+- **Respect time zones** when scheduling calls
+- **Avoid early morning** and late evening calls
+- **Consider business hours** for B2B calls
+- **Check local holidays** and regulations
+
+### Call Volume Management
+- **Rate limiting**: Don't overwhelm your provider or recipients
+- **Retry logic**: Handle busy signals and no-answers appropriately
+- **Do Not Call lists**: Respect opt-out requests
+
+### Legal Compliance
+- **TCPA compliance**: Follow US telephone regulations
+- **GDPR compliance**: Respect EU privacy regulations
+- **Local regulations**: Check requirements in your target regions
+- **Opt-out mechanisms**: Provide easy ways to stop calls
+
+### Error Handling
+Always implement robust error handling:
+
+```javascript
+async function makeOutboundCall(phoneNumber, message) {
+  try {
+    // Create Ultravox call
+    const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.ULTRAVOX_API_KEY
+      },
+      body: JSON.stringify({
+        systemPrompt: message,
+        medium: { "twilio": {} },
+        firstSpeakerSettings: { user: {} }
+      })
+    });
+    
+    if (!callResponse.ok) {
+      throw new Error(`Ultravox API error: ${callResponse.status}`);
+    }
+    
+    const { joinUrl } = await callResponse.json();
+    
+    // Make phone call
+    const call = await client.calls.create({
+      twiml: `<Response><Connect><Stream url="${joinUrl}"/></Connect></Response>`,
+      to: phoneNumber,
+      from: twilioPhoneNumber
+    });
+    
+    return call.sid;
+    
+  } catch (error) {
+    console.error(`Failed to make outbound call to ${phoneNumber}:`, error);
+    
+    // Log to your monitoring system
+    await logCallFailure(phoneNumber, error.message);
+    
+    // Optionally retry or schedule for later
+    throw error;
+  }
+}
+```
+
+## Monitoring and Analytics
+
+Track your outbound call performance:
+
+```javascript
+// Track call outcomes
+async function trackCallOutcome(callSid, outcome) {
+  await saveCallMetrics({
+    callSid,
+    outcome, // 'completed', 'no-answer', 'busy', 'failed'
+    timestamp: new Date(),
+    duration: await getCallDuration(callSid)
+  });
+}
+
+// Monitor call status with Twilio webhooks
+app.post('/twilio/status', (req, res) => {
+  const { CallSid, CallStatus } = req.body;
+  
+  switch (CallStatus) {
+    case 'completed':
+      trackCallOutcome(CallSid, 'completed');
+      break;
+    case 'no-answer':
+      trackCallOutcome(CallSid, 'no-answer');
+      break;
+    case 'busy':
+      trackCallOutcome(CallSid, 'busy');
+      break;
+    case 'failed':
+      trackCallOutcome(CallSid, 'failed');
+      break;
+  }
+  
+  res.sendStatus(200);
+});
+```
+
+## Next Steps
+
+- Learn about [Call Transfers](/telephony/call-transfers) to escalate calls to human agents
+- Implement [IVR Flows](/telephony/ivr-flows) for more interactive call experiences
+- Set up [Incoming Calls](/telephony/inbound-calls) to handle return calls

@@ -1,0 +1,130 @@
+---
+title: 'Overview: Custom Tools'
+description: 'Create powerful integrations that enable your agent to communicate with external systems and perform real-world actions.'
+icon: 'compass'
+---
+Custom tools enable you to communicate with the outside world. Anything that you can do in a function can now be done by your agent via a custom tool.
+
+<Tip>
+<b>Adding Tools for an Existing API</b>
+
+If you already run a server with a well-defined OpenAPI spec, you can quickly create tools for all your API endpoints by
+[uploading that spec](/api-reference/tools/tools-post). Your OpenAPI spec must be either `json` or `yaml` format.
+
+Once uploaded, your tools are just like any other durable tool, so you can use, modify, or delete them as you wish.
+</Tip>
+
+
+## Creating Your First Custom Tool
+Let's look at creating a tool that sends an email with a summary of the conversation.
+
+There are three steps:
+
+### Step 1:  Define the Tool
+We need to define the tool and provide it to our agent. The name, description, and parameters we provide here will be seen by the agent so we need to be thoughtful with them.
+
+```js Creating a custom tool
+// Creating a tool called 'sendConversationSummary'
+//
+// A 'string' parameter named 'conversationSummary'
+// is passed in the body of a POST request to https://foo.bar/sendSummary
+{
+  "systemPrompt": "You are a helpful assistant...",
+  "selectedTools": [
+    {
+      "temporaryTool": {
+        "modelToolName": "sendConversationSummary",
+        "description": "Use this tool at the end of a conversation to send the caller a summary of the conversation.",
+        "dynamicParameters": [
+          {
+            "name": "conversationSummary",
+            "location": "PARAMETER_LOCATION_BODY",
+            "schema": {
+              "description": "A 2-3 sentence summary of the conversation.",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "http": {
+          "baseUrlPattern": "https://foo.bar/sendSummary",
+          "httpMethod": "POST"
+        }
+      }
+    }
+  ]
+}
+```
+What's happening here:
+* We are adding `selectedTools` to the request body of the [Create Call](/api-reference/calls/calls-post) API request.
+* There's a single tool named `sendConversationSummary`.
+* This tool requires a single [dynamic parameter](./parameters#dynamic-parameters) called `conversationSummary` that is passed in the request body.
+* The tool's functionality is available via POST at the url `https://foo.bar/sendSummary`.
+* The tool is a [temporary tool](./durable-vs-temporary-tools#temporary-tools), so it will only be available for this call.
+
+### Step 2:  Implement the Function
+Now that we've defined the tool, let's implement the functionality. This is a simplified example using Express.js and imagines a generic email API provider.
+
+```js Simple API endpoint
+const express = require('express');
+const router = express.Router();
+
+router.post('/sendSummary', async (req, res) => {
+  try {
+    const { conversationSummary } = req.body;
+
+    // Send the email using our email provider
+    sendEmail(conversationSummary);
+
+    return res.status(200).json({
+      message: 'Conversation summary sent successfully. Continue the conversation with the user.'
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+});
+
+module.exports = router;
+```
+
+This function does the following:
+* Accepts the `conversationSummary` via a POST.
+* Passes the data along to another function (`sendEmail`) that will send it via email.
+
+### Step 3:  Instruct the Agent on Tool Use
+The last thing we need to do is provide additional instructions to the agent on how to use the tool. This is primarily done using the tool's own description along with the `systemPrompt`. Let's update what we used in the first step.
+
+```js Prompting the agent on how to use the tool
+const updatedPrompt = `
+You're a friendly and fun guy. You like to chat casually while learning 
+more about the person you're chatting with (name, hobbies, likes/dislikes).
+
+Be casual. Be fun to chat with. Don't talk too much. Keep your sentences 
+pretty short and fun. Let the user guide the conversation.
+
+As you chat, try and learn more about the person you are talking to such 
+as their name, hobbies, and their likes/dislikes.
+
+Once you have all the information, call the 'sendSummary' tool to send 
+a summary of the conversation.
+`;
+{
+  "systemPrompt": updatedPrompt,
+  "selectedTools": [
+      // Same as before
+  ]
+}
+```
+
+We've updated the system prompt that is used when the Ultravox call is created to instruct the agent when and how to use the tool.
+
+## Debugging Tool Calls
+The Ultravox SDK enables viewing [debug messages](/sdk-reference/introduction#debug-messages) for any active call. These messages include tool calls.
+
+## Keep Learning
+- Learn all about [Tool Parameters →](./parameters)
+- Learn how to secure tool calls in [Tool Authentication →](./authentication)
+- Check out our [API reference](/api-reference/tools) for all tools endpoints.

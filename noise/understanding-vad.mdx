@@ -1,0 +1,125 @@
+---
+title: 'Understanding VAD'
+description: "Learn how Ultravox's multi-model VAD system works and when to adjust voice activity detection parameters."
+icon: 'sliders'
+---
+
+Voice Activity Detection (VAD) determines when a user is speaking and when they've finished their turn. Understanding how Ultravox's VAD system works will help you make informed decisions about when and how to adjust settings.
+
+## How Ultravox VAD Works
+
+Ultravox Realtime uses a multi-layered approach to VAD which results in low latency and an overall experience that feels fluid and natural.
+
+### Traditional VAD Model
+The foundation is a classic VAD model that analyzes audio frames (32ms each) to predict "speechiness" - whether each frame contains human speech. This model is intentionally aggressive, meaning it has a low threshold for detecting potential speech.
+
+### Neural VAD
+Our neural VAD model makes intelligent predictions about conversation state and turn-taking patterns. It understands context like:
+- Whether the user is likely finished speaking based on conversation flow
+- Typical pause patterns in natural dialogue
+- The difference between a thoughtful pause and the end of a turn
+
+### Noise Cancellation & Audio Processing
+Additional models handle:
+- Background noise filtering
+- Echo cancellation  
+- Audio quality enhancement
+- False positive reduction
+
+## VAD Parameters Explained
+
+Ultravox exposes several VAD parameters that control this behavior. These parameters are exposed via the [vadSettings](/api-reference/calls/calls-post#body-vad-settings) object that can be set when creating new calls or call stages.
+
+The following settings are available:
+
+### `turnEndpointDelay`
+<ResponseField name="turnEndpointDelay" type="string" default="0.384s">
+  The minimum time the agent waits before responding after the user appears to stop speaking.
+
+  Only multiples of 32ms are meaningful (anything from 1ms - 31ms produces the same result).
+
+  **Trade-offs:**
+  - **Shorter delays** → Leads to faster responses, but more likely to interrupt users mid-thought.
+  - **Longer delays** → Makes agent less eager to respond (i.e. interrupt the user), but perceived as slower or less responsive.
+
+  ```js Adjusting turnEndpointDelay
+  vadSettings: {
+    turnEndpointDelay: "0.384s"  // 12 VAD frames at 32ms each
+  }
+  ```
+</ResponseField>
+
+### `minimumTurnDuration`
+
+<ResponseField name="minimumTurnDuration" type="string" default="0s">
+  The minimum duration of user speech required to be considered a valid turn.
+
+  **Trade-offs:**
+  - **Shorter durations** → Captures very short user audio.
+  - **Longer durations** → Ignores very short user audio segments that might be noise but could ignore meaningful, short user responses like "yes" or "no".
+
+  ```js Adjusting minimumTurnDuration
+  vadSettings: {
+    minimumTurnDuration: "0s"  // Consider all user audio
+  }
+  ```
+</ResponseField>
+
+### `minimumInterruptionDuration`
+
+<ResponseField name="minimumInterruptionDuration" type="string" default="0.09s">
+  The minimum duration of user speech required to interrupt the agent when it's speaking. Similar to minimumTurnDuration but provides a higher threshold for interrupting the agent. Ignored if the value is less than minimumTurnDuration.
+
+  **Trade-offs:**
+  - **Shorter durations** → More sensitive to interruptions, may trigger on background noise.
+  - **Longer durations** → Less sensitive to noise, but may miss legitimate interruption attempts.
+
+  ```js Adjusting minimumInterruptionDuration
+  vadSettings: {
+    minimumInterruptionDuration: "0.09s"
+  }
+  ```
+</ResponseField>
+
+### `frameActivationThreshold`
+
+<ResponseField name="frameActivationThreshold" type="number" default="0.1">
+  The threshold for considering an individual audio frame as containing speech (0.1 to 1.0).
+
+  **Trade-offs:**
+  - **Lower thresholds** → More sensitive to quiet speech, but more false positives.
+  - **Higher thresholds** → Less sensitive to noise, but may miss quiet or distant speakers.
+
+  ```js Adjusting frameActivationThreshold
+  vadSettings: {
+    frameActivationThreshold: 0.1  // Very sensitive to potential speech
+  }
+  ```
+</ResponseField>
+
+
+## Best Practices for VAD Tuning
+
+<Warning>
+  <b>Start with Defaults</b>
+  
+  The default VAD settings work well for most applications. Only adjust them if you have specific, tested issues that can't be resolved through environmental or hardware improvements.
+</Warning>
+
+### The Safest Parameter to Adjust
+
+If you venture into adjusting VAD settings, `turnEndpointDelay` is the safest parameter to modify. As noted in the [API reference](/api-reference/schema/call-definition#schema-vad-settings-turn-endpoint-delay), "there's nothing special about this value" - it's simply a starting point that works well in most scenarios.
+
+### Making Changes Safely
+
+1. **Change one parameter at a time** → Isolate the effects of each adjustment.
+2. **Test thoroughly** → Use real users and realistic environments.
+3. **Monitor the trade-offs** → Every improvement in one area may cause issues in another.
+
+### Environmental Solutions First
+
+Before adjusting VAD parameters, consider:
+- **Audio quality** → Better microphones reduce VAD complexity.
+- **Network quality** → Poor connections can affect VAD performance.
+
+Remember: VAD tuning is a series of trade-offs. The system is designed to be intelligent and adaptive. Trust the defaults unless you have a compelling, well-tested reason to change them.

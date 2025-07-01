@@ -2,7 +2,7 @@ export const ToolsPossibilities = ({}) => (
   <div>
     Tools in Ultravox (also known as function calling) are a powerful way to extend your agents' capabilities by connecting them to external services and systems. At their core, tools are simply functions that agents can invoke to perform specific actions or retrieve information.
     <br /><br />
-    Ultravox includes <a href="/essentials/tools#built-in-tools">built-in tools</a> and you can <a href="/essentials/tools#creating-your-first-custom-tool">create custom tools</a>.
+    Ultravox includes <a href="/tools/built-in-tools">built-in tools</a> and you can <a href="/tools/http-vs-client-tools">create custom tools</a>.
     <br /><br />
     Here are some of the things you can do with tools:
 
@@ -27,6 +27,6 @@ export const ToolsPossibilities = ({}) => (
     </Card>
   </CardGroup>
   <br />
-  Any functionality you can encapsulate in a function can be exposed to your agents as a tool. Addtionally, Ultravox automatically calls the underlying function so you don't have to sweat gluing things together.
+  Any functionality you can encapsulate in a function can be exposed to your agents as a tool. Addtionally, unlike other LLM APIs where you have to handle tool calls yourself, Ultravox actually executes your tools during live conversations, enabling real-time interactions with external systems, databases, and APIs.
   </div>
 );

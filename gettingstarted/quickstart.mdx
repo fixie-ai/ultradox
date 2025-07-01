@@ -1,0 +1,106 @@
+---
+title: 'Quickstart'
+description: 'Get started with Ultravox in minutes - make your first AI voice call.'
+icon: 'bolt'
+---
+
+Get your first AI voice agent up and running in just a few minutes. This quickstart will walk you through making an automated phone call using Ultravox and Twilio.
+
+<Note>
+<b>Don't use Twilio?</b>
+
+Ultravox Realtime enables you connect your voice AI agents via [telephony providers](/telephony/overview), [Websockets](/apps/websockets), [SIP trunks](/telephony/sip), or in [web/native apps](/apps/overview).
+</Note>
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+<Steps>
+  <Step title="Ultravox account">[Sign up here](https://app.ultravox.ai) if you haven't already</Step>
+  <Step title="API key">Create one in the [Ultravox console](https://app.ultravox.ai/settings/)</Step>
+  <Step title="Twilio account">with Account SID, Auth Token, and a phone number</Step>
+  <Step title="Node.js 20">or higher installed</Step>
+</Steps>
+
+## Make Your First Outbound Call
+
+Here's the core concept in 3 steps:
+
+### 1. Create an Ultravox Call
+```javascript
+const response = await fetch('https://api.ultravox.ai/api/calls', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'YOUR_ULTRAVOX_API_KEY'
+  },
+  body: JSON.stringify({
+    systemPrompt: "You are Steve, a friendly AI assistant calling to check in.",
+    medium: { "twilio": {} },
+    firstSpeakerSettings: { user: {} }
+  })
+});
+
+const { joinUrl } = await response.json();
+```
+
+### 2. Make the Phone Call
+```javascript
+const call = await twilioClient.calls.create({
+  twiml: `<Response><Connect><Stream url="${joinUrl}"/></Connect></Response>`,
+  to: '+1234567890',
+  from: 'YOUR_TWILIO_NUMBER'
+});
+```
+
+### 3. Your AI Agent Talks!
+When the recipient answers, your AI agent starts the conversation.
+
+---
+
+**Want the complete working example?** Check out our [detailed outbound call example](./examples/outbound-phone-call) with full setup instructions, error handling, and more.
+
+## How It Works
+
+This quickstart example:
+
+1. **Creates an Ultravox call** configured for outbound phone calls
+2. **Uses Twilio** to initiate the phone call to your target number
+3. **Connects the call** to your AI agent using Ultravox's streaming API
+4. **Starts the conversation** when the recipient answers
+
+The AI agent follows the system prompt you provide and can have natural voice conversations with the person who answers.
+
+## More Examples
+
+Ready to explore more? Our examples repository includes complete implementations for:
+
+- **[Incoming Phone Calls](./examples/inbound-phone-call)** - Handle inbound calls with AI agents
+- **[Outbound Phone Calls](./examples/outbound-phone-call)** - Handle outbound calls with AI agents
+
+[Explore All Examples →](https://github.com/ultravox-ai/ultravox-examples)
+
+## What's Next?
+
+### For Phone Integration:
+- Learn about [Telephony Providers](/telephony/supported-providers) (Twilio, Telnyx, Plivo)
+- Check out the [Inbound Calls Example](/gettingstarted/examples/inbound-phone-call)
+- Implement [Call Transfers](/telephony/call-transfers) to human agents
+
+### For Web Integration:
+- Try our [WebRTC SDK](/apps/sdks) for browser-based voice chat
+- Build custom voice interfaces for your applications
+
+### Advanced Features:
+- Create [Custom Voices](/voices/cloning) that match your brand
+- Add [Custom Tools](/tools/custom/overview) to give your agents special capabilities
+- Set up [Webhooks](/webhooks/overview) for real-time call notifications
+
+## Need Help?
+
+- **Discord**: Join our [community](https://discord.gg/ultravox) for real-time support
+- **Documentation**: Browse our complete [API reference](/api-reference)
+- **Examples**: More working code in our [GitHub repository](https://github.com/ultravox-ai/ultravox-examples)
+
+Start building powerful voice AI applications with Ultravox today!

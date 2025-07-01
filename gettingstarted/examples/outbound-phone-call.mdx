@@ -1,0 +1,95 @@
+---
+title: 'Outbound Phone Calls'
+description: 'Connect outbound Twilio calls to an Ultravox agent in 5 minutes or less.'
+icon: 'phone-arrow-up-right'
+---
+
+<Note>
+This is the full example of the [Outbound Call Quickstart](/gettingstarted/quickstart/telephony-outbound).
+</Note>
+
+This guide will help you set up and make your first automated call using Ultravox and Twilio.
+
+## Prerequisites
+
+- Node.js 20 or higher
+- A Twilio account with:
+  - Account SID
+  - Auth Token
+  - Phone Number
+- An Ultravox API key
+
+## Set-up and Installation
+
+<Steps>
+  <Step title="Get the Source Code">
+    Copy all the code locally from the [`twilio-outbound-quickstart-js`](https://github.com/fixie-ai/ultravox-examples/tree/main/telephony/twilio-outbound-quickstart-js) example.
+  </Step>
+  <Step title="Install the Required Dependencies">
+    ```bash
+    pnpm install
+    ```
+    or
+
+    ```bash
+    npm install
+    ```
+  </Step>
+</Steps>
+
+## Making Your First Outbound Call
+
+The AI assistant will introduce itself as Steve and have a conversation with the recipient. To make a call you need to update the variables for keys and phone numbers. You may also update the system prompt.
+
+### Update Configuration
+- `TWILIO_ACCOUNT_SID`: Your Twilio Account SID from the Twilio Console
+- `TWILIO_AUTH_TOKEN`: Your Twilio Auth Token
+- `TWILIO_PHONE_NUMBER`: The Twilio phone number to make calls from
+- `DESTINATION_PHONE_NUMBER`: The recipient's phone number
+- `ULTRAVOX_API_KEY`: Your Ultravox API key
+- `SYSTEM_PROMPT`: Instructions for the AI agent's behavior
+
+
+```js Configuring Variables
+
+// Twilio configuration
+const TWILIO_ACCOUNT_SID = 'your_twilio_account_sid_here';
+const TWILIO_AUTH_TOKEN = 'your_twilio_auth_token_here';
+const TWILIO_PHONE_NUMBER = 'your_twilio_phone_number_here';
+const DESTINATION_PHONE_NUMBER = 'the_destination_phone_number_here';
+
+// Ultravox configuration
+const ULTRAVOX_API_KEY = 'your_ultravox_api_key_here';
+const SYSTEM_PROMPT = 'Your name is Steve and you are calling a person on the phone. Ask them their name and see how they are doing.';
+```
+
+### User Speaks First
+
+By default, Ultravox Realtime defaults to having the agent speak first. This is exactly what you want for an inbound call you want the agent to answer. However, this is not what is wanted for outbound calls where someone can be expected to answer the call with something like "Hello".
+
+When creating the call in Ultravox, you need to address this by setting the first speaker to user:
+
+```js User speaks first
+const ULTRAVOX_CALL_CONFIG = {
+    systemPrompt: SYSTEM_PROMPT,
+    firstSpeakerSettings: { user: {} },     // For outgoing calls, the user will answer the call (i.e. speak first)
+    medium: { twilio: {} }                  // Use twilio medium
+};
+```
+
+### Start the Call
+
+Once you've configured and saved everything, start the call:
+
+```bash
+pnpm start
+```
+
+or
+```bash
+npm start
+```
+
+## Next Steps
+1. Check out the [Inbound Phone Call](/gettingstarted/examples/inbound-phone-call) example.
+1. Ultravox Realtime provides telephony integrations for Telnyx, Twilio, Plivo, and Exotel. Learn more [here](/telephony/overview).

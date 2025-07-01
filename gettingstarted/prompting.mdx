@@ -1,12 +1,12 @@
 ---
-title: 'Prompting Quickstart'
+title: 'Prompting Guide'
 description: 'A guide to prompting for great voice AI experiences'
 icon: 'person-chalkboard'
 ---
 
 ## Introduction
 
-As we say in our guide, it's all about prompting. Prompting is how we get Voice AI agents to do what we want, but all models work a little bit differently. Under the hood, the Realtime platform runs a version of the Ultravox model built on Llama 3.3 70B, so we recommend looking at the [Llama Prompting Guides](https://www.llama.com/docs/how-to-guides/prompting/) as a good starting point.
+As we say in the [How Ultravox Works](/gettingstarted/how-ultravox-works#key-principles) guide, it's all about prompting. Prompting is how we get Voice AI agents to do what we want, but all models work a little bit differently. Under the hood, the Realtime platform runs a version of the Ultravox model built on Llama 3.3 70B, so we recommend looking at the [Llama Prompting Guides](https://www.llama.com/docs/how-to-guides/prompting/) as a good starting point.
 
 Below, we try to lay out the core patterns that we see working well at scale, but you'll probably need to customize these approaches based on your particular use case.
 
@@ -42,7 +42,7 @@ or otherwise engage in action-based roleplay (e.g., "(pauses), "*laughs").
 This section includes patterns and example prompts for dealing with common challenges.
 
 ### Tools
-Tools are how your model interacts with the outside world, but you have to help the model understand when and how those [tools](/essentials/tools) should be used. Here's a good pattern for prompting the model to use a tool:
+Tools are how your model interacts with the outside world, but you have to help the model understand when and how those [tools](/tools/overview) should be used. Here's a good pattern for prompting the model to use a tool:
 
 <Steps>
   <Step title="Use Good Tool Definitions">
@@ -62,14 +62,19 @@ Tools are how your model interacts with the outside world, but you have to help 
 Text to speech engines can sometimes have trouble with numbers, but we can help them by asking the LLM to output numbers in a more voice-friendly format. A pattern that we see that works well is to ask the LLM to separate numbers into individual digits, separated by a hyphen.
 
 ```text Example: Speaking Numbers
-Output account numbers, codes, or phone numbers as individual digits, separated by hyphens (e.g. 1234 → '1-2-3-4'). For decimals, say 'point' and then each digit (e.g., 3.14 → 'three point one four')."
+Output account numbers, codes, or phone numbers as individual digits, 
+separated by hyphens (e.g. 1234 → '1-2-3-4'). For decimals, 
+say 'point' and then each digit (e.g., 3.14 → 'three point one four')."
 ```
 
 ### Dates & Times
 Similar to numbers, dates and times can be tricky for speech generation, so it can be helpful to provide clearer guidance on how to produce the correct date/time format for effective speech generation.
 
 ```text Example: Reading Out Dates
-Output dates as individual components (e.g. 12/25/2022 → "December twenty-fifth twenty twenty-two"). For times, "10:00 AM" should be outputted as "10 AM". Read years naturally (e.g., 2024 → 'twenty twenty-four').
+Output dates as individual components (e.g. 12/25/2022 → "December 
+twenty-fifth twenty twenty-two"). For times, "10:00 AM" should be 
+outputted as "10 AM". Read years naturally (e.g., 2024 → 'twenty 
+twenty-four').
 ```
 
 ### Jailbreaks
@@ -110,3 +115,8 @@ Example: User asks for help changing their password
   * user: "uh huh."
 - Repeat in this manner until you complete the entire process.
 ```
+
+## Related Resources
+
+- Learn how [Agents](/agents/overview) work and how to build them
+- Check out the guide on [Guiding Agents](/agents/guiding-agents) to learn techniques for steering agents toward good experiences

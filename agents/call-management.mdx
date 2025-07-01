@@ -1,0 +1,195 @@
+---
+title: 'Call Management'
+description: 'Retrieve call information, from active conversation monitoring to historical data analysis and cleanup.'
+icon: 'gears'
+---
+
+## Monitoring Active Calls
+
+Track ongoing conversations across your application:
+
+```js
+// List all calls with filtering
+const getActiveCalls = async () => {
+  const response = await fetch('https://api.ultravox.ai/api/calls?pageSize=50', {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  const data = await response.json();
+  
+  // Filter for active calls (those that are joined but not ended)
+  const activeCalls = data.results.filter(call => 
+    call.joined && !call.ended
+  );
+  
+  return activeCalls;
+};
+
+// Get calls with specific metadata
+const getCallsBySource = async (source) => {
+  const params = new URLSearchParams({
+    'metadata.source': source,
+    pageSize: 100
+  });
+  
+  const response = await fetch(`https://api.ultravox.ai/api/calls?${params}`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return await response.json();
+};
+```
+
+## Advanced Filtering
+
+Use query parameters to find specific calls:
+
+```js
+// Filter by date range and duration
+const getRecentLongCalls = async () => {
+  const params = new URLSearchParams({
+    fromDate: '2024-01-01',
+    toDate: '2024-01-31',
+    durationMin: '300s',  // 5 minutes or longer
+    sort: '-created'      // Newest first
+  });
+  
+  const response = await fetch(`https://api.ultravox.ai/api/calls?${params}`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return await response.json();
+};
+
+// Search calls by content
+const searchCalls = async (searchTerm) => {
+  const params = new URLSearchParams({
+    search: searchTerm,
+    pageSize: 20
+  });
+  
+  const response = await fetch(`https://api.ultravox.ai/api/calls?${params}`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return await response.json();
+};
+```
+
+## Retrieving Call Details
+
+Get comprehensive information about specific calls:
+
+```js
+// Get call details
+const getCallDetails = async (callId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/calls/${callId}`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  const call = await response.json();
+  
+  console.log('Call Status:', call.ended ? 'Completed' : 'Active');
+  console.log('Duration:', call.ended ? 
+    calculateDuration(call.joined, call.ended) : 'Ongoing');
+  console.log('End Reason:', call.endReason);
+  
+  return call;
+};
+
+// Get conversation messages
+const getCallMessages = async (callId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/calls/${callId}/messages`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return await response.json();
+};
+
+// Get call events and logs
+const getCallEvents = async (callId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/calls/${callId}/events`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return await response.json();
+};
+```
+
+## Working with Call Stages
+
+For calls using [Call Stages](/agents/call-stages), use stage-specific endpoints:
+
+```js
+// Get all stages for a call
+const getCallStages = async (callId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/calls/${callId}/stages`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return await response.json();
+};
+
+// Get messages for a specific stage
+const getStageMessages = async (callId, stageId) => {
+  const response = await fetch(
+    `https://api.ultravox.ai/api/calls/${callId}/stages/${stageId}/messages`,
+    { headers: { 'X-API-Key': 'your-api-key' } }
+  );
+  
+  return await response.json();
+};
+```
+
+## Call Recordings
+
+Retrieve audio recordings when recording is enabled:
+
+```js
+// Get call recording
+const getCallRecording = async (callId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/calls/${callId}/recording`, {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  if (response.ok) {
+    const audioBlob = await response.blob();
+    // Handle audio data (save to file, play, etc.)
+    return audioBlob;
+  } else {
+    console.log('Recording not available');
+    return null;
+  }
+};
+```
+
+## Call Deletion
+
+Remove calls and all associated messages, recordings, and stages:
+
+```js
+// Delete a specific call
+const deleteCall = async (callId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/calls/${callId}`, {
+    method: 'DELETE',
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return response.ok;
+};
+```
+
+### List Deleted Calls
+
+When calls are deleted, we retain basic metadata for record keeping:
+
+```js
+// View deleted calls (tombstone records)
+const getDeletedCalls = async () => {
+  const response = await fetch('https://api.ultravox.ai/api/deleted_calls', {
+    headers: { 'X-API-Key': 'your-api-key' }
+  });
+  
+  return await response.json();
+};
+```

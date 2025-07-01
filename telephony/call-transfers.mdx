@@ -1,0 +1,95 @@
+---
+title: 'Call Transfers'
+description: 'Transfer calls between AI agents and human operators.'
+icon: 'phone-arrow-right'
+---
+
+Call transfers allow your AI agents to seamlessly hand off conversations to human operators when needed. This is essential for scenarios where the AI agent cannot resolve a customer's issue, needs to escalate to a specialist, or when the caller specifically requests to speak with a human.
+
+## Understanding Call Transfers
+
+Call transfers work by providing your AI agent with a custom tool that enables it to transfer active calls to human operators. The agent uses this tool based on instructions in your system prompt and the tool's description, determining when and how to initiate transfers.
+
+<Note>
+  <b>Agent-Initiated Transfers</b>
+  
+  The AI agent decides when to transfer calls based on your instructions. You control this behavior through your system prompt and tool configuration.
+</Note>
+
+### Transfer Types
+
+There are two main types of call transfers you can implement:
+
+**Blind Transfer** → The call is immediately transferred to the human operator without any preparation or context sharing. Also known as a cold transfer or unattended transfer.
+
+**Attended Transfer** → A summary message is provided to the human operator before the caller is connected, giving the operator context about the conversation and reason for transfer. Also known as a warm transfer or whisper transfer. Ensure your agent provides helpful context to the human operator, including the customer's issue and any relevant details from the conversation.
+
+
+## Implementation Overview
+<Warning>
+  <b>Call Transfers with SIP</b>
+  <br />
+  The native `sip` call medium does not currently support call transfers. Voximplant and jambonz each provide APIs to accomplish transfers when you are using SIP for calls.
+</Warning>
+
+To implement call transfers:
+
+<Steps>
+  <Step title="Create a Transfer Tool">
+    Build a custom tool that your AI agent can call to initiate transfers. This tool should handle the telephony provider's transfer APIs.
+  </Step>
+  <Step title="Configure Agent Instructions">
+    Update your system prompt to instruct the agent when and how to use the transfer tool. Include guidelines for all transfer scenarios and when transfers should occur (e.g., "Transfer when you cannot answer billing questions" or "Transfer if the customer asks for a manager").
+    
+    Instruct your agent to politely explain the transfer to the customer before initiating it (e.g., "I'm going to connect you with a specialist who can better help with your billing question").
+  </Step>
+  <Step title="Handle Transfer Logic">
+    Implement the backend logic to manage the actual call transfer using your telephony provider's APIs.
+  </Step>
+</Steps>
+
+```js Example Call Transfer Tool Definition
+{
+  "toolName": "transferCall",
+  "description": "Transfer the current call to a human agent when you cannot resolve the customer's issue or when they specifically request to speak with a human.",
+  "parameters": {
+    "destinationNumber": {
+      "type": "string",
+      "description": "The phone number to transfer the call to"
+    },
+    "transferReason": {
+      "type": "string", 
+      "description": "Brief explanation of why the call is being transferred"
+    }
+  }
+}
+```
+
+## Provider-Specific Implementation
+
+### Twilio
+
+Twilio supports both blind and attended transfers through different APIs. Blind transfers use the simple `<Dial>` verb to immediately connect the caller to a new destination, while attended transfers utilize Twilio's Conference API to create a three-way call before the agent disconnects.
+
+**Blind Transfer**: Uses Twilio's `calls.update()` method with TwiML containing a `<Dial>` verb to immediately redirect the call.
+
+**Attended Transfer**: Creates a conference call, places the original caller on hold, calls the human agent with a whisper message, and allows the agent to join the conference after hearing the context.
+
+The attended transfer process involves:
+1. Putting the caller on hold with music
+2. Creating a conference call 
+3. Calling the human agent with the transfer reason
+4. Requiring the agent to press a key to join
+5. Connecting all parties to the conference
+6. Allowing the AI agent to disconnect
+
+<Tip>
+  <b>Complete Example Available</b>
+  
+  We have a full working example of Twilio call transfers (including both blind and attended transfers) available in the [`ultravox-examples`](https://github.com/fixie-ai/ultravox-examples/tree/main/telephony/twilio-call-transfer-ts) repo.
+</Tip>
+
+
+## Conclusion
+
+Call transfers are essential for creating robust AI-powered voice applications that can seamlessly escalate to human operators when needed. By implementing both blind and attended transfer capabilities, you can ensure customers receive the appropriate level of service while maintaining a smooth experience throughout the conversation.

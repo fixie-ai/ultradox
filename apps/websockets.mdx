@@ -1,0 +1,69 @@
+---
+title: 'WebSocket Integration'
+description: 'Integrate with your server via direct WebSocket connections.'
+icon: 'plug'
+---
+
+<Warning>
+<b>Server-to-Server Only</b>
+<br />
+WebSocket connections are designed for server-to-server communication. For browser or mobile applications, use our client SDKs with WebRTC for optimal performance. WebSocket connections over TCP can experience audio blocking and ordering constraints that make them unsuitable for direct client use.
+</Warning>
+
+### Creating a WebSocket Call
+
+Creating a WebSocket-based call with Ultravox requires setting `medium` to `serverWebSocket` and passing in parameters for sample rates and buffer size.
+
+- **inputSampleRate** (required): Sample rate for input (user) audio (e.g., 48000).
+- **outputSampleRate** (optional): Sample rate for output (agent) audio (defaults to inputSampleRate).
+- **clientBufferSizeMs** (optional): Size of the client-side audio buffer in milliseconds. Smaller buffers allow for faster interruptions but may cause audio underflow if network latency fluctuates too greatly. For the best of both worlds, set this to some large value (e.g. 30000) and implement support for [PlaybackClearBuffer](/apps/datamessages#playbackclearbuffer) messages. (Defaults to 60).
+
+```js Example: Creating an Ultravox Call for WebSockets
+    const response = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+            'X-API-Key': 'your_api_key',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            systemPrompt: "You are a helpful assistant...",
+            model: "fixie-ai/ultravox",
+            voice: "Mark",
+            medium: {
+                serverWebSocket: {
+                    inputSampleRate: 48000,
+                    outputSampleRate: 48000,
+                }
+            }
+        })
+    });
+
+    const { joinUrl } = await response.json();
+```
+
+```python Example: Joining an Ultravox Call via Websockets
+import websockets
+
+socket = await websockets.connect(join_url)
+audio_send_task = asyncio.create_task(_send_audio(socket))
+async for message in socket:
+    if isinstance(message, bytes):
+        # Handle agent audio data
+    else:
+        # Handle data message. See "Data Messages"
+
+...
+
+async def _send_audio(socket: websockets.WebSocketClientProtocol):
+    async for chunk in some_audio_source:
+        # chunk should be a bytes object containing s16le PCM audio from the user
+        self._socket.send(chunk)
+```
+
+See [Data Messages](/apps/datamessages) for more information on all available messages.
+
+<Note>
+<b>Data Messages</b>
+<br />
+WebSocket connections use the same message format as WebRTC data channels. See our [Data Messages](/apps/datamessages) documentation for detailed message specifications.
+</Note>

@@ -1,0 +1,63 @@
+---
+title: 'Handling IVR Flows'
+description: 'Build interactive voice response systems with keypad input and DTMF tones.'
+icon: 'grid'
+---
+
+Ultravox provides comprehensive support for DTMF (Dual-Tone Multi-Frequency) tones, enabling both [sending](#sending-dtmf-tones) and [receiving](#receiving-dtmf-tones) tones during phone calls. This enables AI agents to interact with traditional phone systems and allows you to build voice applications that can respond to keypad inputs.
+
+<Note>
+<b>DTMF and WebRTC</b>
+<br />
+Due to the audio codec used in WebRTC connections, DTMF tones are inaudible when using WebRTC. The `playDtmfSounds` tool is intended for use with [telephony integrations](/telephony/overview).
+</Note>
+
+## Receiving DTMF Tones
+Ultravox automatically converts incoming DTMF tones to text, making it easy to build interactive voice applications that respond to keypad input. When a caller presses keys on their phone keypad, the tones are converted to text that your AI agent can understand and respond to.
+
+For example, if a caller presses "5" on their keypad, your agent will receive this as text and can respond accordingly:
+
+```js
+// Example system prompt for an agent that handles DTMF input
+{
+  "systemPrompt": `You are an automated phone system.
+    When a caller joins, say: "Welcome! Press 1 for sales, 2 for support, or 3 for billing."
+    If they press 1, transfer them to sales using the transfer tool.
+    If they press 2, transfer them to support.
+    If they press 3, transfer them to billing.
+    If they press any other key, ask them to try again with a valid option."`
+}
+```
+
+## Sending DTMF Tones
+The [built-in](/tools/built-in-tools#playdtmfsounds) `playDtmfSounds` tool allows your AI agent to send DTMF tones, which is useful for navigating Interactive Voice Response (IVR) systems or other phone trees. To enable the tool, add it to the `selectedTools` array when creating a call or call stage:
+
+```js
+// Example request body for creating a call with DTMF capability
+{
+  "systemPrompt": "You are a helpful assistant. When prompted to dial an extension, use the 'playDtmfSounds' tool to send the appropriate tones.",
+  "selectedTools": [
+    { "toolName": "playDtmfSounds" }
+  ]
+}
+```
+
+The `playDtmfSounds` tool accepts a string parameter named `digits` and works with the following tones: 0-9, *, #, A-D.
+
+For example:
+
+```js
+// Example of using the playDtmfSounds tool to dial an extension
+{
+  "digits": "123#"  // Will play tones for 1, 2, 3, and # in sequence
+}
+```
+
+Note: the `playDtmfSounds` tool uses an [automatic parameter](/tools/custom/parameters#automatic-parameters) that sends the proper sample rate of the source audio and should be treated as an implementation detail.
+
+## Common Use Cases
+- Building interactive phone trees or IVR systems
+- Creating agents that can navigate existing phone systems
+- Enabling quick responses through keypad input
+- Collecting numeric input (e.g., account numbers, PIN codes)
+- Building hybrid voice/keypad interfaces

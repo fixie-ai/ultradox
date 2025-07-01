@@ -1,0 +1,92 @@
+---
+title: 'Inbound Phone Calls'
+description: 'Connect inbound phone calls to an AI agent in 6 minutes.'
+icon: 'phone-arrow-down-left'
+---
+
+<Note>
+This is the full example of the [Inbound Call Quickstart](/gettingstarted/quickstart/telephony-inbound).
+</Note>
+
+This guide walks you through connecting inbound phone calls using Twilio to an Ultravox agent.
+
+## Prerequisites
+
+- Node.js 20 or higher
+- A Twilio account with:
+  - Account SID
+  - Auth Token
+  - Phone Number
+- An Ultravox API key
+- For incoming calls: A publicly accessible URL for your webhook (e.g., using ngrok)
+
+## Set-up and Installation
+
+<Steps>
+  <Step title="Get the Source Code">
+    Copy all the code locally from the [`twilio-inbound-quickstart-js`](https://github.com/fixie-ai/ultravox-examples/tree/main/telephony/twilio-inbound-quickstart-js) example.
+  </Step>
+  <Step title="Install the Required Dependencies">
+    ```bash
+    pnpm install
+    ```
+    or
+
+    ```bash
+    npm install
+    ```
+  </Step>
+</Steps>
+
+### Configure Twilio Webhook
+<Steps>
+  <Step title="Make Your Server Publicly Accessible">
+    Use ngrok or a similar service to create a public URL for your local server:
+    ```bash
+    ngrok http 3000
+    ```
+  </Step>
+  <Step title="Set Up Webhook">
+    1. Go to your Twilio Console
+    2. Navigate to your phone number's configuration
+    3. Under "Voice & Fax", set the webhook URL for incoming calls to:
+       `https://your-ngrok-url/incoming`
+  </Step>
+</Steps>
+
+
+### Update Configuration
+
+The AI assistant will introduce itself as Steve and have a conversation with the recipient. You need to update the variable for the Ultravox API key. You may also (optionally) update the system prompt.
+
+- `ULTRAVOX_API_KEY`: Your Ultravox API key
+- `SYSTEM_PROMPT`: Instructions for the AI agent's behavior
+
+```js Configuring Variables
+// Ultravox configuration
+const ULTRAVOX_API_KEY = 'your_ultravox_api_key_here';
+const SYSTEM_PROMPT = 'Your name is Steve. You are receiving a phone call. Ask them their name and see how they are doing.';
+```
+
+### Start the Server
+
+Run the server:
+
+```bash
+pnpm start
+```
+or
+```bash
+npm start
+```
+
+Now, when someone calls your Twilio number, they'll be connected to your AI assistant.
+
+## Next Steps
+1. Check out the [Outbound Phone Call](/gettingstarted/examples/outbound-phone-call) example.
+1. Ultravox Realtime provides telephony integrations for Telnyx, Twilio, Plivo, and Exotel. Learn more [here](/telephony/overview).
+
+### Additional Resources
+* [Twilio Documentation](https://www.twilio.com/docs)
+* [Express.js Documentation](https://expressjs.com/)
+* [ngrok Documentation](https://expressjs.com/)

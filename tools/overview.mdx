@@ -1,0 +1,55 @@
+---
+title: 'Overview: Tools'
+description: 'Give your agents additional capabilities while maintaining a natural conversation flow.'
+icon: 'compass'
+---
+
+import { ToolsPossibilities } from '/snippets/toolspossibilities.mdx'
+
+<ToolsPossibilities />
+
+## Types of Tools
+
+### Built-in Tools
+Ultravox provides several ready-to-use tools for common functionality:
+- **queryCorpus**: Retrieve information from knowledge bases.
+- **playDtmfSounds**: Play dial tones for telephony applications.
+- **leaveVoicemail**: Leaves voicemail message and ends the call.
+- **hangUp**: End calls programmatically.
+
+[Learn more about Built-in Tools →](/tools/built-in-tools)
+
+### Custom Tools
+Create your own tools to integrate with any external system or API. Custom tools can:
+- Send emails or notifications
+- Look up customer information
+- Process payments
+- Update databases
+- Integrate with third-party services
+
+[Learn more about Custom Tools →](/tools/custom/overview)
+
+## Tool Implementation Types
+
+**HTTP Tools**: Most common type - your tool runs on your server and Ultravox calls it via HTTP.
+
+**Client Tools**: Run directly in the client application using our SDKs.
+
+[Compare HTTP vs Client Tools →](/tools/custom/http-vs-client-tools)
+
+## Tool Persistence
+
+**Durable Tools**: Created once via API or the web app, reused across calls and agents. Best for production.
+
+**Temporary Tools**: Defined per-call, great for testing and rapid iteration.
+
+[Learn about Durable vs Temporary Tools →](/tools/custom/durable-vs-temporary-tools)
+
+## Getting Started with Tools
+Ready to build your first tool? [Check out the Tools Quickstart →](/gettingstarted/quickstart/tools)
+
+## Keep Building
+
+- Learn about [Built-in Tools](./built-in-tools) you can use.
+- Dig into [HTTP vs. Client Tools](./custom/http-vs-client-tools) to understand the differences.
+- Read about [Durable vs. Temp Tools](./custom/durable-vs-temporary-tools).

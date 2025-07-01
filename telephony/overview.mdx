@@ -1,0 +1,79 @@
+---
+title: 'Overview: Telephony'
+description: 'Connect Ultravox to traditional phone networks for AI-powered voice calls.'
+icon: 'compass'
+---
+
+Ultravox Realtime is a "BYOT" (bring your own telephony) platform and integrates with major telephony providers to enable AI-powered voice applications that work with regular phone numbers. Your AI agents can make outbound calls and answer inbound calls through traditional phone networks.
+
+## Connection Methods
+
+Ultravox supports multiple ways to connect to phone networks:
+
+<Columns cols={3}>
+  <Card title="Telephony Providers" href="./supported-providers">
+    Native support for Twilio, Telnyx, Plivo, and Exotel.
+  </Card>
+  <Card title="Voice Platforms" href="./supported-providers">
+    Integrations with Voximplant and jambonz.
+  </Card>
+  <Card title="SIP" href="./sip">
+    Connect your existing phone system through our SIP integration.
+  </Card>
+</Columns>
+
+Learn more: [Supported Providers →](./supported-providers)
+
+Learn more: [SIP Guide →](./sip)
+
+## Key Capabilities
+Create AI agents that can handle both directions of phone communication:
+- [Outbound Calls](/gettingstarted/examples/outbound-phone-call) - AI agents initiate calls to users.
+- [Incoming Calls](/gettingstarted/examples/inbound-phone-call) - AI agents answer calls from users.
+
+You can also enable your agents to handle more advanced tasks:
+- [Call Transfers](./call-transfers) - Route calls between agents and humans.
+- [IVR Flows](./ivr-flows) - Interactive voice response with keypad input using Ultravox's native support for DTMF.
+
+
+## Connecting Ultravox to a Phone Call
+<Warning>
+<b>"Calls" is Overloaded</b>
+<br />
+It can be a bit confusing because Ultravox Realtime uses the concept of a "call" to mean a voice session between an AI agent and another party. For phone calls, you will accept inbound or make outbound calls via your chosen telephony provider and then connect those calls to an Ultravox call.
+</Warning>
+
+Creating an Ultravox call that you can connect with a phone call requires specific parameters in the [Create Call](/api-reference/calls/calls-post) command:
+
+<ParamField body="medium" type="object" default="{'webRtc': {}}">
+  Tells Ultravox which protocol to use. For phone calls, must be set to one of:
+  
+  `{"telnyx": {}}`, `{"twilio": {}}`, or `{"plivo": {}}`.
+  
+  Defaults to `{"webRtc": {}}`.
+</ParamField>
+
+<ParamField body="firstSpeakerSettings" type="object" default="agent: {}">
+  Tells Ultravox who should speak first.
+  
+  For outbound calls, typically set to `user: {}`.
+  
+  The default is `agent: {}`.
+</ParamField>
+
+```js Example: Outbound Call via Twilio {4-7}
+{
+  "systemPrompt": "You are a helpful assistant...",
+  ...
+  "medium": {
+    "twilio": {} // or "telnyx": {} or "plivo": {} or "exotel": {}
+  },
+  "firstSpeakerSettings": { "user": {} }
+}
+```
+
+## Learn More
+
+- Discover how to get started with [Supported Providers](./supported-providers).
+- Learn how to integrate with your existing phone system in the [SIP Guide](./sip).
+- Set your agent up to receive [Inbound Calls](/gettingstarted/examples/inbound-phone-call) or make [Outbound Calls](/gettingstarted/examples/outbound-phone-call).

@@ -1,0 +1,51 @@
+---
+title: 'Overview: Webhooks'
+description: 'Learn how webhooks work with Ultravox and get started with real-time notifications.'
+icon: 'compass'
+---
+
+Webhooks provide a powerful way to receive real-time notifications about events in your Ultravox Realtime account. Instead of repeatedly polling our API to check for updates, webhooks push event data directly to your application as soon as something happens.
+
+When you configure a webhook in Ultravox, we'll send an HTTP POST request to your specified URL whenever a subscribed event occurs. This allows your application to react immediately to important events like call starts, call ends, etc. Your server needs to respond with a 2xx to confirm receipt. If delivery fails, we will [retry delivery](./errors-and-retries).
+
+## Getting Started
+
+To start using webhooks with Ultravox:
+
+1. **Set up an endpoint**: Create a URL on a server that can receive POST requests.
+2. **Create a webhook**: Use the Ultravox API to register the URL that will receive webhook events and select events you want to receive.
+3. **Handle events**: Process incoming webhook data in your application.
+4. **Secure your webhook**: Implement signature verification for security (recommended).
+
+## Webhook Payload Structure
+
+All webhooks follow a consistent structure and return the event and details about the call.
+
+```json
+{
+  "event": {event_name},
+  "call": {call_object}
+}
+```
+
+See [Event Payload Reference](./available-webhooks#event-payload-reference).
+
+
+## Best Practices
+
+**Respond Quickly**: Return a 2xx status code (we recommend 204) as soon as you receive the webhook. Process the data asynchronously if needed.
+
+**Handle Duplicates**: In rare cases, you might receive the same webhook twice. Make your processing idempotent.
+
+**Implement Security**: Always verify webhook signatures to ensure requests are from Ultravox Realtime.
+
+**Monitor Failures**: Keep track of failed webhook deliveries and have a backup plan to retrieve missed data via our API.
+
+**Use HTTPS**: Always use HTTPS endpoints for webhooks to protect sensitive data in transit.
+
+## Keep Building
+
+- Learn about all [Available Webhooks](./available-webhooks) you can subscribe to.
+- Learn about webhook [errors and our retry strategy](./errors-and-retries).
+- Implement [Webhook Security](./securing-webhooks) to protect your endpoints.
+- Check out our [API reference](/api-reference/webhooks/webhooks-list) for webhook management endpoints.

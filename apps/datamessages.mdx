@@ -1,0 +1,107 @@
+---
+title: "Protocol & Data Messages"
+description: Protocol documentation for messages exchanged between client and server during Ultravox calls.
+icon: network-wired
+tag: "NEW"
+---
+
+Data messages are used to communicate non-audio information between your client and an Ultravox server during calls.
+These messages work across WebRTC data channels (used by our [SDKs](/apps/sdks) and [WebSocket](/apps/websockets) connections.
+Messages can also be received by adding a [data connection](/api-reference/calls/calls-post#body-data-connection) to your call, which is especially useful for telephony.
+
+All messages are JSON objects with camelCase keys containing:
+- A required `type` field identifying the message type
+- Additional fields specific to each message type
+
+## Messages at a Glance
+This table provides key messages at a glance. Details on each message type appear below. Sender indicates client or server message. Client messages are sent from the client to the server. Server messages are sent from the server to the client.
+| Message | Sender | Description |
+| --------------------------------------------- | ------ | ------------------------------------------------------ |
+| [Ping](#ping)                                 | Client | Measures round-trip data latency.                      |
+| [Pong](#pong)                                 | Server | Server reply to a ping message.                        |
+| [State](#state)                               | Server | Indicates the server's current state.                  |
+| [Transcript](#transcript)                     | Server | Contains text for an utterance made during the call.   |
+| [InputTextMessage](#inputtextmessage)         | Client | Used to send a user message to the agent via text.     |
+| [SetOutputMedium](#setoutputmedium)           | Client | Sets server's output medium to text or voice.          |
+| [ClientToolInvocation](#clienttoolinvocation) | Server | Asks the client to invoke a client tool.               |
+| [ClientToolResult](#clienttoolresult)         | Client | Contains the result of a client tool invocation.       |
+| [Debug](#debug)                               | Server | Useful for application debugging. Excluded by default. |
+| [CallStarted](#callstarted)                   | Server | Notifies that a call has started.                      |
+| [PlaybackClearBuffer](#playbackclearbuffer)   | Server | Used to clear buffered output audio. WebSocket only.   |
+
+
+## Ping
+A message sent by the client to measure round-trip data message latency.
+- `type: "ping"`
+- `timestamp`: Float. Client timestamp for latency measurement.
+
+## Pong
+A message sent by the server in response to a PingMessage. The timestamp is copied from the PingMessage.
+- `type: "pong"`
+- `timestamp`: Float. Matching ping timestamp.
+
+## State
+A message sent by the server to indicate its current state.
+- `type: "state"`
+- `state`: Current session state
+
+## Transcript
+A message containing text transcripts of user and agent utterances.
+- `type: "transcript"`
+- `role`: "user" or "agent". Who emitted the utterance.
+- `medium`: "text" or "voice". The medium through which the utterance was emitted.
+- `text`: String. Full transcript text (exclusive with delta). The full text of the transcript so far. Either this or delta will be set.
+- `delta`: String. Incremental transcript update (exclusive with text). The additional transcript text added since the last agent transcript message.
+- `final`: Boolean. Whether more updates are expected for this utterance.
+- `ordinal`: int. Used for ordering transcripts within a call.
+
+## InputTextMessage
+A user message sent via text.
+- `type: "input_text_message"`
+- `text`: String. The content of the user message.
+- `deferResponse`: Boolean. Optional. If set to true, allows adding text to the conversation history without inducing an immediate response from or interrupting the model. Useful for injecting additional inline instructions into the conversation.
+
+**Examples: Using deferResponse**
+|||
+| :------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Emphasizing the Task            | Provide instructions to the agent to emphasize what it should do. (e.g. `"Translate, don't respond"`)<br /><br />Have your application send information about what the user is doing or looking at. (e.g. `"User is viewing property #123-456"`)           |
+| Moving the Conversation Forward | After N turns, tell the agent to try to close the sale or end the call.                                            |
+| Running Background Processes    | Allow the conversation to proceed while a background process runs, then have the agent become aware of the result. |
+
+## SetOutputMedium
+Message sent by the client to set the server's output medium.
+- `type: "set_output_medium"`
+- `medium`: Either "voice" or "text".
+
+## ClientToolInvocation
+Sent by the server to ask the client to invoke a client-implemented tool with the given parameters. The client is expected to send back a ClientToolResultMessage with a matching invocationId.
+- `type: "client_tool_invocation"`
+- `toolName`: String. Tool to invoke
+- `invocationId`: String. Unique invocation ID
+- `parameters`: Dict[String, Any]. Tool parameters
+
+## ClientToolResult
+Contains the result of a client-implemented tool invocation.
+- `type: "client_tool_result"`
+- `agentReaction`: String. Optional. Must be one of the following: "speaks" (the default), "listens", or "speaks-once". See [Agent Responses to Tools](/tools/custom/agent-responses) for more.
+- `invocationId`: String. Matches corresponding invocation.
+- `result`: String. Tool execution result. Often a JSON string. May be omitted for errors.
+- `responseType`: String. Defaults to "tool-response".
+- `errorType`: Optional string. Should be omitted when result is set. Otherwise, should be "undefined" if the a tool with the given name does not exist or "implementation-error" otherwise.
+- `errorMessage`: String. Error details if failed (optional).
+
+## Debug
+A message sent by the server to communicate debug information.
+- `type: "debug"`
+- `message`: String. Debug information
+- Disabled by default
+
+## CallStarted
+A message sent by the server to notify that a call has started.
+- `type: "call_started"`
+- `callId`: String. The ID of the call that has started.
+
+## PlaybackClearBuffer
+Message sent by our server to clear buffered output audio. Integrators should drop as much unplayed output audio as possible in order for interruptions to function properly.
+- `type: "playback_clear_buffer"`
+- WebSocket connections only

@@ -1,0 +1,142 @@
+---
+title: 'Tool Authentication'
+description: 'How to use auth tokens with tools.'
+icon: 'lock'
+---
+
+Ultravox has rich support for tool auth. When creating a tool, you must specify what is required for successful authentication to the backend service.
+
+## Methods for Passing Keys
+Three methods for passing API keys are supported and are used when creating the tool.
+
+### Method 1: Query Parameter
+The API key will be passed via the query string. The name of the parameter must be provided when the tool is created.
+
+```js Creating a tool with a query param auth key
+// Create a tool that uses a query parameter called 'apiKey'
+{
+  "name": "stock_price"
+  "definition": {
+    "description": "Get the current stock price for a given symbol",
+    "requirements": {
+      "httpSecurityOptions": {
+        "options": [
+          "requirements": {
+            "myServiceApiKey": {
+              "queryApiKey": {
+                "name": "apiKey"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+```js Providing the auth key during call creation
+// Pass the API key during call creation
+// Requests will include ?apiKey=your_token_here in the url
+{
+  "systemPrompt": ...
+  "selectedTools": [
+    {
+      "toolName": "stock_price"
+      "authTokens": {
+        "myServiceApiKey": "your_token_here"
+      }
+    }
+  ]
+}
+```
+
+### Method 2: Header
+The API key will be passed via a custom header. The name of the header must be provided when the tool is created.
+
+```js Creating a tool with a custom header auth key
+// Create a tool that uses an HTTP Header named 'X-My-Header'
+{
+  "name": "stock_price"
+  "definition": {
+    "description": "Get the current stock price for a given symbol",
+    "requirements": {
+      "httpSecurityOptions": {
+        "options": [
+          "requirements": {
+            "myServiceApiKey": {
+              "headerApiKey": {
+                "name": "X-My-Header"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+```js Providing the auth key during call creation
+// Pass the API key during call creation
+// Requests will include the header "X-My-Header: your_token_here"
+{
+  "systemPrompt": ...
+  "selectedTools": [
+    {
+      "toolName": "stock_price"
+      "authTokens": {
+        "myServiceApiKey": "your_token_here"
+      }
+    }
+  ]
+}
+```
+
+### Method 3: HTTP Authentication
+The API key will be passed via the HTTP Authentication header. The name of the scheme (e.g. `Bearer`) must be provided when the tool is created.
+
+```js Creating a tool that passes auth key via HTTP Authentication header
+// Create a tool that uses HTTP Authentication scheme 'Bearer'.
+{
+  "name": "stock_price"
+  "definition": {
+    "description": "Get the current stock price for a given symbol",
+    "requirements": {
+      "httpSecurityOptions": {
+        "options": [
+          "requirements": {
+            "myServiceApiKey": {
+              "httpAuth": {
+                "scheme": "Bearer"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+```js Providing the auth key during call creation
+// Pass the API key during call creation
+// Requests will include the header "Authorization: Bearer your_token_here"
+{
+  "systemPrompt": ...
+  "selectedTools": [
+    {
+      "toolName": "stock_price"
+      "authTokens": {
+        "myServiceApiKey": "your_token_here"
+      }
+    }
+  ]
+}
+```
+
+## Multiple Options Supported
+Your tool can specify multiple options for fulfilling auth requirements (for example if your server allows either query or header auth).
+Each option may also contain multiple requirements, for example if your server requires both a user_id and an auth_token for that user.
+
+## Passing Keys at Call Creation Time
+When defining an agent or creating a call, you pass in the key(s) in the `authTokens` property of `selectedTools`.
+If the tokens you provide satisfy multiple options, the first non-empty option whose requirements are all satisfied
+will be used. An unauthenticated option, if present, will only be used if no other option can be satisfied.

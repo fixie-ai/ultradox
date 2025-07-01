@@ -1,0 +1,315 @@
+---
+title: 'Parameter Overrides'
+description: 'Advanced parameter customization for fine-tuned tool behavior across different agents and calls.'
+icon: 'sliders'
+---
+
+Parameter overrides allow you to customize tool behavior without modifying the base tool definition. This powerful feature enables tool reuse across different contexts while maintaining specific configurations for each use case.
+
+## Parameter Override Capabilities
+
+### Override Dynamic Parameters
+
+Convert dynamic parameters to static values for specific use cases:
+
+```js
+// Base tool: Generic stock lookup
+{
+  "name": "stockPrice",
+  "definition": {
+    "modelToolName": "stockPrice",
+    "description": "Get current stock price for any symbol",
+    "dynamicParameters": [
+      {
+        "name": "symbol",
+        "location": "PARAMETER_LOCATION_QUERY",
+        "schema": {
+          "type": "string",
+          "description": "Stock symbol (e.g., AAPL, GOOGL)"
+        },
+        "required": true
+      }
+    ]
+  }
+}
+
+// Override for NVIDIA-specific agent
+{
+  "selectedTools": [
+    {
+      "toolName": "stockPrice",
+      "nameOverride": "nvidiaStockPrice",
+      "descriptionOverride": "Get current NVIDIA stock price",
+      "parameterOverrides": {
+        "symbol": "NVDA" // AI won't see this parameter anymore
+      }
+    }
+  ]
+}
+```
+
+### Override Static Parameters
+
+Modify static parameter values for different environments or configurations:
+
+```js
+// Base tool with production API endpoint
+{
+  "name": "processPayment",
+  "staticParameters": [
+    {
+      "name": "environment",
+      "location": "PARAMETER_LOCATION_BODY",
+      "value": "production"
+    },
+    {
+      "name": "timeout",
+      "location": "PARAMETER_LOCATION_BODY", 
+      "value": 30
+    }
+  ]
+}
+
+// Override for testing environment
+{
+  "selectedTools": [
+    {
+      "toolName": "processPayment",
+      "parameterOverrides": {
+        "environment": "sandbox", // Override static value
+        "timeout": 10 // Shorter timeout for testing
+      }
+    }
+  ]
+}
+```
+
+## Required Parameter Overrides
+
+Some tools require certain parameters to be overridden at call creation time. This is common with built-in tools that need context-specific configuration.
+
+### Example: queryCorpus Tool
+
+The built-in `queryCorpus` tool requires the corpus ID to be specified:
+
+```js
+{
+  "selectedTools": [
+    {
+      "toolName": "queryCorpus",
+      "parameterOverrides": {
+        "corpusId": "your-corpus-id-here" // Required override
+      }
+    }
+  ]
+}
+```
+
+### Creating Tools with Required Overrides
+
+```js
+{
+  "name": "customerQuery",
+  "definition": {
+    "modelToolName": "customerQuery",
+    "description": "Query customer database",
+    "requirements": {
+      "requiredParameterOverrides": ["databaseId"] // Must be overridden
+    },
+    "dynamicParameters": [
+      {
+        "name": "databaseId",
+        "location": "PARAMETER_LOCATION_QUERY",
+        "schema": { "type": "string" },
+        "required": true
+      },
+      {
+        "name": "searchTerm", 
+        "location": "PARAMETER_LOCATION_BODY",
+        "schema": { "type": "string" },
+        "required": true
+      }
+    ]
+  }
+}
+
+// Usage requires databaseId override
+{
+  "selectedTools": [
+    {
+      "toolName": "customerQuery",
+      "parameterOverrides": {
+        "databaseId": "prod-customers" // Required
+        // searchTerm remains dynamic for the AI to set
+      }
+    }
+  ]
+}
+```
+
+## Advanced Override Patterns
+
+### Multi-Environment Tool Configuration
+
+```js
+// Base tool definition
+{
+  "name": "emailService",
+  "definition": {
+    "modelToolName": "sendEmail",
+    "staticParameters": [
+      {
+        "name": "apiEndpoint",
+        "location": "PARAMETER_LOCATION_HEADER",
+        "value": "https://api.production-email.com"
+      },
+      {
+        "name": "fromAddress",
+        "location": "PARAMETER_LOCATION_BODY",
+        "value": "noreply@production.com"
+      }
+    ]
+  }
+}
+
+// Development environment override
+const devEmailConfig = {
+  "toolName": "emailService",
+  "parameterOverrides": {
+    "apiEndpoint": "https://api.dev-email.com",
+    "fromAddress": "noreply@dev.com"
+  }
+};
+
+// Staging environment override  
+const stagingEmailConfig = {
+  "toolName": "emailService",
+  "parameterOverrides": {
+    "apiEndpoint": "https://api.staging-email.com",
+    "fromAddress": "noreply@staging.com"
+  }
+};
+```
+
+### Feature-Specific Tool Variants
+
+```js
+// Base search tool
+{
+  "name": "searchProducts",
+  "dynamicParameters": [
+    {
+      "name": "query",
+      "location": "PARAMETER_LOCATION_BODY",
+      "schema": { "type": "string" },
+      "required": true
+    },
+    {
+      "name": "category",
+      "location": "PARAMETER_LOCATION_BODY", 
+      "schema": { "type": "string" },
+      "required": false
+    },
+    {
+      "name": "maxResults",
+      "location": "PARAMETER_LOCATION_BODY",
+      "schema": { "type": "integer" },
+      "required": false
+    }
+  ]
+}
+
+// Electronics-focused agent
+{
+  "selectedTools": [
+    {
+      "toolName": "searchProducts",
+      "nameOverride": "searchElectronics",
+      "descriptionOverride": "Search for electronic products",
+      "parameterOverrides": {
+        "category": "electronics", // Lock to electronics
+        "maxResults": 5 // Limit results
+      }
+    }
+  ]
+}
+
+// Quick search variant
+{
+  "selectedTools": [
+    {
+      "toolName": "searchProducts", 
+      "nameOverride": "quickSearch",
+      "descriptionOverride": "Quick product search (top 3 results)",
+      "parameterOverrides": {
+        "maxResults": 3 // Quick results only
+      }
+    }
+  ]
+}
+```
+
+### Authentication Context Overrides
+
+```js
+// Multi-tenant tool
+{
+  "name": "databaseQuery",
+  "staticParameters": [
+    {
+      "name": "tenantId",
+      "location": "PARAMETER_LOCATION_HEADER",
+      "value": "default"
+    }
+  ],
+  "automaticParameters": [
+    {
+      "name": "authToken",
+      "location": "PARAMETER_LOCATION_HEADER", 
+      "knownValue": "KNOWN_PARAM_CALL_STATE"
+    }
+  ]
+}
+
+// Tenant-specific override
+{
+  "selectedTools": [
+    {
+      "toolName": "databaseQuery",
+      "parameterOverrides": {
+        "tenantId": "customer-abc-123"
+      }
+    }
+  ]
+}
+```
+
+## Template Variables in Overrides
+
+When using agents, parameter overrides can include template variables:
+
+```js
+// Agent with template-based overrides
+{
+  "name": "Customer Service Agent",
+  "callTemplate": {
+    "selectedTools": [
+      {
+        "toolName": "customerLookup",
+        "parameterOverrides": {
+          "customerId": "{{customerId}}", // Template variable
+          "region": "{{customerRegion}}"
+        }
+      }
+    ]
+  }
+}
+
+// Call creation with template context
+{
+  "templateContext": {
+    "customerId": "cust-456789",
+    "customerRegion": "us-west"
+  }
+}
+```

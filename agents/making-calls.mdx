@@ -1,0 +1,175 @@
+---
+title: 'Making Calls'
+description: 'Start conversations using agents or direct call configuration.'
+icon: 'microphone'
+---
+
+## Creating Calls with Agents (Recommended)
+
+For all new projects, use agents to create calls. This approach provides consistency, reusability, and easier maintenance.
+
+### Basic Agent Call
+
+Start a call using an existing agent and pass in any template variables:
+
+```js Example: Create a New Agent Call
+const startAgentCall = async (agentId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/agents/${agentId}/calls`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'your-api-key'
+    },
+    body: JSON.stringify({
+      templateContext: {
+        customerName: "Jane Smith",
+        accountType: "Premium"
+      }
+    })
+  });
+  
+  return await response.json();
+};
+```
+
+### Template Context and Variables
+
+Provide dynamic data to your agent at call creation time:
+
+```js Example: Template Context Variables
+{
+  templateContext: {
+    customerName: "John Doe",
+    accountType: "enterprise",
+    lastInteraction: "2025-05-15",
+    accountBalance: "$1,250.00"
+  }
+}
+```
+
+### Overriding Agent Settings
+
+When starting a call with an agent, you can override specific settings from the agent's call template. Here are the parameters you can include in the request body:
+
+| Parameter              | Description                         | Type    | Example                      |
+|------------------------|-------------------------------------|---------|------------------------------|
+| `templateContext`      | Variables for template substitution | Object  | `{ customerName: "John" }`   |
+| `initialMessages`      | Conversation history to start from  | Array   | Previous chat context        |
+| `metadata`             | Key-value pairs for tracking        | Object  | `{ source: "website" }`      |
+| `medium`               | Communication protocol              | Object  | `{ twilio: {} }`.            |
+| `joinTimeout`          | Time limit for user to join         | String  | `"60s"`                      |
+| `maxDuration`          | Maximum call length                 | String  | `"1800s"`                    |
+| `recordingEnabled`.    | Whether to record audio             | Boolean | `true` / `false`             |
+| `initialOutputMedium`  | Start with voice or text            | String  | `"voice"` / `"text"`         |
+| `firstSpeakerSettings` | Initial conversation behavior       | Object  | `{ agent: { text: "..." } }` |
+| `experimentalSettings` | Experimental settings for the call  | Object  | Varies                       |
+
+Example of overriding agent settings when creating a call:
+
+```js Example: Overriding Agent Settings
+const response = await fetch(`https://api.ultravox.ai/api/agents/${agentId}/calls`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your-api-key'
+  },
+  body: JSON.stringify({
+    // Template context
+    templateContext: {
+      customerName: "VIP Customer",
+      accountType: "enterprise"
+    },
+    
+    // Override agent settings for this specific call
+    maxDuration: "900s", // 15 minutes instead of default
+    recordingEnabled: false  // Disable call recording
+  })
+});
+```
+
+## Direct Call Alternative
+
+For legacy integration, testing, or very simple use cases, you can create calls directly without agents:
+
+```js
+const startDirectCall = async () => {
+  const response = await fetch('https://api.ultravox.ai/api/calls', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'your-api-key'
+    },
+    body: JSON.stringify({
+      systemPrompt: "You are a helpful customer service agent. Be friendly and professional.",
+      voice: "Jessica",
+      temperature: 0.3,
+      model: "fixie-ai/ultravox",
+      joinTimeout: "30s",
+      maxDuration: "3600s",
+      recordingEnabled: false,
+      
+      firstSpeakerSettings: {
+        agent: {
+          text: "Hello! How can I help you today?"
+        }
+      },
+      
+      selectedTools: [
+        { toolName: 'knowledgebaseLookup' },
+        { toolName: 'transferToHuman' }
+      ],
+      
+      metadata: {
+        purpose: "customer_support",
+        test: "true"
+      }
+    })
+  });
+  
+  return await response.json();
+};
+```
+
+### Prior Call Inheritance
+
+You can reuse the same properties (including message history) from a prior call by passing in a query param:
+
+```js Example: Using Prior Call ID
+const continueFromPriorCall = async (priorCallId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/calls?priorCallId=${priorCallId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'your-api-key'
+    },
+    body: JSON.stringify({
+      // Only override what you need to change
+      systemPrompt: "Continue the previous conversation with updated context...",
+      metadata: {
+        continuation: "true",
+        originalCall: priorCallId
+      }
+    })
+  });
+  
+  return await response.json();
+};
+```
+
+<Note>
+  When using `priorCallId`, the new call inherits all properties from the prior call unless explicitly overridden. The prior call's message history becomes the new call's `initialMessages`.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Scaling & Concurrency" icon="wave-pulse" href="/gettingstarted/concurrency">
+    Learn how call concurrency works and how to manage it.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/webhooks/overview">
+    Learn how to integrate and monitor real-time events.
+  </Card>
+  <Card title="Test & Debug Your Calls" icon="bug-slash" href="/agents/testing-and-debugging">
+    Learn to monitor, troubleshoot, and optimize your voice conversations
+  </Card>
+</CardGroup>

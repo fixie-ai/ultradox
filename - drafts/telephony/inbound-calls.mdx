@@ -1,0 +1,362 @@
+---
+title: 'Incoming Calls TODO'
+description: 'Configure AI agents to answer incoming phone calls.'
+icon: 'phone-arrow-down-left'
+---
+
+[Under Construction]
+
+Set up AI agents to automatically answer incoming phone calls from your users. This is perfect for customer service, support lines, or any application where users initiate contact.
+
+## How Incoming Calls Work
+
+1. **User dials your phone number** purchased from your telephony provider
+2. **Provider routes the call** to your configured webhook/application
+3. **Your server creates an Ultravox call** and gets a `joinUrl`
+4. **Provider connects the call** to Ultravox using the `joinUrl`
+5. **AI agent answers** and begins the conversation
+
+## Basic Configuration
+
+Create an Ultravox call configured for incoming calls:
+
+```javascript
+// Create call for incoming phone calls
+const response = await fetch('https://api.ultravox.ai/api/calls', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    systemPrompt: "You are a helpful customer service agent. Greet the caller and ask how you can help them today.",
+    medium: {
+      "twilio": {}  // or "telnyx": {}, "plivo": {}
+    },
+    firstSpeakerSettings: { agent: {} }  // Agent speaks first
+  })
+});
+
+const { joinUrl } = await response.json();
+```
+
+**Key Parameters:**
+- `medium`: Set to your telephony provider (`twilio`, `telnyx`, or `plivo`)
+- `firstSpeakerSettings`: Set to `{ agent: {} }` so your AI greets the caller
+- `joinUrl`: Use this to connect the phone call to Ultravox
+
+## Provider-Specific Implementation
+
+<Tabs>
+  <Tab title="Twilio">
+    ### Webhook Configuration
+    Configure your Twilio phone number to send incoming calls to your webhook:
+
+    ```javascript
+    // Your webhook endpoint that Twilio calls
+    app.post('/twilio/incoming', async (req, res) => {
+      // Create Ultravox call
+      const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.ULTRAVOX_API_KEY
+        },
+        body: JSON.stringify({
+          systemPrompt: "You are a customer service agent...",
+          medium: { "twilio": {} },
+          firstSpeakerSettings: { agent: {} }
+        })
+      });
+      
+      const { joinUrl } = await callResponse.json();
+      
+      // Return TwiML to connect call to Ultravox
+      const twiml = `
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Connect>
+            <Stream url="${joinUrl}"/>
+          </Connect>
+        </Response>
+      `;
+      
+      res.type('text/xml').send(twiml);
+    });
+    ```
+
+    ### Phone Number Configuration
+    In your Twilio console, set your phone number's webhook URL to point to your endpoint (e.g., `https://yourapp.com/twilio/incoming`).
+  </Tab>
+
+  <Tab title="Telnyx">
+    ### Webhook Configuration
+    Configure your Telnyx phone number to send incoming calls to your webhook:
+
+    ```javascript
+    // Your webhook endpoint that Telnyx calls
+    app.post('/telnyx/incoming', async (req, res) => {
+      // Create Ultravox call
+      const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.ULTRAVOX_API_KEY
+        },
+        body: JSON.stringify({
+          systemPrompt: "You are a customer service agent...",
+          medium: { "telnyx": {} },
+          firstSpeakerSettings: { agent: {} }
+        })
+      });
+      
+      const { joinUrl } = await callResponse.json();
+      
+      // Return TeXML to connect call to Ultravox
+      const texml = `
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Connect>
+            <Stream url="${joinUrl}" 
+                    bidirectionalMode="rtp" 
+                    codec="PCMU" 
+                    bidirectionalCodec="PCMU"/>
+          </Connect>
+        </Response>
+      `;
+      
+      res.type('text/xml').send(texml);
+    });
+    ```
+
+    **Important:** Set both `codec` and `bidirectionalCodec` to the same value. Use `PCMU` for most regions, `PCMA` for Europe.
+  </Tab>
+
+  <Tab title="Plivo">
+    ### Webhook Configuration
+    Configure your Plivo phone number to send incoming calls to your webhook:
+
+    ```javascript
+    // Your webhook endpoint that Plivo calls
+    app.post('/plivo/incoming', async (req, res) => {
+      // Create Ultravox call
+      const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.ULTRAVOX_API_KEY
+        },
+        body: JSON.stringify({
+          systemPrompt: "You are a customer service agent...",
+          medium: { "plivo": {} },
+          firstSpeakerSettings: { agent: {} }
+        })
+      });
+      
+      const { joinUrl } = await callResponse.json();
+      
+      // Return XML to connect call to Ultravox
+      const xml = `
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Stream keepCallAlive="true"
+                  contentType="audio/x-l16;rate=16000" 
+                  bidirectional="true">
+            ${joinUrl}
+          </Stream>
+        </Response>
+      `;
+      
+      res.type('text/xml').send(xml);
+    });
+    ```
+
+    **Recommended:** Use `audio/x-l16;rate=16000` for best audio quality.
+  </Tab>
+
+  <Tab title="jambonz">
+    ### Application Setup
+    jambonz handles the Ultravox call creation automatically through their LLM verb:
+
+    ```javascript
+    // Example jambonz application for incoming calls
+    session
+      .pause({length: 1.5})
+      .llm({
+        vendor: 'ultravox',
+        model: 'fixie-ai/ultravox',
+        auth: {
+          apiKey: process.env.ULTRAVOX_API_KEY
+        },
+        actionHook: '/final',
+        eventHook: '/event',
+        llmOptions: {
+          systemPrompt: 'You are a customer service agent. Greet the caller and ask how you can help.',
+          firstSpeakerSettings: { agent: {} },
+          initialMessages: [{
+            medium: 'MESSAGE_MEDIUM_VOICE',
+            role: 'MESSAGE_ROLE_USER'
+          }],
+          model: 'fixie-ai/ultravox',
+          voice: 'Tanya-English',
+          transcriptOptional: true,
+        }
+      })
+      .hangup()
+      .send();
+    ```
+
+    Configure your jambonz phone number to use this application in the jambonz portal.
+  </Tab>
+</Tabs>
+
+## Common Patterns
+
+### Personalized Greetings
+Access caller information to personalize the experience:
+
+```javascript
+// Extract caller information from webhook
+const { From, To } = req.body;  // Twilio format
+
+const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': process.env.ULTRAVOX_API_KEY
+  },
+  body: JSON.stringify({
+    systemPrompt: `You are a customer service agent. The caller is calling from ${From} to ${To}. Greet them warmly and ask how you can help.`,
+    medium: { "twilio": {} },
+    firstSpeakerSettings: { agent: {} }
+  })
+});
+```
+
+### Business Hours Check
+Route calls differently based on business hours:
+
+```javascript
+app.post('/incoming', async (req, res) => {
+  const now = new Date();
+  const isBusinessHours = isWithinBusinessHours(now);
+  
+  const systemPrompt = isBusinessHours 
+    ? "You are a customer service agent. Help the caller with their needs."
+    : "You are an after-hours assistant. Let the caller know our business hours and offer to take a message.";
+  
+  // Create call with appropriate prompt
+  const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': process.env.ULTRAVOX_API_KEY
+    },
+    body: JSON.stringify({
+      systemPrompt,
+      medium: { "twilio": {} },
+      firstSpeakerSettings: { agent: {} }
+    })
+  });
+  
+  // ... return appropriate TwiML/TeXML/XML
+});
+```
+
+### Call Routing by Number
+Route calls to different agents based on the number called:
+
+```javascript
+app.post('/incoming', async (req, res) => {
+  const { To } = req.body;
+  
+  let systemPrompt;
+  switch (To) {
+    case '+1234567890':
+      systemPrompt = "You are a sales agent...";
+      break;
+    case '+1234567891':
+      systemPrompt = "You are a support agent...";
+      break;
+    default:
+      systemPrompt = "You are a general customer service agent...";
+  }
+  
+  // Create call with department-specific prompt
+  // ... rest of implementation
+});
+```
+
+## Error Handling
+
+Always implement proper error handling for incoming calls:
+
+```javascript
+app.post('/incoming', async (req, res) => {
+  try {
+    const callResponse = await fetch('https://api.ultravox.ai/api/calls', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.ULTRAVOX_API_KEY
+      },
+      body: JSON.stringify({
+        systemPrompt: "You are a customer service agent...",
+        medium: { "twilio": {} },
+        firstSpeakerSettings: { agent: {} }
+      })
+    });
+    
+    if (!callResponse.ok) {
+      throw new Error(`Ultravox API error: ${callResponse.status}`);
+    }
+    
+    const { joinUrl } = await callResponse.json();
+    
+    // Return success TwiML
+    const twiml = `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Connect>
+          <Stream url="${joinUrl}"/>
+        </Connect>
+      </Response>
+    `;
+    
+    res.type('text/xml').send(twiml);
+    
+  } catch (error) {
+    console.error('Error handling incoming call:', error);
+    
+    // Return fallback TwiML
+    const errorTwiml = `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Say>We're sorry, but we're experiencing technical difficulties. Please try calling back later.</Say>
+        <Hangup/>
+      </Response>
+    `;
+    
+    res.type('text/xml').send(errorTwiml);
+  }
+});
+```
+
+## Testing Incoming Calls
+
+1. **Set up ngrok** for local development:
+   ```bash
+   ngrok http 3000
+   ```
+
+2. **Configure your provider** to use the ngrok URL as your webhook
+
+3. **Call your phone number** to test the integration
+
+4. **Monitor logs** to debug any issues with call flow
+
+## Next Steps
+
+- Learn about [Outbound Calls](/telephony/outbound-calls) to initiate calls from your application
+- Implement [Call Transfers](/telephony/call-transfers) to route calls to human agents
+- Build [IVR Flows](/telephony/ivr-flows) with keypad input handling

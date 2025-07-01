@@ -1,0 +1,23 @@
+---
+title: 'Error Handling & Retries'
+description: 'Understand how Ultravox automatically retries failed webhook deliveries with exponential backoff to ensure reliable event notifications.'
+icon: 'circle-exclamation'
+---
+
+## Retrying Failed Webhook Event Deliveries
+If your webhook endpoint is temporarily unavailable or returns an error status code (e.g. 4xx or 5xx), Ultravox will automatically retry delivery using an exponential backoff strategy.
+
+We'll make up to 10 retry attempts over several hours as follows:
+
+* First retry will occur approximately 30 seconds later.
+* Subsequent retries will double the retry interval. (e.g. second retry again after 1m, third retry after 2m, etc.)
+* Total of 10 retries.
+
+For permanent failures or extended downtime, you can always use our REST API to retrieve information about any calls/events you may have missed.
+
+
+## Keep Building
+
+- Learn about all [Available Webhooks](./available-webhooks) you can subscribe to
+- Implement [Webhook Security](./securing-webhooks) to protect your endpoints
+- Check out our [API reference](/api-reference/webhooks/webhooks-list) for webhook management endpoints

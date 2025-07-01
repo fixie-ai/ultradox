@@ -1,0 +1,18 @@
+---
+title: 'Agent Responses to Tools'
+description: 'Configure when and how your agent responds after tool calls - whether to speak immediately, listen for input, or speak conditionally.'
+icon: 'comment-dots'
+---
+
+## Post-Tool Call Behavior
+By default, the agent speaks again immediately after a tool call. This is typically the desired behavior for tools that gather information since the agent can immediately respond based on the information retrieved.
+
+However, this may make less sense for other tools. For example, if your agent is gathering information for the user and you have a tool that allows the agent to store what's been gathered so far, you may want the agent to speak either before or after the tool but not both.
+
+Ultravox Realtime allows you to define how the agent reacts after a tool call by setting the `agent reaction`. A default can be set on the tool itself or you can use either the `X-Ultravox-Agent-Reaction` header (for http tools) or the `agent_reaction` field on the tool result message (for client and data connection tools) similar to how you'd set a response type (see above).
+
+| Reaction    | Description                                                                                                                                                            |
+|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| speaks      | Agent will speak immediately after the tool call returns. This is the default behavior if agent reaction is not set. Should be used for tools that gather information. |
+| listens     | Agent listens for user input and doesn't speak.                                                                                                                        |
+| speaks-once | Agent speaks only if it didn't speak immediately before the tool call. Prevents agent repeating things before and after the tool call.                                 |

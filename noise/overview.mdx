@@ -1,0 +1,62 @@
+---
+title: 'Overview: Noise & VAD'
+description: 'Learn how Ultravox intelligently handles voice activity detection and background noise to create natural, responsive conversations.'
+icon: 'compass'
+---
+
+Voice Activity Detection (VAD) and noise handling are critical components that determine how natural and responsive your voice conversations feel. Ultravox provides an intelligent, multi-layered approach to managing audio input that works seamlessly out of the box.
+
+## Our Philosophy: Smart Defaults
+
+At its core, Ultravox handles VAD complexity for you. Our system uses multiple models working together to provide a great experience out of the box.
+
+We are very aggressive about triggering VAD by default because:
+
+1. **Latency Matters** → Users expect immediate responses in voice conversations.
+1. **Smart Models Compensate** → Neural VAD and noise cancellation handle edge cases (e.g. false positives, interruptions).
+1. **Context is Key** → The conversation state helps determine when users are truly done speaking.
+
+Additionally, Ultravox Realtime provides `vadSettings` that can be customized if and when needed. However, customizing VAD involves a series of tradeoffs.
+
+### Key Benefits
+
+**Low Latency** → Aggressive VAD settings combined with intelligent models minimize response delays.
+
+**Natural Conversations** → Context-aware models understand conversation flow and turn-taking.
+
+**Robust Audio Handling** → Built-in noise cancellation and background speaker management.
+
+**Minimal Configuration** → Works excellently with default settings for most use cases.
+
+## When to Customize
+
+The default VAD settings are carefully tuned and work well for the vast majority of applications. You may need to adjust VAD settings for extremely noisy environments, accessibility needs, or other specialized situations.
+
+If you are experiencing issues:
+
+1. **Start with troubleshooting** → Verify your audio setup and environment.
+2. **Test with default settings** → Ensure the issue isn't environmental or hardware-related.
+3. **Make incremental changes** → Adjust one parameter at a time.
+4. **Monitor the trade-offs** → Test thoroughly with real users and use cases.
+
+The system is designed to be intelligent and adaptive. Trust the defaults unless you have a specific, tested need to change them.
+
+<Warning>
+  <b>Proceed with Caution</b>
+  
+  Changing VAD parameters is a trade-off game. Every adjustment has consequences for latency, accuracy, or user experience. We recommend extensive testing when modifying default settings.
+</Warning>
+
+## What's in This Section
+
+<CardGroup cols={3}>
+  <Card title="Understanding VAD" href="/noise/understanding-vad" icon="sliders">
+    Learn how VAD works, what the parameters control, and how our multi-model approach functions.
+  </Card>
+  <Card title="Handling Background Noise" href="/noise/handling-background-noise" icon="volume-slash">
+    Strategies for managing environmental noise, audio interference, and input quality issues.
+  </Card>
+  <Card title="Handling Background Speakers" href="/noise/handling-background-speakers" icon="users">
+    Techniques for environments with multiple speakers, echo, and cross-talk situations.
+  </Card>
+</CardGroup>
