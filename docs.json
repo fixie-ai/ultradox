@@ -151,7 +151,9 @@
             "tag": "NEW",
             "pages": [
               "noise/overview",
-              "noise/understanding-vad"
+              "noise/understanding-vad",
+              "noise/handling-background-noise",
+              "noise/handling-background-speakers"
             ]
           }
         ]
