@@ -1,8 +1,46 @@
 ---
 title: 'Handling Background Speakers'
-description: 'Techniques for managing multi-speaker environments, cross-talk, and unwanted voice interactions.'
+description: 'Built-in filtering to focus on the primary speaker in multi-speaker environments.'
 icon: 'users'
-tag: "COMING SOON"
 ---
 
-[Under Construction]
+Ultravox Realtime provides built-in support for handling background speakers and multi-speaker environments. The system is designed to focus on the primary speaker while filtering out cross-talk and unwanted voice interactions.
+
+<Note>
+  <b>Automatic Filtering</b>
+  
+  Background speaker filtering is enabled by default for all Ultravox calls. This helps your AI agent focus on the intended speaker even in challenging multi-speaker scenarios.
+</Note>
+
+## Addressing a Complex Challenge
+
+Multi-speaker environments present unique difficulties for voice AI systems:
+
+- **Speaker phone scenarios** where multiple voices may be muffled or distant
+- **Cross-talk situations** with overlapping conversations
+- **Background conversations** that shouldn't trigger the AI agent
+
+## Advanced Speaker Detection
+
+Ultravox employs sophisticated techniques to handle these challenging scenarios:
+
+**Model Training** → The Ultravox model is specifically trained to distinguish between primary and background speakers, understanding conversational context and speaker intent.
+
+**Speaker Energy Detection** → Advanced algorithms analyze voice energy levels and patterns to identify the primary speaker and filter out background voices.
+
+**Real-time Processing** → All speaker detection and filtering happens in real-time without adding latency to the conversation.
+
+## Configuration Options
+
+While background speaker filtering is enabled by default, you can disable it if needed:
+
+TODO
+```json
+{
+  "experimentalSettings": {
+    "todo": false
+  }
+}
+```
+
+The result is cleaner voice interactions where your AI agent responds to the intended speaker, reducing confusion and improving conversation quality in complex acoustic environments.
