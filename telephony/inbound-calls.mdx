@@ -1,0 +1,43 @@
+---
+title: 'Inbound Calls'
+description: 'Configure AI agents to answer incoming phone calls.'
+icon: 'phone-arrow-down-left'
+---
+
+Ultravox can power AI agents that automatically answer incoming phone calls from your users. This is perfect for customer service, support lines, or any application where users initiate contact.
+
+## How Inbound Calls Work
+<Steps>
+  <Step title="User Dials You">
+    User dials your phone number purchased from your telephony provider.
+  </Step>
+  <Step title="Incoming Webhook">
+    Provider routes the call to your configured webhook/application.
+  </Step>
+  <Step title="Create Ultravox Call">
+    Your server creates an Ultravox call and gets a `joinUrl`.
+  </Step>
+  <Step title="Connect & Answer">
+    Connect the call to your provider using the `joinUrl`. The AI agent answers and begins the conversation.
+  </Step>
+</Steps>
+
+## Using Template Variables
+When you use [Agents](/agents/overview#why-start-with-agents%3F) for creating calls, you can define template variables that get passed in a call creation time. For incoming calls, this data might come from an IVR or your own application.
+
+```js Example: Template Context
+// System prompt expects template variables
+systemPrompt: "You are calling {{customerName}}..."
+
+// Set templateContext at call creation time
+templateContext: {
+  customerName: "VIP Customer",
+  accountType: "enterprise"
+}
+```
+
+For more see [Template Context →](/agents/making-calls#template-context-and-variables)
+
+## Next Steps
+- Check out the [Inbound Call Quickstart](/gettingstarted/quickstart/telephony-inbound)
+- Learn about [Call Transfers](/telephony/call-transfers) to escalate calls to human agents
