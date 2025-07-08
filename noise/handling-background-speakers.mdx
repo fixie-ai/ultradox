@@ -24,23 +24,10 @@ Multi-speaker environments present unique difficulties for voice AI systems:
 
 Ultravox employs sophisticated techniques to handle these challenging scenarios:
 
-**Model Training** → The Ultravox model is specifically trained to distinguish between primary and background speakers, understanding conversational context and speaker intent.
+**Model Training** → The Ultravox model distinguishes between speech and noise/unintelligible speech.
 
 **Speaker Energy Detection** → Advanced algorithms analyze voice energy levels and patterns to identify the primary speaker and filter out background voices.
 
 **Real-time Processing** → All speaker detection and filtering happens in real-time without adding latency to the conversation.
-
-## Configuration Options
-
-While background speaker filtering is enabled by default, you can disable it if needed:
-
-TODO
-```json
-{
-  "experimentalSettings": {
-    "todo": false
-  }
-}
-```
 
 The result is cleaner voice interactions where your AI agent responds to the intended speaker, reducing confusion and improving conversation quality in complex acoustic environments.
