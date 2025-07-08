@@ -1,0 +1,52 @@
+---
+title: 'Outbound Calls'
+description: 'Configure AI agents to make outbound phone calls to users.'
+icon: 'phone-arrow-up-right'
+---
+
+It's easy to have your Ultravox agent make outbound calls for appointment reminders, customer outreach, surveys, proactive customer service, or anything else you can dream up.
+
+## How Outbound Calls Work
+<Steps>
+  <Step title="Call Trigger">
+    Your application triggers an outbound call (user action, scheduled event, etc.).
+  </Step>
+  <Step title="Create Ultravox Call">
+    Create an Ultravox call with correct [firstSpeakerSetting](#firstspeakersettings).
+  </Step>
+  <Step title="Initiate Phone Call">
+    Initiate the phone call using your telephony provider's API and connect it to Ultravox using the `joinUrl`. User answers and the agent engages in the conversation.
+  </Step>
+</Steps>
+
+
+
+## `firstSpeakerSettings`
+By default, Ultravox calls assume the agent begins conversations. This is typically what you want for inbound calls (i.e. an agent answering incoming customer support calls). However, outbound calls require modifying this behavior since the user will typically answer the phone with something like "Hello".
+
+```js Settings for Outbound Call
+{
+  "firstSpeakerSettings": { "user": {} }
+}
+```
+
+## Using Template Variables
+When you use [Agents](/agents/overview#why-start-with-agents%3F) for creating calls, you can define template variables that get passed in a call creation time.
+
+```js Example: Template Context
+// System prompt expects template variables
+systemPrompt: "You are calling {{customerName}}..."
+
+// Set templateContext at call creation time
+templateContext: {
+  customerName: "VIP Customer",
+  accountType: "enterprise"
+}
+```
+
+For more see [Template Context →](/agents/making-calls#template-context-and-variables)
+
+## Next Steps
+- Check out the [Outbound Call Quickstart](/gettingstarted/quickstart/telephony-outbound)
+- Learn about [Call Transfers](/telephony/call-transfers) to escalate calls to human agents
+- Read [Managing Concurrency](/gettingstarted/concurrency) to learn how to keep the pipe full when making many calls

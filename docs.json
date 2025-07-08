@@ -79,7 +79,9 @@
             "tag": "NEW",
             "pages": [
               "telephony/overview", 
-              "telephony/supported-providers", 
+              "telephony/supported-providers",
+              "telephony/outbound-calls",
+              "telephony/inbound-calls",
               "telephony/call-transfers",
               "telephony/ivr-flows",
               "telephony/sip"
