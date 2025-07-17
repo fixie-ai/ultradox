@@ -45,7 +45,7 @@
                   "gettingstarted/examples",
                   "gettingstarted/examples/outbound-phone-call",
                   "gettingstarted/examples/inbound-phone-call",
-                  
+
                   {
                 "group": "Tutorials",
                 "icon": "chalkboard-user",
@@ -78,7 +78,7 @@
             "icon": "square-phone",
             "tag": "NEW",
             "pages": [
-              "telephony/overview", 
+              "telephony/overview",
               "telephony/supported-providers",
               "telephony/outbound-calls",
               "telephony/inbound-calls",
@@ -339,7 +339,7 @@
     "links": [
       {
         "label": "Community",
-        "href": "https://discord.gg/Qw6KHxv8YB"
+        "href": "https://discord.gg/62X253zeWB"
       }
     ],
     "primary": {
@@ -350,7 +350,7 @@
   },
   "footer": {
     "socials": {
-      "discord": "https://discord.gg/Qw6KHxv8YB",
+      "discord": "https://discord.gg/62X253zeWB",
       "github": "https://github.com/fixie-ai/ultravox",
       "x": "https://x.com/fixieai"
     }
