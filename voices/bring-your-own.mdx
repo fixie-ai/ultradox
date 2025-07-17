@@ -26,6 +26,24 @@ You can do that in the [Ultravox console](https://app.ultravox.ai/settings/) or 
   You can skip this step if you're using the "generic" ExternalVoice integration.
 </Note>
 
+## Debugging
+
+If you start a call with an external voice and don't hear anything from the agent, your external voice is
+probably misconfigured. You can figure out what's wrong using the [call event API](/api-reference/calls/calls-events-list).
+Events are also visible when viewing the call in the Ultravox console.  Here are some common issues and their resolutions:
+
+| Example error text                                       | Resolution                                                  |
+| -------------------------------------------------------- | ----------------------------------------------------------- |
+| `Requested output format pcm_44100 (PCM at 44100hz) is only allowed for Pro tier and above.` | Your ElevenLabs subscription limits your generation sample rate. Find the maximum sample rate allowed for your subscription on [their pricing page](https://elevenlabs.io/pricing) (you'll need to click "Show API details") and then set maxSampleRate on your voice to match. |
+| `A model with requested ID does not exist`               | Your model name is wrong. See [their model page](https://elevenlabs.io/docs/models#models-overview) for the correct ids. |
+| `A voice with voice_id 2bNrEsM0omyhLiEyOwqY does not exist.` | The voiceId you provided doesn't correspond to a voice in your ElevenLabs library. Make sure your ElevenLabs API key is what you expect and then add the voice to your library in Eleven. |
+| `The API key you used is missing the permission text_to_speech to execute this operation.` | Check your key and/or upgrade your account with ElevenLabs. |
+| `This request exceeds your quota of 10000. You have 14 credits remaining, while 46 credits are required for this request.` | Check your key and/or upgrade your account with ElevenLabs. |
+| `Error initializing streaming TTS connection` | The provider rejected our attempt to create a streaming connection. This occurs most commonly with ElevenLabs and usually means your API key is incorrect. |
+| `HTTP error: 500 Response:{"error": "Internal server error"} Request:{"text": "How can I help you?"} | This is the sort of error you'll get for generic external voices. You should be able to use the complete request and response to reproduce and debug the error with your provider. |
+
+If you can't figure out your issue from the call events or the common issues below, you can also try our [Discord](https://discord.gg/62X253zeWB).
+
 ## Providers
 
 When setting an [ExternalVoice](/api-reference/calls/calls-post#body-external-voice) on your agent or call,
