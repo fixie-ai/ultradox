@@ -116,7 +116,7 @@ To users this may feel like the call was disconnected or that there was an unnat
 }
 ```
 
-For tools that take even longer, consider responding immediately and later using an [input_text_message](/apps/datamessages#inputtextmessage) data message with `deferResponse` with the real tool result. This is easiest with a `dataConnection` implementation since data connections are also able to send input text messages (and the response is always deferred in that case). Keep in mind that the model will see whatever response you send back initially, so you'll want to make it clear to the model what's going on by initially responding with some text like "Tool started. The full response will be available soon."
+For tools that take even longer, consider responding immediately and later using a [user_text_message](/apps/datamessages#usertextmessage) with the real tool result. This is easiest with a `dataConnection` implementation since data connections are also able to send input text messages (and the response is always deferred in that case). Keep in mind that the model will see whatever response you send back initially, so you'll want to make it clear to the model what's going on by initially responding with some text like "Tool started. The full response will be available soon."
 
 **Custom Timeout Considerations**
 

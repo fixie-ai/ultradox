@@ -18,7 +18,7 @@ graph LR
     B <-->|PSTN| C[Phone \n Network]
     B <-->|SIP Trunk| D[VoIP \n Infrastructure]
     B <-->|WebRTC| E[SDK]
-    
+
     classDef cloud fill:#a881f7,stroke:#a881f7,shape:cloud;
     class B cloud
 
@@ -84,22 +84,22 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, async ({ call }) => {
   const AUTHORIZATIONS = {
     'X-API-Key': ULTRAVOX_API_KEY,
   };
-  
+
   const MODEL = 'fixie-ai/ultravox';
   const VOICE_NAME = 'Mark';
   const PATH_PARAMETERS = {};
 
-  // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+  // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
   const PATH_PARAMETERS_AGENT_CALL = {agent_id: "YOUR-AGENT-ID"};
 
   const QUERY_PARAMETERS = {};
   const BODY_CREATE_CALL = {
     systemPrompt: 'You are a helpful assistant',
-    model: MODEL,      
-    voice: VOICE_NAME, 
+    model: MODEL,
+    voice: VOICE_NAME,
   };
 
-  // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+  // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
   const BODY_CREATE_AGENT_CALL = {
   };
 
@@ -153,11 +153,11 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, async ({ call }) => {
       if (webSocketAPIClient) webSocketAPIClient.clearMediaBuffer();
     });
 
-    const inputTextMessageContent = {
-      type: 'input_text_message',
+    const userTextMessageContent = {
+      type: 'user_text_message',
       text: 'HI!',
     };
-    webSocketAPIClient.inputTextMessage(inputTextMessageContent);
+    webSocketAPIClient.inputTextMessage(userTextMessageContent);
   } catch (error) {
     Logger.write('===SOMETHING_WENT_WRONG===');
     Logger.write(error);
@@ -177,7 +177,7 @@ VoxEngine.addEventListener(AppEvents.Started, async () => {
   const customData = JSON.parse(VoxEngine.customData());
 
   const call = VoxEngine.callSIP(`sip:${customData["number"]}@sip.example.org`,customData["callerid"]);
-  
+
   const callBaseHandler = () => {
     if (webSocketAPIClient) webSocketAPIClient.close();
     VoxEngine.terminate();
@@ -192,27 +192,27 @@ VoxEngine.addEventListener(AppEvents.Started, async () => {
         Logger.write(JSON.stringify(event));
         VoxEngine.terminate();
       };
-    
+
     const ULTRAVOX_API_KEY = 'YOUR_ULTRAVOX_API_KEY';
       const AUTHORIZATIONS = {
         'X-API-Key': ULTRAVOX_API_KEY,
       };
-      
+
       const MODEL = 'fixie-ai/ultravox';
       const VOICE_NAME = 'Mark';
       const PATH_PARAMETERS = {};
 
-    // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+    // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
       const PATH_PARAMETERS_AGENT_CALL = {agent_id: "YOUR-AGENT-ID"};
 
     const QUERY_PARAMETERS = {};
       const BODY_CREATE_CALL = {
         systemPrompt: 'You are a helpful assistant',
-        model: MODEL,      
-        voice: VOICE_NAME, 
+        model: MODEL,
+        voice: VOICE_NAME,
       };
 
-    // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+    // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
       const BODY_CREATE_AGENT_CALL = {
       };
 
@@ -225,7 +225,7 @@ VoxEngine.addEventListener(AppEvents.Started, async () => {
         body: BODY_CREATE_CALL, // Change for agent call
         onWebSocketClose,
       };
-    
+
     try {
         webSocketAPIClient = await Ultravox.createWebSocketAPIClient(webSocketAPIClientParameters);
         VoxEngine.sendMediaBetween(call, webSocketAPIClient);
@@ -266,11 +266,11 @@ VoxEngine.addEventListener(AppEvents.Started, async () => {
           if (webSocketAPIClient) webSocketAPIClient.clearMediaBuffer();
         });
 
-    const inputTextMessageContent = {
-          type: 'input_text_message',
+    const userTextMessageContent = {
+          type: 'user_text_message',
           text: 'HI!',
         };
-        webSocketAPIClient.inputTextMessage(inputTextMessageContent);
+        webSocketAPIClient.inputTextMessage(userTextMessageContent);
       } catch (error) {
         Logger.write('===SOMETHING_WENT_WRONG===');
         Logger.write(error);
@@ -371,47 +371,47 @@ Voximplant can initiate outgoing calls to your PBX and join them to the voice ag
       let webSocketAPIClient = undefined;
       // Obtain parameters passed to call
       const customData = JSON.parse(VoxEngine.customData());
-      
+
       const call = VoxEngine.callSIP(`sip:${customData["number"]}@YOUR_PBX_ADDRESS`,customData["callerid"]);
-      
+
       const callBaseHandler = () => {
         if (webSocketAPIClient) webSocketAPIClient.close();
         VoxEngine.terminate();
       };
       call.addEventListener(CallEvents.Disconnected, callBaseHandler);
       call.addEventListener(CallEvents.Failed, callBaseHandler);
-      
+
       call.addEventListener(CallEvents.Connected, async () => {
-      
+
         const onWebSocketClose = (event) => {
             Logger.write('===ON_WEB_SOCKET_CLOSE==');
             Logger.write(JSON.stringify(event));
             VoxEngine.terminate();
           };
-        
+
         const ULTRAVOX_API_KEY = 'YOUR_ULTRAVOX_API_KEY';
           const AUTHORIZATIONS = {
             'X-API-Key': ULTRAVOX_API_KEY,
           };
-          
+
           const MODEL = 'fixie-ai/ultravox';
           const VOICE_NAME = 'Mark';
           const PATH_PARAMETERS = {};
-      
-        // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+
+        // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
           const PATH_PARAMETERS_AGENT_CALL = {agent_id: "YOUR-AGENT-ID"};
-      
+
         const QUERY_PARAMETERS = {};
           const BODY_CREATE_CALL = {
             systemPrompt: 'You are a helpful assistant',
-            model: MODEL,      
-            voice: VOICE_NAME, 
+            model: MODEL,
+            voice: VOICE_NAME,
           };
-      
-        // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL  
+
+        // Use this object when Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
           const BODY_CREATE_AGENT_CALL = {
           };
-      
+
         const webSocketAPIClientParameters = {
             // or Ultravox.HTTPEndpoint.CREATE_AGENT_CALL
             endpoint: Ultravox.HTTPEndpoint.CREATE_CALL, // Change for agent call
@@ -421,52 +421,52 @@ Voximplant can initiate outgoing calls to your PBX and join them to the voice ag
             body: BODY_CREATE_CALL, // Change for agent call
             onWebSocketClose,
           };
-        
+
         try {
             webSocketAPIClient = await Ultravox.createWebSocketAPIClient(webSocketAPIClientParameters);
             VoxEngine.sendMediaBetween(call, webSocketAPIClient);
-      
+
         webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Unknown, (event) => {
               Logger.write('===Ultravox.WebSocketAPIEvents.Unknown===');
               Logger.write(JSON.stringify(event));
             });
-      
+
         webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.HTTPResponse, (event) => {
               Logger.write('===Ultravox.WebSocketAPIEvents.HTTPResponse===');
               Logger.write(JSON.stringify(event));
             });
-      
+
         webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.State, (event) => {
               Logger.write('===Ultravox.WebSocketAPIEvents.State===');
               Logger.write(JSON.stringify(event));
             });
-      
+
         webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Transcript, (event) => {
               Logger.write('===Ultravox.WebSocketAPIEvents.Transcript===');
               Logger.write(JSON.stringify(event));
             });
-      
+
         webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.ClientToolInvocation, (event) => {
               Logger.write('===Ultravox.WebSocketAPIEvents.ClientToolInvocation===');
               Logger.write(JSON.stringify(event));
             });
-      
+
         webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.Debug, (event) => {
               Logger.write('===Ultravox.WebSocketAPIEvents.Debug===');
               Logger.write(JSON.stringify(event));
             });
-      
+
         webSocketAPIClient.addEventListener(Ultravox.WebSocketAPIEvents.PlaybackClearBuffer, (event) => {
               Logger.write('===Ultravox.WebSocketAPIEvents.PlaybackClearBuffer===');
               Logger.write(JSON.stringify(event));
               if (webSocketAPIClient) webSocketAPIClient.clearMediaBuffer();
             });
-      
-        const inputTextMessageContent = {
-              type: 'input_text_message',
+
+        const userTextMessageContent = {
+              type: 'user_text_message',
               text: 'HI!',
             };
-            webSocketAPIClient.inputTextMessage(inputTextMessageContent);
+            webSocketAPIClient.inputTextMessage(userTextMessageContent);
           } catch (error) {
             Logger.write('===SOMETHING_WENT_WRONG===');
             Logger.write(error);

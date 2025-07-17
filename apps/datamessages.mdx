@@ -21,7 +21,7 @@ This table provides key messages at a glance. Details on each message type appea
 | [Pong](#pong)                                 | Server | Server reply to a ping message.                        |
 | [State](#state)                               | Server | Indicates the server's current state.                  |
 | [Transcript](#transcript)                     | Server | Contains text for an utterance made during the call.   |
-| [InputTextMessage](#inputtextmessage)         | Client | Used to send a user message to the agent via text.     |
+| [UserTextMessage](#usertextmessage)           | Client | Used to send a user message to the agent via text.     |
 | [SetOutputMedium](#setoutputmedium)           | Client | Sets server's output medium to text or voice.          |
 | [ClientToolInvocation](#clienttoolinvocation) | Server | Asks the client to invoke a client tool.               |
 | [ClientToolResult](#clienttoolresult)         | Client | Contains the result of a client tool invocation.       |
@@ -55,11 +55,11 @@ A message containing text transcripts of user and agent utterances.
 - `final`: Boolean. Whether more updates are expected for this utterance.
 - `ordinal`: int. Used for ordering transcripts within a call.
 
-## InputTextMessage
+## UserTextMessage
 A user message sent via text.
-- `type: "input_text_message"`
+- `type: "user_text_message"`
 - `text`: String. The content of the user message.
-- `deferResponse`: Boolean. Optional. If set to true, allows adding text to the conversation history without inducing an immediate response from or interrupting the model. Useful for injecting additional inline instructions into the conversation.
+- `urgency`: "immediate" | "soon" | "later". Optional, defaults to "soon". Determines whether this message can interrupt the agent (only "immediate" will interrupt) and whether it should trigger a generation in the absence of other user input ("later" will wait until the next natural generation).
 
 **Examples: Using deferResponse**
 |||
