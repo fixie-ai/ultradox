@@ -251,6 +251,61 @@ You can use a generic ExternalVoice with your self-hosted Orpheus instance:
 ```
 
 
+### Inworld
+Inworld's TTS API returns json, so it requires extra `jsonAudioFieldPath` and `responseMimeType` fields in your generic ExternalVoice.
+
+```json
+"externalVoice": {
+  "generic": {
+    "url": "https://api.inworld.ai/tts/v1/voice:stream",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Basic YOUR_INWORLD_BASIC_API_KEY"
+    },
+    "body": {
+      "voiceId": "Hades",
+      "modelId": "inworld-tts-1",
+      "text": "{text}",
+      "audioConfig": {
+          "audioEncoding": "LINEAR16",
+          "speakingRate": 1.0,
+          "sampleRateHertz": 48000
+      }
+    },
+    "responseSampleRate": 48000,
+    "responseMimeType": "application/jsonl",
+    "jsonAudioFieldPath": "result.audioContent"
+  }
+}
+```
+
+### Sarvam
+Sarvam's TTS API returns json, so it requires an extra `jsonAudioFieldPath` field in your generic ExternalVoice.
+
+```json
+"externalVoice": {
+  "generic": {
+    "url": "https://api.sarvam.ai/text-to-speech",
+    "headers": {
+      "Content-Type": "application/json",
+      "api-subscription-key": "YOUR_SARVAM_API_KEY"
+    },
+    "body": {
+      "text": "{text}",
+      "targetLanguageCode": "en-IN",
+      "speaker": "anushka",
+      "model": "bulbul:v2",
+      "pace": 1,
+      "speechSampleRate": 24000,
+      "outputAudioCodec": "linear16"
+    },
+    "responseSampleRate": 24000,
+    "jsonAudioFieldPath": "audios"
+  }
+}
+```
+
+
 ## Debugging
 
 If you start a call with an external voice and don't hear anything from the agent, your external voice is
