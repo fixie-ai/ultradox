@@ -220,7 +220,7 @@ You can use a generic ExternalVoice with your self-hosted Orpheus instance:
 
 
 ### Inworld
-Inworld's TTS API returns json, so it requires extra `jsonAudioFieldPath` and `responseMimeType` fields in your generic ExternalVoice.
+Inworld's TTS API returns json, so it requires an extra `jsonAudioFieldPath` field. To use the streaming endpoint, you'll also need to override the `responseMimeType` field so we know to treat the response as [json lines](https://jsonlines.org/).
 
 ```json
 {
