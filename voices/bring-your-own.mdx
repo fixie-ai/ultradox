@@ -65,11 +65,9 @@ what was spoken in the event of an interruption.
 </Note>
 
 ```json
-"externalVoice": {
-  "elevenLabs": {
-    "voiceId": "21m00Tcm4TlvDq8ikWAM",
-    "model": "eleven_turbo_v2_5"
-  }
+"elevenLabs": {
+  "voiceId": "21m00Tcm4TlvDq8ikWAM",
+  "model": "eleven_turbo_v2_5"
 }
 ```
 
@@ -80,27 +78,9 @@ parallel. Cartesia provides word-level timing information interspersed with audi
 in sync with audio.
 
 ```json
-"externalVoice": {
-  "cartesia": {
-    "voiceId": "af346552-54bf-4c2b-a4d4-9d2820f51b6c",
-    "model": "sonic-2"
-  }
-}
-```
-
-### PlayHT
-
-PlayHT's latest dialog model provides high quality voices, albeit with a bit higher latency. Like the generic option,
-PlayHT does not allow for input streaming and doesn't provide audio timing information. Ultravox handles this as
-described for generic integrations above, though more experience with PlayHT has allowed for more accurate approximations.
-
-```json
-"externalVoice": {
-  "playHt": {
-    "userId": "YOUR_PLAY_HT_USER_ID",
-    "voiceId": "s3://voice-cloning-zero-shot/d9ff78ba-d016-47f6-b0ef-dd630f59414e/female-cs/manifest.json",
-    "model": "PlayDialog"
-  }
+"cartesia": {
+  "voiceId": "af346552-54bf-4c2b-a4d4-9d2820f51b6c",
+  "model": "sonic-2"
 }
 ```
 
@@ -112,11 +92,9 @@ concurrency and no rate limits even on their $10/month plan. Like Eleven Labs an
 text in and audio out in parallel and provides audio timing information to help Ultravox align transcripts with speech.
 
 ```json
-"externalVoice": {
-  "lmnt": {
-    "voiceId": "lily",
-    "model": "blizzard"
-  }
+"lmnt": {
+  "voiceId": "lily",
+  "model": "blizzard"
 }
 ```
 
