@@ -127,18 +127,16 @@ in their streaming API yet and Ultravox has no special integration with it yet a
 "generic" ExternalVoice to give Deepgram a try now using their REST API.
 
 ```json
-"externalVoice": {
-  "generic": {
-    "url": "https://api.deepgram.com/v1/speak?model=aura-2-asteria-en&encoding=linear16&sample_rate=48000&container=none",
-    "headers": {
-      "Authorization": "Token YOUR_DEEPGRAM_API_KEY",
-      "Content-Type": "application/json"
-    },
-    "body": {
-      "text": "{text}"
-    },
-    "responseSampleRate": 48000
-  }
+{
+  "url": "https://api.deepgram.com/v1/speak?model=aura-2-asteria-en&encoding=linear16&sample_rate=48000&container=none",
+  "headers": {
+    "Authorization": "Token YOUR_DEEPGRAM_API_KEY",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "text": "{text}"
+  },
+  "responseSampleRate": 48000
 }
 ```
 
@@ -147,28 +145,26 @@ in their streaming API yet and Ultravox has no special integration with it yet a
 Google's TTS API returns json, so it requires an extra `jsonAudioFieldPath` in your generic ExternalVoice.
 
 ```json
-"externalVoice": {
-  "generic": {
-    "url": "https://texttospeech.googleapis.com/v1/text:synthesize",
-    "headers": {
-      "Authorization": "Bearer YOUR_GOOGLE_SERVICE_ACCOUNT_CREDENTIALS",
-      "Content-Type": "application/json"
+{
+  "url": "https://texttospeech.googleapis.com/v1/text:synthesize",
+  "headers": {
+    "Authorization": "Bearer YOUR_GOOGLE_SERVICE_ACCOUNT_CREDENTIALS",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "input": {"text": "{text}"},
+    "voice": {
+      "languageCode": "en-US",
+      "name": "en-US-Chirp3-HD-Charon"
     },
-    "body": {
-      "input": {"text": "{text}"},
-      "voice": {
-        "languageCode": "en-US",
-        "name": "en-US-Chirp3-HD-Charon"
-      },
-      "audioConfig": {
-        "audioEncoding": "LINEAR16",
-        "speakingRate": 1.0,
-        "sampleRateHertz": 48000
-      }
-    },
-    "responseSampleRate": 48000,
-    "jsonAudioFieldPath": "audioContent"
-  }
+    "audioConfig": {
+      "audioEncoding": "LINEAR16",
+      "speakingRate": 1.0,
+      "sampleRateHertz": 48000
+    }
+  },
+  "responseSampleRate": 48000,
+  "jsonAudioFieldPath": "audioContent"
 }
 ```
 
@@ -177,22 +173,20 @@ Google's TTS API returns json, so it requires an extra `jsonAudioFieldPath` in y
 OpenAI also has a TTS API you can use with our generic ExternalVoice option.
 
 ```json
-"externalVoice": {
-  "generic": {
-    "url": "https://api.openai.com/v1/audio/speech",
-    "headers": {
-      "Authorization": "Bearer YOUR_OPENAI_API_KEY",
-      "Content-Type": "application/json",
-    },
-    "body": {
-      "input": "{text}",
-      "model": "gpt-4o-mini-tts",
-      "voice": "shimmer",
-      "response_format": "pcm",
-      "speed": 1.0
-    },
-    "responseSampleRate": 24000
-  }
+{
+  "url": "https://api.openai.com/v1/audio/speech",
+  "headers": {
+    "Authorization": "Bearer YOUR_OPENAI_API_KEY",
+    "Content-Type": "application/json",
+  },
+  "body": {
+    "input": "{text}",
+    "model": "gpt-4o-mini-tts",
+    "voice": "shimmer",
+    "response_format": "pcm",
+    "speed": 1.0
+  },
+  "responseSampleRate": 24000
 }
 ```
 
@@ -201,23 +195,21 @@ OpenAI also has a TTS API you can use with our generic ExternalVoice option.
 Resemble also has a TTS API you can use with our generic ExternalVoice option.
 
 ```json
-"externalVoice": {
-  "generic": {
-    "url": "https://p.cluster.resemble.ai/stream",
-    "headers": {
-      "Authorization": "Token YOUR_RESEMBLE_API_KEY",
-      "Content-Type": "application/json",
-      "Accept": "audio/wav"
-    },
-    "body": {
-      "data": "{text}",
-      "project_uuid": "YOUR_RESEMBLE_PROJECT_ID",
-      "voice_uuid": "0842fdf9",
-      "precision": "PCM_16",
-      "sample_rate": 44100
-    },
-    "responseSampleRate": 44100
-  }
+{
+  "url": "https://p.cluster.resemble.ai/stream",
+  "headers": {
+    "Authorization": "Token YOUR_RESEMBLE_API_KEY",
+    "Content-Type": "application/json",
+    "Accept": "audio/wav"
+  },
+  "body": {
+    "data": "{text}",
+    "project_uuid": "YOUR_RESEMBLE_PROJECT_ID",
+    "voice_uuid": "0842fdf9",
+    "precision": "PCM_16",
+    "sample_rate": 44100
+  },
+  "responseSampleRate": 44100
 }
 ```
 
@@ -230,23 +222,21 @@ simple [self-hosting option](https://www.baseten.co/library/orpheus-tts/) you ca
 You can use a generic ExternalVoice with your self-hosted Orpheus instance:
 
 ```json
-"externalVoice": {
-  "generic": {
-    "url": "YOUR_BASETEN_DEPLOYMENT_URL",
-    "headers": {
-      "Authorization": "Api-Key YOUR_BASETEN_API_KEY",
-      "Content-Type": "application/json"
-    },
-    "body": {
-      "prompt": "{text}",
-      "request_id": "SOME_UUID",
-      "max_tokens": 4096,
-      "voice": "tara",
-      "stop_token_ids": [128258, 128009]
-    },
-    "responseSampleRate": 24000,
-    "responseMimeType": "audio/l16"
-  }
+{
+  "url": "YOUR_BASETEN_DEPLOYMENT_URL",
+  "headers": {
+    "Authorization": "Api-Key YOUR_BASETEN_API_KEY",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "prompt": "{text}",
+    "request_id": "SOME_UUID",
+    "max_tokens": 4096,
+    "voice": "tara",
+    "stop_token_ids": [128258, 128009]
+  },
+  "responseSampleRate": 24000,
+  "responseMimeType": "audio/l16"
 }
 ```
 
@@ -255,27 +245,25 @@ You can use a generic ExternalVoice with your self-hosted Orpheus instance:
 Inworld's TTS API returns json, so it requires extra `jsonAudioFieldPath` and `responseMimeType` fields in your generic ExternalVoice.
 
 ```json
-"externalVoice": {
-  "generic": {
-    "url": "https://api.inworld.ai/tts/v1/voice:stream",
-    "headers": {
-      "Content-Type": "application/json",
-      "Authorization": "Basic YOUR_INWORLD_BASIC_API_KEY"
-    },
-    "body": {
-      "voiceId": "Hades",
-      "modelId": "inworld-tts-1",
-      "text": "{text}",
-      "audioConfig": {
-          "audioEncoding": "LINEAR16",
-          "speakingRate": 1.0,
-          "sampleRateHertz": 48000
-      }
-    },
-    "responseSampleRate": 48000,
-    "responseMimeType": "application/jsonl",
-    "jsonAudioFieldPath": "result.audioContent"
-  }
+{
+  "url": "https://api.inworld.ai/tts/v1/voice:stream",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": "Basic YOUR_INWORLD_BASIC_API_KEY"
+  },
+  "body": {
+    "voiceId": "Hades",
+    "modelId": "inworld-tts-1",
+    "text": "{text}",
+    "audioConfig": {
+        "audioEncoding": "LINEAR16",
+        "speakingRate": 1.0,
+        "sampleRateHertz": 48000
+    }
+  },
+  "responseSampleRate": 48000,
+  "responseMimeType": "application/jsonl",
+  "jsonAudioFieldPath": "result.audioContent"
 }
 ```
 
@@ -283,25 +271,23 @@ Inworld's TTS API returns json, so it requires extra `jsonAudioFieldPath` and `r
 Sarvam's TTS API returns json, so it requires an extra `jsonAudioFieldPath` field in your generic ExternalVoice.
 
 ```json
-"externalVoice": {
-  "generic": {
-    "url": "https://api.sarvam.ai/text-to-speech",
-    "headers": {
-      "Content-Type": "application/json",
-      "api-subscription-key": "YOUR_SARVAM_API_KEY"
-    },
-    "body": {
-      "text": "{text}",
-      "targetLanguageCode": "en-IN",
-      "speaker": "anushka",
-      "model": "bulbul:v2",
-      "pace": 1,
-      "speechSampleRate": 24000,
-      "outputAudioCodec": "linear16"
-    },
-    "responseSampleRate": 24000,
-    "jsonAudioFieldPath": "audios"
-  }
+{
+  "url": "https://api.sarvam.ai/text-to-speech",
+  "headers": {
+    "Content-Type": "application/json",
+    "api-subscription-key": "YOUR_SARVAM_API_KEY"
+  },
+  "body": {
+    "text": "{text}",
+    "targetLanguageCode": "en-IN",
+    "speaker": "anushka",
+    "model": "bulbul:v2",
+    "pace": 1,
+    "speechSampleRate": 24000,
+    "outputAudioCodec": "linear16"
+  },
+  "responseSampleRate": 24000,
+  "jsonAudioFieldPath": "audios"
 }
 ```
 
