@@ -239,7 +239,8 @@
               "api-reference/tools/tools-post",
               "api-reference/tools/tools-put",
               "api-reference/tools/tools-delete",
-              "api-reference/tools/tools-history-get"
+              "api-reference/tools/tools-history-get",
+              "api-reference/tools/tools-test-post"
             ]
           },
           {
@@ -248,7 +249,11 @@
               "api-reference/voices/voices-list",
               "api-reference/voices/voices-get",
               "api-reference/voices/voices-post",
-              "api-reference/voices/voices-delete"
+              "api-reference/voices/voices-delete",
+              "api-reference/voices/voices-put",
+              "api-reference/voices/voices-patch",
+              "api-reference/voices/voice-preview-post",
+              "api-reference/voices/voices-preview-get"
             ]
           },
           {
