@@ -176,13 +176,12 @@ Resemble also has a TTS API you can use with our generic ExternalVoice option.
 {
   "url": "https://p.cluster.resemble.ai/stream",
   "headers": {
-    "Authorization": "Token YOUR_RESEMBLE_API_KEY",
+    "Authorization": "Bearer YOUR_RESEMBLE_API_KEY",
     "Content-Type": "application/json",
     "Accept": "audio/wav"
   },
   "body": {
     "data": "{text}",
-    "project_uuid": "YOUR_RESEMBLE_PROJECT_ID",
     "voice_uuid": "0842fdf9",
     "precision": "PCM_16",
     "sample_rate": 44100
