@@ -1,0 +1,235 @@
+---
+title: 'Outbound Call Scheduler'
+description: 'Schedule and manage batches of outbound calls automatically with concurrency control and retry handling.'
+icon: 'calendar-clock'
+tag: "NEW"
+---
+
+<Callout icon="star" color="#FFC107" iconType="regular">
+  <b>Premium Feature</b>
+  <br />
+  Outbound Call Scheduler is available on select plans.
+  
+  See https://ultravox.ai/pricing for details.
+</Callout>
+
+The Outbound Call Scheduler (OCS) enables you to create and manage batches of outbound calls without worrying about concurrency limits or retry logic. Simply define a time window and upload your call list - Ultravox handles the rest.
+
+## Overview
+
+The OCS eliminates the complexity of managing outbound call campaigns by:
+
+- **Automatic Concurrency Management** - No more 429 errors from hitting rate limits
+- **Flexible Scheduling** - Define time windows for when calls should be made
+- **SIP Integration** - Use the `sip` call medium for 'set it and forget it' simplicity
+- **Webhook Integration** - Get notified when calls are ready to be initiated for custom connectivity
+- **Batch Management** - Track progress and control execution
+
+## How It Works
+
+<Steps>
+  <Step title="Create a Scheduled Batch">
+    Pick an agent and upload a batch of calls with a time window and configuration.
+  </Step>
+  <Step title="Automatic Processing">
+    Ultravox processes calls within your specified window, respecting concurrency limits.
+  </Step>
+  <Step title="Call Execution">
+    Calls are either initiated automatically (SIP) or via webhook notifications.
+  </Step>
+  <Step title="Monitor Progress">
+    Track batch status and individual call outcomes.
+  </Step>
+</Steps>
+
+## Creating a Scheduled Batch
+
+Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-post) API to upload your call batch:
+
+```js Example: Creating a Scheduled Batch
+{
+  "windowStart": "2025-09-25T09:00:00Z",
+  "windowEnd": "2025-09-25T17:00:00Z",
+  "webhookUrl": "https://your-server.com/call-webhook",
+  "webhookSecret": "your-secret-key",
+  "calls": [
+    {
+      "medium": {
+        "sip": {
+          "outgoing": {
+            "to": "sip:+15551234567@carrier.com",
+            "from": "Your Company"
+          }
+        }
+      },
+      "templateContext": {
+        "customerName": "John Doe",
+        "appointmentTime": "3 PM tomorrow"
+      },
+      "metadata": {
+        "customer_id": "12345",
+        "campaign": "appointment_reminders"
+      }
+    },
+    {
+      "medium": {
+        "twilio": {}
+      },
+      "templateContext": {
+        "customerName": "Jane Smith", 
+        "appointmentTime": "2 PM tomorrow"
+      },
+      "metadata": {
+        "customer_id": "67890",
+        "campaign": "appointment_reminders"
+      }
+    }
+  ]
+}
+```
+
+### Batch Parameters
+
+<ParamField body="windowStart" type="string" format="date-time">
+  The earliest time when calls in this batch can be initiated.
+</ParamField>
+
+<ParamField body="windowEnd" type="string" format="date-time">
+  The latest time when calls in this batch can be initiated.
+</ParamField>
+
+<ParamField body="webhookUrl" type="string" format="uri">
+  Optional. URL to notify when calls are ready to be initiated. Required if any call doesn't have an outgoing medium.
+</ParamField>
+
+<ParamField body="webhookSecret" type="string">
+  Optional. Secret for webhook request verification. Auto-generated if not provided.
+</ParamField>
+
+<ParamField body="calls" type="array" required>
+  Array of call configurations. Each call can include:
+  - `medium` - Call medium (SIP, Twilio, etc.)
+  - `templateContext` - Variables for agent template substitution
+  - `metadata` - Key-value pairs associated with the call
+  - `experimentalSettings` - Advanced call configuration
+</ParamField>
+
+## Call Execution Methods
+
+The OCS supports two execution methods:
+
+### Method 1: Automatic Execution
+When all calls in your batch have an `outgoing` `sip` medium, Ultravox initiates calls automatically:
+
+```js Automatic Execution Example
+{
+  "calls": [
+    {
+      "medium": {
+        "sip": {
+          "outgoing": {
+            "to": "sip:+15551234567@carrier.com",
+            "from": "Your Company"
+          }
+        }
+      },
+      "templateContext": { "customerName": "John" }
+    }
+  ]
+}
+```
+
+### Method 2: Webhook Notifications
+When calls don't have outgoing mediums or you want more control, Ultravox notifies your webhook when capacity is available:
+
+```js Webhook Method Example
+{
+  "webhookUrl": "https://your-server.com/call-ready",
+  "calls": [
+    {
+      "templateContext": { "customerName": "John" },
+      "metadata": { "phone": "+15551234567" }
+    }
+  ]
+}
+```
+
+Your webhook receives notifications like:
+```js Webhook Payload
+{
+  "batchId": "uuid",
+  "callId": "uuid", 
+  "templateContext": { "customerName": "John" },
+  "metadata": { "phone": "+15551234567" }
+}
+```
+
+## Managing Batches
+
+### Monitor Batch Progress
+Use [Get Scheduled Batch](/api-reference/agents/agents-scheduled-batches-get) to check status:
+
+```js Response Example
+{
+  "batchId": "uuid",
+  "totalCount": 1000,
+  "completedCount": 750,
+  "windowStart": "2024-01-15T09:00:00Z",
+  "windowEnd": "2024-01-15T17:00:00Z",
+  "paused": false,
+  "endedAt": null
+}
+```
+
+### List Scheduled Calls
+View individual calls with [List Scheduled Calls](/api-reference/agents/agents-scheduled-batches-scheduled-calls-list):
+
+```bash
+GET /api/agents/{agent_id}/scheduled_batches/{batch_id}/scheduled_calls?status=SUCCESS
+```
+
+### List Created Calls  
+See completed calls with [List Created Calls](/api-reference/agents/agents-scheduled-batches-created-calls-list):
+
+```bash
+GET /api/agents/{agent_id}/scheduled_batches/{batch_id}/created_calls
+```
+
+### Pause a Batch
+Use [Update Scheduled Batch](/api-reference/agents/agents-scheduled-batches-patch) to pause execution:
+
+```js Pause Batch
+{
+  "paused": true
+}
+```
+
+<Warning>
+  <b>No Resume Function</b>
+  <br />
+  Once paused, batches cannot currently be resumed. Pausing effectively stops processing without deleting the batch.
+</Warning>
+
+### Delete a Batch
+Use [Delete Scheduled Batch](/api-reference/agents/agents-scheduled-batches-delete) to remove a batch entirely.
+
+## Limits and Considerations
+
+### Request Limits
+- **Call Count**: No specific limit on number of calls per batch
+- **Request Size**: Maximum 32MB per batch request
+- **Multiple Batches**: Create additional batches if your request size is > 32MB
+
+### Time Windows
+- Calls will only be processed during the specified window
+- Use appropriate time zones in your ISO 8601 timestamps
+- Consider business hours and time zones of your recipients
+
+### Error Handling
+- Monitor batch progress to identify systematic issues
+- Completed calls have a status and will indicate any calls experiencing errors
+
+## Next Steps
+- Explore the [Scheduled Call Batch](/api-reference/agents/agents-scheduled-batches-list) APIs
+- Learn about [Outbound Calls](/telephony/outbound-calls) for single-call scenarios
+- Explore [Template Context](/agents/making-calls#template-context-and-variables) for dynamic call personalization  

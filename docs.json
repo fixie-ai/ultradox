@@ -86,7 +86,8 @@
               "telephony/inbound-calls",
               "telephony/call-transfers",
               "telephony/ivr-flows",
-              "telephony/sip"
+              "telephony/sip",
+              "telephony/outbound-call-scheduler"
             ]
           },
           {
@@ -184,7 +185,21 @@
               "api-reference/agents/agents-patch",
               "api-reference/agents/agents-delete",
               "api-reference/agents/agents-calls-list",
-              "api-reference/agents/agents-calls-post"
+              "api-reference/agents/agents-calls-post",
+              {
+                "group": "Scheduled Call Batches",
+                "expanded": true,
+                "tag": "NEW",
+                "pages": [
+                  "api-reference/agents/agents-scheduled-batches-list",
+                  "api-reference/agents/agents-scheduled-batches-post",
+                  "api-reference/agents/agents-scheduled-batches-get",
+                  "api-reference/agents/agents-scheduled-batches-patch",
+                  "api-reference/agents/agents-scheduled-batches-delete",
+                  "api-reference/agents/agents-scheduled-batches-created-calls-list",
+                  "api-reference/agents/agents-scheduled-batches-scheduled-calls-list"
+                ]
+              }
             ]
           },
           {
