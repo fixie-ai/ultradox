@@ -4,6 +4,7 @@ description: 'Schedule and manage batches of outbound calls automatically with c
 icon: 'calendar-clock'
 tag: "NEW"
 ---
+import OCSHighlights from '/snippets/ocsHighlights.mdx'
 
 <Callout icon="star" color="#FFC107" iconType="regular">
   <b>Premium Feature</b>
@@ -19,10 +20,7 @@ The Outbound Call Scheduler (OCS) enables you to create and manage batches of ou
 
 The OCS eliminates the complexity of managing outbound call campaigns by:
 
-- **Automatic Concurrency Management** - No more 429 errors from hitting rate limits
-- **Flexible Scheduling** - Define time windows for when calls should be made
-- **Automatic capacity reservation** - Save room for high priority or incoming calls while your campaign is running
-- **Batch Management** - Track progress and control execution
+<OCSHighlights />
 
 <Danger>
   <b>Call Delivery Not Guaranteed</b>
@@ -70,7 +68,7 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
 
 <ParamField body="calls" type="array" required>
   Array of call configurations. Each call can include:
-  - `medium` - Call medium (SIP, Twilio, etc.)
+  - `medium` - Call medium (can be `sip`, `twilio`, `telnyx`, or `plivo`)
   - `templateContext` - Variables for agent template substitution
   - `metadata` - Key-value pairs associated with the call
   - `experimentalSettings` - Advanced call configuration
@@ -106,8 +104,8 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
           "medium": {
             "twilio": {
               "outgoing": {
-                "to": "sip:+15551234567@carrier.com",
-                "from": "Your Company"
+                "to": "+15551234567",
+                "from": "+15559876543"
               }
             }
           },
