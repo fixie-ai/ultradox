@@ -1,65 +1,62 @@
 // DocSearch v4 Integration for Mintlify
+
+const algoliaAppId = '6400BF8JR1';
+const algoliaSearchApiKey = '2b641fc441384a7caf125dbc206a2b5a';
+const algoliaIndexName = 'new_index';
+
 // Add DocSearch CSS
 const docSearchCSS = document.createElement('link');
 docSearchCSS.rel = 'stylesheet';
-docSearchCSS.href = 'https://cdn.jsdelivr.net/npm/@docsearch/css@alpha';
+docSearchCSS.href = 'https://cdn.jsdelivr.net/npm/@docsearch/css@4';
 document.head.appendChild(docSearchCSS);
+
+// Add preconnect for performance
+const preconnect = document.createElement('link');
+preconnect.rel = 'preconnect';
+preconnect.href = `https://${algoliaAppId}-dsn.algolia.net`;
+preconnect.crossOrigin = '';
+document.head.appendChild(preconnect);
 
 // Add DocSearch JS
 const docSearchJS = document.createElement('script');
-docSearchJS.src = 'https://cdn.jsdelivr.net/npm/@docsearch/js@alpha';
+docSearchJS.src = 'https://cdn.jsdelivr.net/npm/@docsearch/js@4';
 docSearchJS.onload = function() {
   initializeDocSearch();
 };
 document.head.appendChild(docSearchJS);
 
 function initializeDocSearch() {
-  // DocSearch v4 configuration
-  const searchConfig = {
-    appId: '6400BF8JR1', // Replace with your Algolia app ID
-    apiKey: '2b641fc441384a7caf125dbc206a2b5a', // Replace with your search-only API key
-    indexName: 'new_index', // Your index name from the crawler config
-    
-    // v4 specific options
-    insights: true, // Enable search insights
-    container: '#docsearch', // Container selector
-    placeholder: 'Search docs...',
-    
-    // Optional: Configure search parameters
-    searchParameters: {
-      // Add any specific search parameters here
-    },
-    
-    // Optional: Transform items before display
-    transformItems: function(items) {
-      return items.map(item => ({
-        ...item,
-        // You can modify items here if needed
-      }));
-    }
-  };
-
-  // Create a hidden container for DocSearch
+  // Create a container for DocSearch
   const docSearchContainer = document.createElement('div');
   docSearchContainer.id = 'docsearch';
-  docSearchContainer.style.position = 'fixed';
-  docSearchContainer.style.top = '-9999px';
-  docSearchContainer.style.left = '-9999px';
+  // Hide it initially since we'll trigger it programmatically
+  docSearchContainer.style.position = 'absolute';
+  docSearchContainer.style.opacity = '0';
+  docSearchContainer.style.pointerEvents = 'none';
   document.body.appendChild(docSearchContainer);
 
-  // Initialize DocSearch
-  const search = docsearch(searchConfig);
+  // Initialize DocSearch v4
+  const searchInstance = docsearch({
+    container: '#docsearch',
+    appId: algoliaAppId,
+    apiKey: algoliaSearchApiKey,
+    indexName: algoliaIndexName,
+    
+    // Enable insights for analytics
+    insights: true,
+    
+    // Optional: Add search parameters if you need filtering
+    searchParameters: {
+      // Example: facetFilters: ['type:content'],
+    },
+  });
 
   // Function to programmatically open the search modal
   function openSearchModal() {
-    // In v4, you can programmatically open the modal
+    // Find the DocSearch button that was auto-generated and click it
     const searchButton = document.querySelector('.DocSearch-Button');
     if (searchButton) {
       searchButton.click();
-    } else {
-      // If button doesn't exist, trigger search directly
-      // v4 may expose different methods - check the docs
-      console.log('Triggering search modal');
     }
   }
 
@@ -71,17 +68,17 @@ function initializeDocSearch() {
 
   const DATA_CUSTOM_LISTENER_ATTACHED = "data-custom-listener-attached";
 
-  // Function to attach DocSearch to an element
+  // Function to hijack Mintlify search elements
   function attachDocSearchToElement(element) {
     if (!element || element.hasAttribute(DATA_CUSTOM_LISTENER_ATTACHED)) {
       return;
     }
 
-    // Clone to remove existing listeners
+    // Clone element to remove existing event listeners
     const clonedElement = element.cloneNode(true);
     element.parentNode.replaceChild(clonedElement, element);
 
-    // Attach new listener
+    // Attach DocSearch trigger
     clonedElement.addEventListener("click", function(event) {
       event.preventDefault();
       event.stopPropagation();
@@ -91,7 +88,7 @@ function initializeDocSearch() {
     clonedElement.setAttribute(DATA_CUSTOM_LISTENER_ATTACHED, 'true');
   }
 
-  // Initial setup for existing elements
+  // Initial setup for existing search buttons
   searchButtonContainerIds.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -99,7 +96,7 @@ function initializeDocSearch() {
     }
   });
 
-  // Global keyboard shortcut
+  // Global keyboard shortcut (Cmd+K / Ctrl+K)
   document.addEventListener("keydown", function(event) {
     if ((event.metaKey || event.ctrlKey) && event.key === "k") {
       event.preventDefault();
@@ -108,7 +105,7 @@ function initializeDocSearch() {
     }
   });
 
-  // Watch for dynamically added elements
+  // Watch for dynamically added elements (Mintlify may re-render components)
   const observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
       if (mutation.type === "childList") {
@@ -123,4 +120,12 @@ function initializeDocSearch() {
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
+}
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeDocSearch);
+} else {
+  // DOM is already ready, initialize immediately
+  initializeDocSearch();
 }
