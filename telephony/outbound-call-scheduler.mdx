@@ -13,7 +13,7 @@ tag: "NEW"
   See https://ultravox.ai/pricing for details.
 </Callout>
 
-The Outbound Call Scheduler (OCS) enables you to create and manage batches of outbound calls without worrying about concurrency limits or retry logic. Simply define a time window and upload your call list - Ultravox handles the rest.
+The Outbound Call Scheduler (OCS) enables you to create and manage batches of outbound calls that will be sent by Ultravox. This allows you to simplify your deployment and stop worrying about things like retry logic. Simply define a time window and upload your call list - Ultravox handles the rest.
 
 ## Overview
 
@@ -21,9 +21,14 @@ The OCS eliminates the complexity of managing outbound call campaigns by:
 
 - **Automatic Concurrency Management** - No more 429 errors from hitting rate limits
 - **Flexible Scheduling** - Define time windows for when calls should be made
-- **SIP Integration** - Use the `sip` call medium for 'set it and forget it' simplicity
-- **Webhook Integration** - Get notified when calls are ready to be initiated for custom connectivity
+- **Automatic capacity reservation** - Save room for high priority or incoming calls while your campaign is running
 - **Batch Management** - Track progress and control execution
+
+<Danger>
+  <b>Call Delivery Not Guaranteed</b>
+  <br />
+  Unless your call batch is scheduled without and end date/time, using OCS does not guarantee that all calls will be made in the window you specify.
+</Danger>
 
 ## How It Works
 
@@ -32,10 +37,10 @@ The OCS eliminates the complexity of managing outbound call campaigns by:
     Pick an agent and upload a batch of calls with a time window and configuration.
   </Step>
   <Step title="Automatic Processing">
-    Ultravox processes calls within your specified window, respecting concurrency limits.
+    Ultravox processes calls within your specified window, maximizing allowed utilization.
   </Step>
   <Step title="Call Execution">
-    Calls are either initiated automatically (SIP) or via webhook notifications.
+    Calls are either initiated automatically or via webhook notifications.
   </Step>
   <Step title="Monitor Progress">
     Track batch status and individual call outcomes.
