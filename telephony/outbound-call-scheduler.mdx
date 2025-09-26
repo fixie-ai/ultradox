@@ -4,6 +4,7 @@ description: 'Schedule and manage batches of outbound calls automatically with c
 icon: 'calendar-clock'
 tag: "NEW"
 ---
+import OCSHighlights from '/snippets/ocsHighlights.mdx'
 
 <Callout icon="star" color="#FFC107" iconType="regular">
   <b>Premium Feature</b>
@@ -19,10 +20,7 @@ The Outbound Call Scheduler (OCS) enables you to create and manage batches of ou
 
 The OCS eliminates the complexity of managing outbound call campaigns by:
 
-- **Automatic Concurrency Management** - No more 429 errors from hitting rate limits
-- **Flexible Scheduling** - Define time windows for when calls should be made
-- **Automatic capacity reservation** - Save room for high priority or incoming calls while your campaign is running
-- **Batch Management** - Track progress and control execution
+<OCSHighlights />
 
 <Danger>
   <b>Call Delivery Not Guaranteed</b>
@@ -78,7 +76,12 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
     },
     {
       "medium": {
-        "twilio": {}
+        "twilio": {
+          "outgoing": {
+            "to": "+15551234567",
+            "from": "+15559876543"
+          }
+        }
       },
       "templateContext": {
         "customerName": "Jane Smith", 
@@ -113,7 +116,7 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
 
 <ParamField body="calls" type="array" required>
   Array of call configurations. Each call can include:
-  - `medium` - Call medium (SIP, Twilio, etc.)
+  - `medium` - Call medium (can be `sip`, `twilio`, `telnyx`, or `plivo`)
   - `templateContext` - Variables for agent template substitution
   - `metadata` - Key-value pairs associated with the call
   - `experimentalSettings` - Advanced call configuration
@@ -121,12 +124,12 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
 
 ## Call Execution Methods
 
-The OCS supports two execution methods:
+The OCS supports three execution methods:
 
-### Method 1: Automatic Execution
-When all calls in your batch have an `outgoing` `sip` medium, Ultravox initiates calls automatically:
+### Method 1: Automatic SIP Execution
+When all calls in your batch uses the `sip` medium, you can provide `outgoing` details and Ultravox will initiate calls automatically:
 
-```js Automatic Execution Example
+```js Automatic SIP Execution Example
 {
   "calls": [
     {
@@ -144,8 +147,29 @@ When all calls in your batch have an `outgoing` `sip` medium, Ultravox initiates
 }
 ```
 
-### Method 2: Webhook Notifications
-When calls don't have outgoing mediums or you want more control, Ultravox notifies your webhook when capacity is available:
+### Method 2: Built-in Telephony
+When you have configured Twilio, Telnyx, or Plivo credentials, you can provide `outgoing` details and Ultravox will initiate calls automatically using your provider:
+
+```js Built-in Telephony Example
+{
+  "calls": [
+    {
+      "medium": {
+        "twilio": {
+          "outgoing": {
+            "to": "+15551234567",
+            "from": "+15559876543"
+          }
+        }
+      },
+      "templateContext": { "customerName": "John" }
+    }
+  ]
+}
+```
+
+### Method 3: Webhook Notifications
+When you need something custom, Ultravox notifies your webhook when capacity is available so that you can join the call:
 
 ```js Webhook Method Example
 {
