@@ -13,6 +13,10 @@
     }
   },
   "favicon": "/favicon.svg",
+  "banner": {
+    "content": "⚠️ SIP Billing Starts October 27, 2025 - See [Ultravox Pricing](https://ultravox.ai/pricing) for details.",
+    "dismissible": false
+  },
   "navigation": {
     "tabs": [
       {
