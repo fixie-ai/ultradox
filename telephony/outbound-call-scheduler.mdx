@@ -78,8 +78,10 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
 
 ### Examples
 <Tabs>
-  <Tab title="Creating a Batch" icon="plus">
-    ```js Example: Creating a Scheduled Batch
+  <Tab title="Example: Automatic Execution" icon="plus">
+      When all calls in your batch have an `outgoing` medium, Ultravox initiates calls automatically.
+
+    ```js Example: Creating a Scheduled Batch with Automatic Execution
     {
       "windowStart": "2025-09-25T09:00:00Z",
       "windowEnd": "2025-09-25T17:00:00Z",
@@ -119,26 +121,6 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
             "customer_id": "67890",
             "campaign": "appointment_reminders"
           }
-        }
-      ]
-    }
-    ```
-
-    When all calls in your batch have an `outgoing` medium, Ultravox initiates calls automatically:
-
-    ```js Example: Automatic Execution
-    {
-      "calls": [
-        {
-          "medium": {
-            "sip": {
-              "outgoing": {
-                "to": "sip:+15551234567@carrier.com",
-                "from": "Your Company"
-              }
-            }
-          },
-          "templateContext": { "customerName": "John" }
         }
       ]
     }
