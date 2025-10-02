@@ -123,8 +123,7 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
       ]
     }
     ```
-  </Tab>
-  <Tab title="Example: Automatic Execution" icon="bolt-auto">
+
     When all calls in your batch have an `outgoing` medium, Ultravox initiates calls automatically:
 
     ```js Example: Automatic Execution
@@ -162,15 +161,23 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
     }
     ```
 
-    Your webhook receives a [Call Definition](/api-reference/schema/call-definition) payload:
+    Your webhook receives the payload for the [call.started](/webhooks/available-webhooks#event-payload-reference) webhook event:
     ```js Call Definition Webhook Payload
     {
-      "callId": "3c90c3cc-0d44-4b50-8888-8dd25736052a",
-      "created": "2023-11-07T05:31:56Z",
-      "joined": "2023-11-07T05:31:56Z",
-      ...
+      "event": "call.started",
+      "call": {
+        "callId": "3c90c3cc-0d44-4b50-8888-8dd25736052a",
+        "created": "2023-11-07T05:31:56Z",
+        "joined": "2023-11-07T05:31:56Z",
+        ...
+      }
     }
     ```
+    <Warning>
+      <b>No Retries</b>
+      <br />
+     OCS webhooks do not retry failed notifications automatically. When your endpoint is unavailable, the system marks that delivery as "ERROR" and proceeds to the next scheduled call after a delay period.
+    </Warning>
   </Tab>
 </Tabs>
 
