@@ -177,7 +177,9 @@
               "api-reference/accounts/accounts-me-get",
               "api-reference/accounts/accounts-me-usage-calls-get",
               "api-reference/accounts/accounts-me-tts-api-keys-partial-update",
-              "api-reference/accounts/accounts-me-tts-api-keys-retrieve"
+              "api-reference/accounts/accounts-me-tts-api-keys-retrieve",
+              "api-reference/accounts/accounts-me-telephony-config-partial-update",
+              "api-reference/accounts/accounts-me-telephony-config-retrieve"
             ]
           },
           {

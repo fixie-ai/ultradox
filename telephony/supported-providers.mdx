@@ -9,14 +9,45 @@ Ultravox integrates with multiple telephony providers and voice platforms.
 ## Native Integrations
 Ultravox provides native integrations for the following. Each has their own unique call [`medium`](api-reference/schema/call-definition#schema-medium) that must be used when creating calls.
 
-| Provider   | Call Medium    | Streaming API                                                                                  |
-|------------|--------------- |------------------------------------------------------------------------------------------------|
-| **Twilio** | `"twilio": {}` | [Media Streams](https://www.twilio.com/docs/voice/media-streams)                               |
-| **Telnyx** | `"telnyx": {}` | [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming) |
-| **Plivo**  | `"plivo": {}`  | [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)                        |
-| **Exotel** | `"exotel": {}` | [Voice Streaming](https://developer.exotel.com/api/product-voice-version-3)                    |
+| Provider   | Call Medium    | Streaming API                                                                                  | Import Credentials? | Out of Band DTMF? |
+|------------|--------------- |------------------------------------------------------------------------------------------------|---------------------|-------------------|
+| **Twilio** | `"twilio": {}` | [Media Streams](https://www.twilio.com/docs/voice/media-streams)                               | ✅                  | ❌                |
+| **Telnyx** | `"telnyx": {}` | [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming) | ✅                  | ✅                |
+| **Plivo**  | `"plivo": {}`  | [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)                        | ✅                  | ✅                |
+| **Exotel** | `"exotel": {}` | [Voice Streaming](https://developer.exotel.com/api/product-voice-version-3)                    | ❌                  | ❌                |
 
-### SIP
+
+## Providing Telephony Credentials
+If you are using Twilio, Telnyx, or Plivo, you can import your credentials to unlock new capabilities:
+
+* **Simplified Outbound Calling** → Allow Ultravox to create and connect [all outbound calls](/telephony/outbound-calls#the-easy-way%3A-built-in-telephony) for Twilio, Telnyx, and Plivo.
+* **Outbound Call Scheduler** → [Schedule batches of outbound calls](/telephony/outbound-call-scheduler) and let us manage the call concurrency and retry logic.
+* **Out of Band DTMF** → By default, the built-in [`playDtmfSounds`](/tools/built-in-tools#playdtmfsounds) tool emits in-band DTMF. When you import credentials for Telnyx or Plivo (Twilio doesn't support out of band DTMF), the `playDtmfSounds` tool will use out of band DTMF.
+
+### Importing Credentials
+To import credentials for Twilio, Telnyx, or Plivo:
+1. Use the [Set Telephony Credentials](/api-reference/accounts/accounts-me-telephony-config-partial-update) API
+1. Provide your credentials (up to one per provider) in the request body:
+```js Example: Proving telephony credentials
+{
+  "twilio": {
+    "accountSid": "string",
+    "authToken": "string"
+  },
+  "telnyx": {
+    "accountSid": "string",
+    "apiKey": "string",
+    "publicKey": "string",
+    "applicationSid": "string"
+  },
+  "plivo": {
+    "authId": "string",
+    "authToken": "string"
+  }
+}
+```
+
+## SIP
 Ultravox Realtime has native support for SIP. See the [SIP Guide](./sip) for more.
 
 ## Partner Integrations
