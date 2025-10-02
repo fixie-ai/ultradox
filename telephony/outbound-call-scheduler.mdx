@@ -49,52 +49,9 @@ The OCS eliminates the complexity of managing outbound call campaigns by:
 
 ## Creating a Scheduled Batch
 
-Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-post) API to upload your call batch:
-
-```js Example: Creating a Scheduled Batch
-{
-  "windowStart": "2025-09-25T09:00:00Z",
-  "windowEnd": "2025-09-25T17:00:00Z",
-  "webhookUrl": "https://your-server.com/call-webhook",
-  "webhookSecret": "your-secret-key",
-  "calls": [
-    {
-      "medium": {
-        "sip": {
-          "outgoing": {
-            "to": "sip:+15551234567@carrier.com",
-            "from": "Your Company"
-          }
-        }
-      },
-      "templateContext": {
-        "customerName": "John Doe",
-        "appointmentTime": "3 PM tomorrow"
-      },
-      "metadata": {
-        "customer_id": "12345",
-        "campaign": "appointment_reminders"
-      }
-    },
-    {
-      "medium": {
-        "twilio": {}
-      },
-      "templateContext": {
-        "customerName": "Jane Smith", 
-        "appointmentTime": "2 PM tomorrow"
-      },
-      "metadata": {
-        "customer_id": "67890",
-        "campaign": "appointment_reminders"
-      }
-    }
-  ]
-}
-```
+Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-post) API to upload your call batch.
 
 ### Batch Parameters
-
 <ParamField body="windowStart" type="string" format="date-time">
   The earliest time when calls in this batch can be initiated.
 </ParamField>
@@ -119,55 +76,102 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
   - `experimentalSettings` - Advanced call configuration
 </ParamField>
 
-## Call Execution Methods
-
-The OCS supports two execution methods:
-
-### Method 1: Automatic Execution
-When all calls in your batch have an `outgoing` `sip` medium, Ultravox initiates calls automatically:
-
-```js Automatic Execution Example
-{
-  "calls": [
+### Examples
+<Tabs>
+  <Tab title="Creating a Batch" icon="plus">
+    ```js Example: Creating a Scheduled Batch
     {
-      "medium": {
-        "sip": {
-          "outgoing": {
-            "to": "sip:+15551234567@carrier.com",
-            "from": "Your Company"
+      "windowStart": "2025-09-25T09:00:00Z",
+      "windowEnd": "2025-09-25T17:00:00Z",
+      "calls": [
+        {
+          "medium": {
+            "sip": {
+              "outgoing": {
+                "to": "sip:+15551234567@carrier.com",
+                "from": "Your Company"
+              }
+            }
+          },
+          "templateContext": {
+            "customerName": "John Doe",
+            "appointmentTime": "3 PM tomorrow"
+          },
+          "metadata": {
+            "customer_id": "12345",
+            "campaign": "appointment_reminders"
+          }
+        },
+        {
+          "medium": {
+            "twilio": {
+              "outgoing": {
+                "to": "sip:+15551234567@carrier.com",
+                "from": "Your Company"
+              }
+            }
+          },
+          "templateContext": {
+            "customerName": "Jane Smith", 
+            "appointmentTime": "2 PM tomorrow"
+          },
+          "metadata": {
+            "customer_id": "67890",
+            "campaign": "appointment_reminders"
           }
         }
-      },
-      "templateContext": { "customerName": "John" }
+      ]
     }
-  ]
-}
-```
+    ```
+  </Tab>
+  <Tab title="Example: Automatic Execution" icon="bolt-auto">
+    When all calls in your batch have an `outgoing` `sip` medium, Ultravox initiates calls automatically:
 
-### Method 2: Webhook Notifications
-When calls don't have outgoing mediums or you want more control, Ultravox notifies your webhook when capacity is available:
-
-```js Webhook Method Example
-{
-  "webhookUrl": "https://your-server.com/call-ready",
-  "calls": [
+    ```js Example: Automatic Execution
     {
-      "templateContext": { "customerName": "John" },
-      "metadata": { "phone": "+15551234567" }
+      "calls": [
+        {
+          "medium": {
+            "sip": {
+              "outgoing": {
+                "to": "sip:+15551234567@carrier.com",
+                "from": "Your Company"
+              }
+            }
+          },
+          "templateContext": { "customerName": "John" }
+        }
+      ]
     }
-  ]
-}
-```
+    ```
+  </Tab>
+  <Tab title="Example: Webhook Notification" icon="webhook">
+    When calls don't have outgoing mediums or you want more control, Ultravox notifies your webhook when capacity is available and your call is created. Your endpoint's job is to then join and connect the call.
 
-Your webhook receives notifications like:
-```js Webhook Payload
-{
-  "batchId": "uuid",
-  "callId": "uuid", 
-  "templateContext": { "customerName": "John" },
-  "metadata": { "phone": "+15551234567" }
-}
-```
+    ```js Example: Webhook Notification
+    {
+      "webhookUrl": "https://your-server.com/call-ready",
+      "webhookSecret": "your-secret-key",
+      "calls": [
+        {
+          "templateContext": { "customerName": "John" },
+          "metadata": { "phone": "+15551234567" }
+        }
+      ]
+    }
+    ```
+
+    Your webhook receives a [Call Definition](/api-reference/schema/call-definition) payload:
+    ```js Call Definition Webhook Payload
+    {
+      "callId": "3c90c3cc-0d44-4b50-8888-8dd25736052a",
+      "created": "2023-11-07T05:31:56Z",
+      "joined": "2023-11-07T05:31:56Z",
+      ...
+    }
+    ```
+  </Tab>
+</Tabs>
 
 ## Managing Batches
 
