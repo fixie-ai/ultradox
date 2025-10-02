@@ -1,14 +1,16 @@
 ---
-title: 'SIP Guide (PREVIEW)'
+title: 'SIP Guide'
 description: 'Create incoming & outgoing SIP calls with Ultravox agents.'
 icon: 'network-wired'
 ---
 
-<Warning>
-  <b>Additional Cost</b>
+<Danger>
+  <b>SIP Billing Starts October 27, 2025</b>
   <br />
-  SIP calls are currently free of charge while in preview but will incur an additional charge when it moves to full release.
-</Warning>
+  Calls via the SIP medium will start to incur additional charges on Monday, October 27, 2025.
+  
+  See https://ultravox.ai/pricing for details.
+</Danger>
 
 Session Initiation Protocol (SIP) enables Ultravox agents to connect with your existing phone systems and SIP clients. This guide explains how to set up both incoming and outgoing SIP calls with Ultravox agents.
 
@@ -61,6 +63,23 @@ medium: {
 }
 ```
 
+### Outgoing SIP Parameters
+<ParamField body="to" type="string" required>
+  The target SIP URL to which the Ultravox call will connect.
+  
+  Examples:
+  `sip:username@domain`, `sip:+15551234567@carrier.com`
+</ParamField>
+<ParamField body="from" type="string" required>
+  The caller identifier. Must conform to what your SIP trunk allows.
+</ParamField>
+<ParamField body="username" type="string">
+  Optional. Username for connecting to your SIP trunk.
+</ParamField>
+<ParamField body="password" type="string">
+  Optional. Password for connecting to your SIP trunk.
+</ParamField>
+
 ### Linphone Example
 
 ```js Example: Creating an Outgoing SIP Call to Linphone
@@ -87,10 +106,26 @@ medium: {
 ```
 
 ## Supported Codecs
-Ultravox Realtime currently supports the following codecs for SIP:
+<Info>
+  Incoming SIP currently only supports PCMA and PCMU. Other codecs are coming soon.
+</Info>
 
-* PCMA
-* PCMU
+Ultravox Realtime supports wideband (AKA "HD audio") and narrowband SIP via various codecs:
+
+### Wideband Codecs (Recommended)
+| Codec | Audio Quality | Outgoing SIP | Incoming SIP |
+|-------|---------------|--------------|--------------|
+| G.722 | HD (16kHz) | ✅ | Coming Soon |
+| G.722.1 | HD (16kHz) | ✅ | Coming Soon |
+| G.722.2 | HD (16kHz) | ✅ | Coming Soon |
+| Opus | Premium HD (48kHz) | ✅ | Coming Soon |
+
+### Narrowband Codecs (Legacy Support)
+| Codec | Audio Quality | Outgoing SIP | Incoming SIP |
+|-------|---------------|--------------|--------------|
+| G.711 (PCMU/u-law) | Standard (8kHz) | ✅ | ✅ |
+| G.711 (PCMA/a-law) | Standard (8kHz) | ✅ | ✅ |
+| iLBC | Standard (8kHz) | ✅ | Coming Soon |
 
 Using any other codec will cause calls to fail.
 
