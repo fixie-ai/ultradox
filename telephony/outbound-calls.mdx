@@ -26,7 +26,7 @@ The simplest way to make outbound calls is using Ultravox's built-in telephony i
 </Steps>
 
 <Info>
-  For outbound calls, make sure to set [`firstSpeakerSettings`](#firstspeakersettings) to `user` if you expect the call recipient to answer before the agent speaks.
+  For outbound calls, make sure to set [`firstSpeakerSettings`](#firstspeakersettings) to `user` if you expect the call recipient to answer before the agent speaks. Also see the [user fallback](/api-reference/schema/call-definition#schema-first-speaker-settings-user-fallback).
 </Info>
 
 ### Example: Direct Outbound Call
@@ -54,11 +54,12 @@ The simplest way to make outbound calls is using Ultravox's built-in telephony i
 <Tabs>
   <Tab title="Twilio">
     ```js Twilio Outgoing
+    // When `to` is a SIP address, `from` does not have to be a phone number.
     {
       "twilio": {
         "outgoing": {
           "to": "+15551234567",        // Phone number or SIP address
-          "from": "+15559876543",      // Your Twilio phone number
+          "from": "+15559876543",      // Your Twilio phone number or a string
           "additionalParams": {        // See Twilio docs for all options
             "statusCallback": "https://your-server.com/status"
             "record": true
