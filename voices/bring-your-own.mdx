@@ -268,6 +268,40 @@ Sarvam's TTS API returns json, so it requires an extra `jsonAudioFieldPath` fiel
 }
 ```
 
+## Testing Your Voice
+We provide the [Preview Voice API](/api-reference/voices/voice-preview-post) that enables you to quickly test any external TTS provider. The API has built-in definitions for ElevenLabs, Cartesia, and LMNT. For any of the other TTS providers documented on this page, you can copy & paste the provided request bodies as the value for the `generic` object and then customize with your API key, voice ID, etc.
+
+### Example: Inworld
+Here's an example of what the request body to the Preview Voice API would look like for [Inworld](#inworld). You must replace `YOUR_INWORLD_BASIC_API_KEY` with your API key. You can also update the `voiceId` (i.e. `Hades`) with the voice you want to test.
+
+```json
+{
+  "name": "MyInworldTest",
+  "definition": {
+    "generic": {
+      "url": "https://api.inworld.ai/tts/v1/voice:stream",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Basic YOUR_INWORLD_BASIC_API_KEY"
+      },
+      "body": {
+        "voiceId": "Hades",
+        "modelId": "inworld-tts-1",
+        "text": "{text}",
+        "audioConfig": {
+            "audioEncoding": "LINEAR16",
+            "speakingRate": 1.0,
+            "sampleRateHertz": 48000
+        }
+      },
+      "responseSampleRate": 48000,
+      "responseMimeType": "application/jsonl",
+      "jsonAudioFieldPath": "result.audioContent"
+    }
+  }
+}
+```
+
 
 ## Debugging
 
