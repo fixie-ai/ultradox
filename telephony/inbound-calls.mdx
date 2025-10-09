@@ -7,6 +7,9 @@ icon: 'phone-arrow-down-left'
 Ultravox can power AI agents that automatically answer incoming phone calls from your users. This is perfect for customer service, support lines, or any application where users initiate contact.
 
 ## How Inbound Calls Work
+The simplest way to set up inbound calls is to [import your credentials](/telephony/supported-providers#providing-telephony-credentials) and point your telephony provider directly to Ultravox. Just set your telephony provider's webhook callback to `https://app.ultravox.ai/api/agents/{agent_id}/telephony_xml` to have incoming phone calls automatically create and connect to Ultravox calls.
+
+Alternatively, you can use these steps when routing calls through your own application.
 <Steps>
   <Step title="User Dials You">
     User dials your phone number purchased from your telephony provider.
@@ -23,7 +26,11 @@ Ultravox can power AI agents that automatically answer incoming phone calls from
 </Steps>
 
 ## Using Template Variables
-When you use [Agents](/agents/overview#why-start-with-agents%3F) for creating calls, you can define template variables that get passed in a call creation time. For incoming calls, this data might come from an IVR or your own application.
+When you use [Agents](/agents/overview#why-start-with-agents%3F) for creating calls, you can define template variables that get passed in at call creation time.
+
+When using simplified incoming call handling (i.e. you have imported your credentials from a [supported provider](/telephony/supported-providers#providing-telephony-credentials)), you can define a mapping from your provider's requests to template context fields. For example, for Twilio you could add an entry like `{"From": "user.phone_number"}` to add `{"user": {"phone_number": "+15551234567"}}` to the template context .
+
+When handling telephony webhooks yourself, this data might come from an IVR or your own application. You then specify it as usual (i.e. via template variables) when creating your Ultravox call, e.g.
 
 ```js Example: Template Context
 // System prompt expects template variables
