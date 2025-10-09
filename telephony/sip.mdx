@@ -30,11 +30,11 @@ The fastest way to start using SIP with Ultravox:
 </Note>
 
 ## Incoming SIP Calls
-For incoming calls, you can configure Ultravox to accept calls from your SIP system then send a sip invite directly to your agent.
+For incoming calls, you can configure Ultravox to accept calls from your SIP system then send a sip invite directly to your agent. The SIP invite will create an Ultravox call and connect to it, no other requests required.
 
 Ultravox supports two setups for incoming SIP calls: IP allowlisting and SIP registration. IP allowlisting works well with dedicated PBX systems, while SIP registration is recommended for cloud PBX setups.
 
-In either set up, you can choose to allow incoming calls to all of your agents or to specific agents only. Calls will be created automatically from your agent's call template when a SIP invite is received.
+In either setup, you can choose to allow incoming calls to all of your agents or to specific agents only. Calls will be created automatically from your agent's call template when a SIP invite is received.
 
 ### IP Allowlisting
 To set up IP Allowlisting, use the [sip configuration API](/api-reference/sip/sip-partial-update) to add your SIP system's public IP addresses to the `allowedCidrRanges` list. Entries in this list must be IPv4 [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) ranges, e.g. `0.0.0.0/0` for any IP address (not recommended) or `91.200.160.14/32` for the single `91.200.160.14` IP address.
@@ -55,7 +55,7 @@ Many parts of an agent can use context to personalize a call. (See [Call Templat
 For example including the headers `X-Customer-Name: Bob` and `X-Complex-Value: {"subkey": "value"}` becomes `{"customer_name": "Bob", "complex_value": {"subkey": "value"}}`.
 
 ## Outgoing SIP Calls
-For outgoing calls, you can create a SIP call with the Ultravox Realtime [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) endpoints using the `sip` medium with `outgoing` property.
+For outgoing calls, you can create a SIP call with Ultravox Realtime [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) endpoints using the `sip` medium with `outgoing` property.
 
 ```js
 medium: {

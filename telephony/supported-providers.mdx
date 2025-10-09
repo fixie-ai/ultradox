@@ -48,7 +48,7 @@ To import credentials for Twilio, Telnyx, or Plivo:
 }
 ```
 
-For each provider, you may also choose which agents can be used with simplified incoming call handling. You can set `callCreationAllowAllAgents` to `true` to allow all of your agents or you can set `callCreationAllowedAgentIds` to specific agent ids to allow only those agents. For any allowed agent, you can direct your telephony provider to send webhooks to `https://app.ultravox.ai/api/agents/{agent_id}/telephony_xml` to have incoming phone calls automatically create and connect to Ultravox calls.
+For each provider, you may also choose which agents can be used with [simplified incoming call handling](/telephony/inbound-calls). You can set `callCreationAllowAllAgents` to `true` to allow all of your agents or you can set `callCreationAllowedAgentIds` to specific agent ids to allow only those agents. For any allowed agent, you can direct your telephony provider to send webhooks to `https://app.ultravox.ai/api/agents/{agent_id}/telephony_xml` to have incoming phone calls automatically create and connect to Ultravox calls.
 
 ## SIP
 Ultravox Realtime has native support for SIP. See the [SIP Guide](./sip) for more.
