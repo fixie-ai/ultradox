@@ -9,7 +9,7 @@ tag: "NEW"
   <b>SIP Billing Starts October 27, 2025</b>
   <br />
   Calls via the SIP medium will start to incur additional charges on Monday, October 27, 2025.
-  
+
   See https://ultravox.ai/pricing for details.
 </Danger>
 
@@ -29,27 +29,33 @@ The fastest way to start using SIP with Ultravox:
   Make sure you have an Ultravox API key. You can create one in the [console](https://app.ultravox.ai/settings/).
 </Note>
 
-## SIP Overview
+## Incoming SIP Calls
+For incoming calls, you can configure Ultravox to accept calls from your SIP system then send a sip invite directly to your agent.
 
-Ultravox uses a `medium` for each call, which defines how the call will occur. When using `sip` as the medium, you can connect your Ultravox agents with standard SIP-compatible systems.
+Ultravox supports two setups for incoming SIP calls: IP allowlisting and SIP registration. IP allowlisting works well with dedicated PBX systems, while SIP registration is recommended for cloud PBX setups.
 
-You can create a SIP call with the Ultravox Realtime [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) endpoints using the `sip` medium.
+In either set up, you can choose to allow incoming calls to all of your agents or to specific agents only. Calls will be created automatically from your agent's call template when a SIP invite is received.
 
-The `sip` medium supports the creation of both incoming and outgoing calls.
+### IP Allowlisting
+To set up IP Allowlisting, use the [sip configuration API](/api-reference/sip/sip-partial-update) to add your SIP system's public IP addresses to the `allowedCidrRanges` list. Entries in this list must be IPv4 [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) ranges, e.g. `0.0.0.0/0` for any IP address (not recommended) or `91.200.160.14/32` for the single `91.200.160.14` IP address.
 
-### Incoming SIP Calls
-Incoming calls are initiated by a SIP client to your Ultravox agent. When the Ultravox incoming SIP call is created, the returned join URL is a SIP URI to which an invite can be sent.
+Once your SIP system's IP address(es) are allowed, you can have them send SIP invites to your agents using the pattern `agent_{agent_id}@{your_account_sip_domain}`. The value for `{your_account_sip_domain}` is available when you [view your SIP configuration](/api-reference/sip/sip-get).
 
+### SIP Registration
+In the registration model, Ultravox acts as a SIP client (similar to a softphone) and registers with your SIP server as the user you specify. To set this up, you'll need to create a user in your PBX, configure your PBX to send relevant calls to that user, and then [create a registration](/api-reference/sip/sip-registrations-create) for that user in Ultravox.
 
-### Outgoing SIP Calls
-Outgoing calls are when Ultravox initiates the call to a SIP endpoint or client. The configuration varies slightly depending on which SIP client/system you're using.
+When creating a registration, you'll need to provide the following information:
+* `username`: The username of the user you created in your PBX.
+* `password`: The password for that user.
+* `proxy`: The domain or IP address of your SIP server.
 
-When creating an outbound SIP call, Ultravox will initiate the call directly and no join URL will be returned. 
+### Personalizing the Call
+Many parts of an agent can use context to personalize a call. (See [Call Template Configuration](/agents/building-and-editing-agents#call-template-configuration).) You can use SIP headers to populate template context for incoming SIP calls. Each header value is interpretted as JSON to allow for complex values.
 
+For example including the headers `X-Customer-Name: Bob` and `X-Complex-Value: {"subkey": "value"}` becomes `{"customer_name": "Bob", "complex_value": {"subkey": "value"}}`.
 
-## Create an Outgoing SIP Call
-
-For outgoing SIP calls, you'll need to add the `outgoing` configuration data for the `sip` medium and add it to the request body of the [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) request:
+## Outgoing SIP Calls
+For outgoing calls, you can create a SIP call with the Ultravox Realtime [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) endpoints using the `sip` medium with `outgoing` property.
 
 ```js
 medium: {
@@ -64,10 +70,12 @@ medium: {
 }
 ```
 
+When you create the call, Ultravox will automatically send a SIP invite using the properties provided.
+
 ### Outgoing SIP Parameters
 <ParamField body="to" type="string" required>
   The target SIP URL to which the Ultravox call will connect.
-  
+
   Examples:
   `sip:username@domain`, `sip:+15551234567@carrier.com`
 </ParamField>
@@ -81,7 +89,7 @@ medium: {
   Optional. Password for connecting to your SIP trunk.
 </ParamField>
 
-### Linphone Example
+### Examples
 
 ```js Example: Creating an Outgoing SIP Call to Linphone
     medium: {
@@ -92,44 +100,37 @@ medium: {
         }
       }
     }
-    ```
+```
 
-## Create an Incoming SIP Call
-
-For incoming SIP calls, you'll need to use `incoming` for the `sip` medium and add it to the request body of the [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) request. This will return a `joinUrl` that can be used to connect to a SIP client.
-
-```js Example: Creating an Incoming SIP Call
-medium: {
-  sip: {
-    incoming: {}
-  }
-}
+```js Example: Creating an Outgoing SIP Call using a Twilio trunk
+    medium: {
+      sip: {
+        outgoing: {
+          to: "+15551234567@trunkname.pstn.twilio.com",
+          from: "+15557654321",  // Some phone number you've purchased from Twilio
+          username: "authorized_user",  // A user you've created in Twilio allowed to use this number
+          password: "password_for_authorized_user"
+        }
+      }
+    }
 ```
 
 ## Supported Codecs
-<Info>
-  Incoming SIP currently only supports PCMA and PCMU. Other codecs are coming soon.
-</Info>
 
 Ultravox Realtime supports wideband (AKA "HD audio") and narrowband SIP via various codecs:
 
-### Wideband Codecs (Recommended)
-| Codec | Audio Quality | Outgoing SIP | Incoming SIP |
-|-------|---------------|--------------|--------------|
-| G.722 | HD (16kHz) | ✅ | Coming Soon |
-| G.722.1 | HD (16kHz) | ✅ | Coming Soon |
-| G.722.2 | HD (16kHz) | ✅ | Coming Soon |
-| Opus | Premium HD (48kHz) | ✅ | Coming Soon |
-
-### Narrowband Codecs (Legacy Support)
-| Codec | Audio Quality | Outgoing SIP | Incoming SIP |
-|-------|---------------|--------------|--------------|
-| G.711 (PCMU/u-law) | Standard (8kHz) | ✅ | ✅ |
-| G.711 (PCMA/a-law) | Standard (8kHz) | ✅ | ✅ |
-| iLBC | Standard (8kHz) | ✅ | Coming Soon |
+| Codec | Audio Quality |
+|-------|---------------|
+| G.722 | HD (16kHz) |
+| G.722.1 | HD (16kHz) |
+| G.722.2 | HD (16kHz) |
+| Opus | Premium HD (48kHz) |
+| G.711 (PCMU/u-law) | Standard (8kHz) |
+| G.711 (PCMA/a-law) | Standard (8kHz) |
+| iLBC | Standard (8kHz) |
 
 Using any other codec will cause calls to fail.
 
 ## Integrations
-* [jambonz](https://jambonz.org) enables SIP connections and has an integration for Ultravox. [Learn more](/telephony/overview#jambonz-portal-setup).
 * [Voximplant](https://voximplant.com/docs) Provides a native connector for Ultravox. [Learn more](https://voximplant.com/docs/guides/ai/ultravox)
+* [jambonz](https://jambonz.org) enables SIP connections and has an integration for Ultravox. [Learn more](/telephony/overview#jambonz-portal-setup).

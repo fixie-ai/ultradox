@@ -286,6 +286,18 @@
             ]
           },
           {
+            "group": "SIP Configuration",
+            "pages": [
+              "api-reference/sip/sip-get",
+              "api-reference/sip/sip-partial-update",
+              "api-reference/sip/sip-registrations-create",
+              "api-reference/sip/sip-registrations-list",
+              "api-reference/sip/sip-registrations-get",
+              "api-reference/sip/sip-registrations-partial-update",
+              "api-reference/sip/sip-registrations-delete"
+            ]
+          },
+          {
             "group": "Schema",
             "pages": [
               "api-reference/schema/call-definition",
