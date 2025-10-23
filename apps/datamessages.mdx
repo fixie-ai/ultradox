@@ -8,7 +8,7 @@ tag: "UPDATED"
 Data messages are used to communicate non-audio information during Ultravox calls. These messages enable real-time control and interaction with ongoing conversations.
 
 ## Communication Methods
-* **WebRTC Data Channels** → Used by our [SDKs](/apps/sdks) and [WebSocket](/apps/websockets) connections for bi-directional, real-time message exchange during calls. This is the primary method for client apps to interact with calls.
+* **Client Data Channels** → Used by our [SDKs](/apps/sdks) and [WebSocket](/apps/websockets) connections for bi-directional, real-time message exchange during calls. This is the primary method for client apps to interact with calls.
 * **Data Connection** → Add a [data connection](/api-reference/calls/calls-post#body-data-connection) to your call to receive messages via a separate WebSocket connection. This is particularly useful for:
   * Telephony integrations where the client doesn't support WebRTC
   * Server-side applications that need to monitor call events or route data to external systems
