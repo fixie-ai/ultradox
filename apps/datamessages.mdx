@@ -296,7 +296,7 @@ Message sent by the server to clear buffered output audio. Integrators should dr
 }
 ```
 <Note>
-  This message is only available on WebSocket connections and is critical for proper interruption handling.
+  This message is only used with WebSocket connections. Handling this message allows for [larger client buffers](/api-reference/agents/agents-post#body-call-template-medium-server-web-socket-client-buffer-size-ms) while maintaining responsive interrupts. Larger client buffers make choppy audio less likely in the presence of network disruption or resource contention.
 </Note>
 
 
