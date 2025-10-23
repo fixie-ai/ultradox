@@ -218,7 +218,8 @@ Contains the result of a tool invocation.
   Must match the invocationId from the corresponding invocation.
 </ResponseField>
 <ResponseField name="result" type="string">
-  Tool execution result, often a JSON string. May be omitted for errors.
+  Typically the tool execution result as viewed by the agent, which is often a JSON string. May be omitted for errors.
+  For responseTypes other than `tool-response`, this may be a JSON string for an object that further specifies how the response should be handled. See [special response types](https://docs.ultravox.ai/tools/custom/changing-call-state#special-tool-response-types).
 </ResponseField>
 <ResponseField name="responseType" type="string" default="tool-response">
   Type of response being provided.
