@@ -2,105 +2,370 @@
 title: "Protocol & Data Messages"
 description: Protocol documentation for messages exchanged between client and server during Ultravox calls.
 icon: network-wired
+tag: "UPDATED"
 ---
 
-Data messages are used to communicate non-audio information between your client and an Ultravox server during calls.
-These messages work across WebRTC data channels (used by our [SDKs](/apps/sdks) and [WebSocket](/apps/websockets) connections.
-Messages can also be received by adding a [data connection](/api-reference/calls/calls-post#body-data-connection) to your call, which is especially useful for telephony.
+Data messages are used to communicate non-audio information between your client and the Ultravox service during calls. These messages enable real-time control and interaction with ongoing conversations beyond just audio streams.
 
+## Communication Methods
+* **WebRTC Data Channels** → Used by our [SDKs](/apps/sdks) and [WebSocket](/apps/websockets) connections for bi-directional, real-time message exchange during calls. This is the primary method for client apps to interact with calls.
+* **Data Connection** → Add a [data connection](/api-reference/calls/calls-post#body-data-connection) to your call to receive messages via a separate WebSocket connection. This is particularly useful for:
+  * Telephony integrations where the client doesn't support WebRTC
+  * Server-side applications that need to monitor call events or route data to external systems
+* **REST API** → Inject messages into active calls via HTTP POST requests. See [Sending Messages to Live Calls via REST API](#sending-messages-to-live-calls-via-rest-api) below for detailed implementation guidelines.
+
+## Messages at a Glance
+Details on each message type appear below in [Data Message Details](#data-message-details).
+
+### Client-to-Server Messages
+| Type         | Message                                    |  Description                                                           |
+| ------------ | ------------------------------------------ |  --------------------------------------------------------------------- |
+| Call Control | [HangUp](#hangup)                          | Instructs the agent to end the call with an optional farewell message. |
+| Call Control | [SetOutputMedium](#setoutputmedium)        | Sets server's output medium to text or voice.                          |
+| System       | [Ping](#ping)                              | Measures round-trip data latency.                                      |
+| Tools        | [ClientToolResult and DataConnectionToolResult](#clienttoolresult-and-dataconnectiontoolresult)      | Contains the result of a tool invocation.                       |
+| User Input   | [ForcedAgentMessage](#forcedagentmessage)  | Forces the agent to say a specific message or invoke tools.            |
+| User Input   | [UserTextMessage](#usertextmessage)        | Used to send a user message to the agent.                              |
+
+### Server-to-Client Messages
+| Type         | Message                                       | Description                                            |
+| ------------ | --------------------------------------------- | ------------------------------------------------------ |
+| Conversation | [CallStarted](#callstarted)                   | Notifies that a call has started.                      |
+| Conversation | [Transcript](#transcript)                     | Contains text for an utterance made during the call.   |
+| System       | [Debug](#debug)                               | Useful for application debugging. Excluded by default. |
+| System       | [PlaybackClearBuffer](#playbackclearbuffer)   | Used to clear buffered output audio. WebSocket only.   |
+| System       | [Pong](#pong)                                 | Server reply to a ping message.                        |
+| System       | [State](#state)                               | Indicates the server's current state.                  |
+| Tools        | [ClientToolInvocation and DataConnectionToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation) | Asks the client or data connection to invoke a tool.               |
+
+
+## Data Message Details
 All messages are JSON objects with camelCase keys containing:
 - A required `type` field identifying the message type
 - Additional fields specific to each message type
 
-## Messages at a Glance
-This table provides key messages at a glance. Details on each message type appear below. Sender indicates client or server message. Client messages are sent from the client to the server. Server messages are sent from the server to the client.
-| Message | Sender | Description |
-| --------------------------------------------- | ------ | ------------------------------------------------------ |
-| [Ping](#ping)                                 | Client | Measures round-trip data latency.                      |
-| [Pong](#pong)                                 | Server | Server reply to a ping message.                        |
-| [State](#state)                               | Server | Indicates the server's current state.                  |
-| [Transcript](#transcript)                     | Server | Contains text for an utterance made during the call.   |
-| [UserTextMessage](#usertextmessage)           | Client | Used to send a user message to the agent via text.     |
-| [SetOutputMedium](#setoutputmedium)           | Client | Sets server's output medium to text or voice.          |
-| [ClientToolInvocation](#clienttoolinvocation) | Server | Asks the client to invoke a client tool.               |
-| [ClientToolResult](#clienttoolresult)         | Client | Contains the result of a client tool invocation.       |
-| [Debug](#debug)                               | Server | Useful for application debugging. Excluded by default. |
-| [CallStarted](#callstarted)                   | Server | Notifies that a call has started.                      |
-| [PlaybackClearBuffer](#playbackclearbuffer)   | Server | Used to clear buffered output audio. WebSocket only.   |
-
-
-## Ping
+### Ping
 A message sent by the client to measure round-trip data message latency.
-- `type: "ping"`
-- `timestamp`: Float. Client timestamp for latency measurement.
 
-## Pong
+**Message Structure**
+```js
+{
+  "type": "ping",
+  "timestamp": 1234567890.123
+}
+```
+
+**Fields**
+<ResponseField name="timestamp" type="float" required>
+  Unix timestamp with millisecond precision. Client timestamp for latency measurement.
+</ResponseField>
+
+### Pong
 A message sent by the server in response to a PingMessage. The timestamp is copied from the PingMessage.
-- `type: "pong"`
-- `timestamp`: Float. Matching ping timestamp.
 
-## State
+**Message Structure**
+```js
+{
+  "type": "pong",
+  "timestamp": 1234567890.123
+}
+```
+
+**Fields**
+<ResponseField name="timestamp" type="float" required>
+  Echoed timestamp from the original ping message.
+</ResponseField>
+
+
+### State
 A message sent by the server to indicate its current state.
-- `type: "state"`
-- `state`: Current session state
 
-## Transcript
+**Message Structure**
+```js
+{
+  "type": "state",
+  "state": "listening"
+}
+```
+**Fields**
+<ResponseField name="state" type="string" required>
+  Current sesssion state. Common values include "listening", "thinking", and "speaking".
+</ResponseField>
+
+### Transcript
 A message containing text transcripts of user and agent utterances.
-- `type: "transcript"`
-- `role`: "user" or "agent". Who emitted the utterance.
-- `medium`: "text" or "voice". The medium through which the utterance was emitted.
-- `text`: String. Full transcript text (exclusive with delta). The full text of the transcript so far. Either this or delta will be set.
-- `delta`: String. Incremental transcript update (exclusive with text). The additional transcript text added since the last agent transcript message.
-- `final`: Boolean. Whether more updates are expected for this utterance.
-- `ordinal`: int. Used for ordering transcripts within a call.
 
-## UserTextMessage
-A user message sent via text.
-- `type: "user_text_message"`
-- `text`: String. The content of the user message.
-- `urgency`: "immediate" | "soon" | "later". Optional, defaults to "soon". Determines whether this message can interrupt the agent (only "immediate" will interrupt) and whether it should trigger a generation in the absence of other user input ("later" will wait until the next natural generation).
+**Message Structure**
 
-**Examples: Using deferResponse**
-|||
-| :------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| Emphasizing the Task            | Provide instructions to the agent to emphasize what it should do. (e.g. `"Translate, don't respond"`)<br /><br />Have your application send information about what the user is doing or looking at. (e.g. `"User is viewing property #123-456"`)           |
-| Moving the Conversation Forward | After N turns, tell the agent to try to close the sale or end the call.                                            |
-| Running Background Processes    | Allow the conversation to proceed while a background process runs, then have the agent become aware of the result. |
+```js
+{
+  "type": "transcript",
+  "role": "agent",
+  "medium": "voice",
+  "text": "Full transcript so far",  // Either text or delta will be set
+  "delta": null,
+  "final": false,
+  "ordinal": 1
+}
+```
 
-## SetOutputMedium
+**Fields**
+<ResponseField name="role" type="string" required>
+  Who emitted the utterance. Must be either "user" or "agent".
+</ResponseField>
+<ResponseField name="medium" type="string" default="voice">
+  The medium through which the utterance was emitted. Either "text" or "voice".
+</ResponseField>
+<ResponseField name="text" type="string">
+  The full text of the transcript so far. Either this or delta will be set, but not both.
+</ResponseField>
+<ResponseField name="delta" type="string">
+  The additional transcript text added since the last transcript message. Either this or text will be set, but not both.
+</ResponseField>
+<ResponseField name="final" type="boolean" required>
+  Whether to expect additional transcript messages for this conversation round.
+</ResponseField>
+<ResponseField name="ordinal" type="integer" required>
+  The ordinal of the message within the current call, used for ordering transcripts.
+</ResponseField>
+
+### UserTextMessage
+A user message sent via text. The message appears to the agent as if it came from the user.
+
+**Message Structure**
+```js
+{
+  "type": "user_text_message",
+  "text": "Your message here",
+  "urgency": "soon"  // Optional, defaults to "soon"
+}
+```
+
+**Fields**
+<ResponseField name="text" type="string" required>
+  The content of the user message.
+</ResponseField>
+<ResponseField name="urgency" type="string" default="soon">
+  Determines whether this message can interrupt the agent and whether it should trigger a generation. Options:
+
+  * immediate → Interrupts the agent if speaking and starts generation immediately.
+  * soon → Doesn't interrupt but starts generation at the next opportunity.
+  * later → Message is considered during the next natural generation without forcing new generation.
+</ResponseField>
+
+
+### SetOutputMedium
 Message sent by the client to set the server's output medium.
-- `type: "set_output_medium"`
-- `medium`: Either "voice" or "text".
 
-## ClientToolInvocation
-Sent by the server to ask the client to invoke a client-implemented tool with the given parameters. The client is expected to send back a ClientToolResultMessage with a matching invocationId.
-- `type: "client_tool_invocation"`
-- `toolName`: String. Tool to invoke
-- `invocationId`: String. Unique invocation ID
-- `parameters`: Dict[String, Any]. Tool parameters
+**Message Structure**
+```js
+{
+  "type": "set_output_medium",
+  "medium": "voice"
+}
+```
+**Fields**
+<ResponseField name="medium" type="string" required>
+  Output medium to use. Must be either "voice" or "text".
+</ResponseField>
 
-## ClientToolResult
-Contains the result of a client-implemented tool invocation.
-- `type: "client_tool_result"`
-- `agentReaction`: String. Optional. Must be one of the following: "speaks" (the default), "listens", or "speaks-once". See [Agent Responses to Tools](/tools/custom/agent-responses) for more.
-- `invocationId`: String. Matches corresponding invocation.
-- `result`: String. Tool execution result. Often a JSON string. May be omitted for errors.
-- `responseType`: String. Defaults to "tool-response".
-- `errorType`: Optional string. Should be omitted when result is set. Otherwise, should be "undefined" if the a tool with the given name does not exist or "implementation-error" otherwise.
-- `errorMessage`: String. Error details if failed (optional).
+### ClientToolInvocation and DataConnectionToolInvocation
+Sent by the server to ask the client or data connection to invoke a tool with the given parameters. The client or data connection is expected to send back a ClientToolResultMessage or DataConnectionToolResultMessage with a matching invocationId.
 
-## Debug
-A message sent by the server to communicate debug information.
-- `type: "debug"`
-- `message`: String. Debug information
-- Disabled by default
+**Message Structure**
 
-## CallStarted
+```js
+{
+  "type": "client_tool_invocation",
+  "toolName": "get_weather",
+  "invocationId": "unique-invocation-id",
+  "parameters": {
+    "location": "Seattle"
+  }
+}
+```
+
+**Fields**
+<ResponseField name="toolName" type="string" required>
+  Name of the tool to invoke.
+</ResponseField>
+<ResponseField name="invocationId" type="string" required>
+  Unique identifier for this invocation. Must be included in the corresponding ClientToolResult.
+</ResponseField>
+<ResponseField name="parameters" type="object" required>
+  Tool-specific parameters as a JSON object.
+</ResponseField>
+
+<Note>
+<b>Data Connection Equivalent: DataConnectionToolInvocation</b>
+<br />
+If you are using a Data Connection, you need to use `DataConnectionToolInvocation` instead.
+</Note>
+
+### ClientToolResult and DataConnectionToolResult
+Contains the result of a tool invocation.
+
+**Message Structure**
+```js
+{
+  "type": "client_tool_result",
+  "invocationId": "matching-invocation-id",
+  "result": "Tool execution result",
+  "responseType": "tool-response",
+  "agentReaction": "speaks",
+  "errorType": null,
+  "errorMessage": null,
+  "updateCallState": null
+}
+```
+**Fields**
+<ResponseField name="invocationId" type="string" required>
+  Must match the invocationId from the corresponding ClientToolInvocation.
+</ResponseField>
+<ResponseField name="result" type="string">
+  Tool execution result, often a JSON string. May be omitted for errors.
+</ResponseField>
+<ResponseField name="responseType" type="string" default="tool-response">
+  Type of response being provided.
+</ResponseField>
+<ResponseField name="agentReaction" type="string" default="speaks">
+  How the agent should react. Options: "speaks" (default), "listens", or "speaks-once". See [Agent Responses to Tools](/tools/custom/agent-responses) for more.
+</ResponseField>
+<ResponseField name="errorType" type="string">
+  Error classification if the tool failed. Should be omitted when result is set.
+  
+  Options:
+  * undefined → Tool with the given name does not exist
+  * implementation-error → Tool exists but execution failed
+</ResponseField>
+<ResponseField name="errorMessage" type="string">
+  Human-readable error description if the tool failed.
+</ResponseField>
+<ResponseField name="updateCallState" type="object">
+  Optional state updates to apply to the call. See [Tool State](/agents/guiding-agents#tool-state) for more.
+</ResponseField>
+
+<Note>
+<b>Data Connection Equivalent: DataConnectionToolResult</b>
+<br />
+If you are using a Data Connection, you need to use `DataConnectionToolResult` instead.
+</Note>
+
+### Debug
+A message sent by the server to communicate debug information. Disabled by default.
+
+**Message Structure**
+```js
+{
+  "type": "debug",
+  "message": "Debug information here"
+}
+```
+**Fields**
+<ResponseField name="message" type="string" required>
+  Debug information or diagnostic details.
+</ResponseField>
+<Note>
+  Debug messages are disabled by default and must be explicitly enabled for debugging purposes.
+</Note>
+
+### CallStarted
 A message sent by the server to notify that a call has started.
-- `type: "call_started"`
-- `callId`: String. The ID of the call that has started.
 
-## PlaybackClearBuffer
-Message sent by our server to clear buffered output audio. Integrators should drop as much unplayed output audio as possible in order for interruptions to function properly.
-- `type: "playback_clear_buffer"`
-- WebSocket connections only
+**Message Structure**
+
+```js
+{
+  "type": "call_started",
+  "callId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Fields**
+<ResponseField name="callId" type="string" required>
+  The UUID of the call that has started.
+</ResponseField>
+
+### PlaybackClearBuffer
+Message sent by the server to clear buffered output audio. Integrators should drop as much unplayed output audio as possible for interruptions to function properly.
+
+**Message Structure**
+```js
+{
+  "type": "playback_clear_buffer"
+}
+```
+<Note>
+  This message is only available on WebSocket connections and is critical for proper interruption handling.
+</Note>
+
+
+### ForcedAgentMessage
+Forces the agent to say a specific message or invoke tools.
+
+**Message Structure**
+```js
+{
+  "type": "forced_agent_message",
+  "content": "Text for the agent to say",  // Optional (default: "")
+  "toolCalls": [  // Optional array of tool calls
+    {
+      "id": "unique-id",  // Optional, generated if not provided
+      "name": "tool_name",
+      "arguments": {
+        "param1": "value1"
+      }
+    }
+  ],
+  "uninterruptible": false,  // Optional (default: false)
+  "urgency": "soon"  // Optional: "immediate" or "soon" (default: "soon")
+}
+```
+
+**Fields**
+<ResponseField name="content" type="string" default="">
+  Text content the agent should speak.
+</ResponseField>
+<ResponseField name="toolCalls" type="array">
+  Array of tool invocations to execute.
+</ResponseField>
+<ResponseField name="uninterruptible" type="boolean">
+  If true, prevents interruption while speaking
+</ResponseField>
+<ResponseField name="urgency" type="string" default="soon">
+  Controls when the message is processed. Must be either "immediate" (process immediately) or "soon" (process at next opportunity).
+</ResponseField>
+
+### HangUp
+Instructs the agent to end the call with an optional farewell message.
+
+**Message Structure**
+```js
+{
+  "type": "hang_up",
+  "message": "Goodbye!"
+}
+```
+
+**Fields**
+<ResponseField name="message" type="string" default="">
+  Final message to speak before ending the call.
+</ResponseField>
+
+
+## Sending Messages to Live Calls via REST API
+The [Send Data Message to Call](/api-reference/calls/calls-send-data-message-post) endpoint allows you to inject messages into active calls (calls that are joined and not yet ended).
+
+### Supported Message Types
+* [ForcedAgentMessage](#forcedagentmessage)
+* [HangUp](#hangup)
+* [UserTextMessage](#usertextmessage)
+
+### Responses
+Successful messages sent via the REST API will receive a `204 No Content` response with an empty body.
+
+The potential error responses are:
+* `422 Unprocessable Entity`: Call is not active (either not joined yet or already ended)
+* `404 Not Found`: Call ID not found or doesn't belong to your account
+* `400 Bad Request`: Invalid message format or missing required fields
+* `401 Unauthorized`: Missing or invalid API key
