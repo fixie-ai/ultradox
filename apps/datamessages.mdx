@@ -148,9 +148,9 @@ A user message sent via text. The message appears to the agent as if it came fro
 <ResponseField name="urgency" type="string" default="soon">
   Determines whether this message can interrupt the agent and whether it should trigger a generation. Options:
 
-  * immediate → Interrupts the agent if speaking and starts generation immediately.
-  * soon → Doesn't interrupt but starts generation at the next opportunity.
-  * later → Message is considered during the next natural generation without forcing new generation.
+  * immediate → Interrupts the agent if speaking and starts a new generation immediately.
+  * soon → Doesn't interrupt but starts a generation at the next opportunity.
+  * later → Message is considered during the next natural generation without forcing a new generation.
 </ResponseField>
 
 
