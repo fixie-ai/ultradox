@@ -360,7 +360,7 @@ The [Send Data Message to Call](/api-reference/calls/calls-send-data-message-pos
 ### Responses
 Successful messages sent via the REST API will receive a `204 No Content` response with an empty body.
 
-The potential error responses are:
+Potential error responses include:
 * `401 Unauthorized`: Missing or invalid API key
 * `403 Forbidden`: Insufficient authorization
 * `422 Unprocessable Entity`: Call is not active (either not joined yet or already ended)
