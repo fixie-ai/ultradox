@@ -176,7 +176,7 @@ Sent by the server to ask the client or data connection to invoke a tool with th
 
 ```js
 {
-  "type": "client_tool_invocation",
+  "type": "client_tool_invocation", // Or "data_connection_tool_invocation" for data connections
   "toolName": "get_weather",
   "invocationId": "unique-invocation-id",
   "parameters": {
