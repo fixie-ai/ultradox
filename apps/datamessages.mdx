@@ -235,7 +235,7 @@ Contains the result of a tool invocation.
   * implementation-error → Tool exists but execution failed
 </ResponseField>
 <ResponseField name="errorMessage" type="string">
-  Human-readable error description if the tool failed.
+  Human-readable error description if the tool failed. This is not seen by the model but may be used for debugging.
 </ResponseField>
 <ResponseField name="updateCallState" type="object">
   Optional state updates to apply to the call. See [Tool State](/agents/guiding-agents#tool-state) for more.
