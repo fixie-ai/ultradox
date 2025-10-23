@@ -18,25 +18,25 @@ Data messages are used to communicate non-audio information during Ultravox call
 Details on each message type appear below in [Data Message Details](#data-message-details).
 
 ### Client-to-Server Messages
-| Type         | Message                                    |  Description                                                           |
-| ------------ | ------------------------------------------ |  --------------------------------------------------------------------- |
-| Call Control | [HangUp](#hangup)                          | Instructs the agent to end the call with an optional farewell message. |
-| Call Control | [SetOutputMedium](#setoutputmedium)        | Sets server's output medium to text or voice.                          |
-| System       | [Ping](#ping)                              | Measures round-trip data latency.                                      |
-| Tools        | [ClientToolResult and DataConnectionToolResult](#clienttoolresult-and-dataconnectiontoolresult)      | Contains the result of a tool invocation.                       |
-| User Input   | [ForcedAgentMessage](#forcedagentmessage)  | Forces the agent to say a specific message or invoke tools.            |
-| User Input   | [UserTextMessage](#usertextmessage)        | Used to send a user message to the agent.                              |
+| Type           | Message                                                                                         |  Description                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------- |  --------------------------------------------------------------------- |
+| Agent Behavior | [ForcedAgentMessage](#forcedagentmessage)                                                       | Forces the agent to say a specific message or invoke tools.            |
+| Call Control   | [HangUp](#hangup)                                                                               | Instructs the agent to end the call with an optional farewell message. |
+| Call Control   | [SetOutputMedium](#setoutputmedium)                                                             | Sets server's output medium to text or voice.                          |
+| System         | [Ping](#ping)                                                                                   | Measures round-trip data latency.                                      |
+| Tools          | [ClientToolResult and DataConnectionToolResult](#clienttoolresult-and-dataconnectiontoolresult) | Contains the result of a tool invocation.                              |
+| User Input     | [UserTextMessage](#usertextmessage)                                                             | Used to send a user message to the agent.                              |
 
 ### Server-to-Client Messages
-| Type         | Message                                       | Description                                            |
-| ------------ | --------------------------------------------- | ------------------------------------------------------ |
-| Conversation | [CallStarted](#callstarted)                   | Provides some basic information about the call at its start.                      |
-| Conversation | [Transcript](#transcript)                     | Contains text for an utterance made during the call.   |
-| System       | [Debug](#debug)                               | Useful for application debugging. Excluded by default. |
-| System       | [PlaybackClearBuffer](#playbackclearbuffer)   | Used to clear buffered output audio. WebSocket only.   |
-| System       | [Pong](#pong)                                 | Server reply to a ping message.                        |
-| System       | [State](#state)                               | Indicates the server's current state.                  |
-| Tools        | [ClientToolInvocation and DataConnectionToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation) | Asks the client or data connection to invoke a tool.               |
+| Type         | Message                                                                                                         | Description                                                  |
+| ------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Conversation | [CallStarted](#callstarted)                                                                                     | Provides some basic information about the call at its start. |
+| Conversation | [Transcript](#transcript)                                                                                       | Contains text for an utterance made during the call.         |
+| System       | [Debug](#debug)                                                                                                 | Useful for application debugging. Excluded by default.       |
+| System       | [PlaybackClearBuffer](#playbackclearbuffer)                                                                     | Used to clear buffered output audio. WebSocket only.         |
+| System       | [Pong](#pong)                                                                                                   | Server reply to a ping message.                              |
+| System       | [State](#state)                                                                                                 | Indicates the server's current state.                        |
+| Tools        | [ClientToolInvocation and DataConnectionToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation) | Asks the client or data connection to invoke a tool.         |
 
 
 ## Data Message Details
@@ -87,6 +87,7 @@ A message sent by the server to indicate its current state.
   "state": "listening"
 }
 ```
+
 **Fields**
 <ResponseField name="state" type="string" required>
   Current session state.  One of: `idle`, `listening`, `thinking`, or `speaking`.
@@ -164,6 +165,7 @@ Message sent by the client to set the server's output medium.
   "medium": "voice"
 }
 ```
+
 **Fields**
 <ResponseField name="medium" type="string" required>
   Output medium to use. Must be either "voice" or "text".
@@ -213,6 +215,7 @@ Contains the result of a tool invocation.
   "updateCallState": null
 }
 ```
+
 **Fields**
 <ResponseField name="invocationId" type="string" required>
   Must match the invocationId from the corresponding invocation.
@@ -252,6 +255,7 @@ A message sent by the server to communicate debug information. Disabled by defau
   "message": "Debug information here"
 }
 ```
+
 **Fields**
 <ResponseField name="message" type="string" required>
   Debug information or diagnostic details.
@@ -286,6 +290,7 @@ Message sent by the server to clear buffered output audio. Integrators should dr
   "type": "playback_clear_buffer"
 }
 ```
+
 <Note>
   This message is only used with WebSocket connections. Handling this message allows for [larger client buffers](/api-reference/agents/agents-post#body-call-template-medium-server-web-socket-client-buffer-size-ms) while maintaining responsive interrupts. Larger client buffers make choppy audio less likely in the presence of network disruption or resource contention.
 </Note>
@@ -356,7 +361,6 @@ The [Send Data Message to Call](/api-reference/calls/calls-send-data-message-pos
 Successful messages sent via the REST API will receive a `204 No Content` response with an empty body.
 
 The potential error responses are:
-* `422 Unprocessable Entity`: Call is not active (either not joined yet or already ended)
-* `404 Not Found`: Call ID not found or doesn't belong to your account
-* `400 Bad Request`: Invalid message format or missing required fields
 * `401 Unauthorized`: Missing or invalid API key
+* `403 Forbidden`: Insufficient authorization
+* `422 Unprocessable Entity`: Call is not active (either not joined yet or already ended)
