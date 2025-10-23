@@ -226,7 +226,8 @@
               "api-reference/calls/calls-stages-message-audio-get",
               "api-reference/calls/calls-deleted-calls-list",
               "api-reference/calls/calls-deleted-calls-get",
-              "api-reference/calls/calls-events-list"
+              "api-reference/calls/calls-events-list",
+              "api-reference/calls/calls-send-data-message-post"
             ]
           },
           {
