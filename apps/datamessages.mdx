@@ -330,7 +330,7 @@ Forces the agent to say a specific message or invoke tools.
   Array of tool invocations to execute.
 </ResponseField>
 <ResponseField name="uninterruptible" type="boolean">
-  If true, prevents interruption while speaking
+  If true, prevents interruption while the agent speaks this message. (Note that tools are always uninterruptible.)
 </ResponseField>
 <ResponseField name="urgency" type="string" default="soon">
   Controls when the message is processed. Must be either "immediate" (process immediately) or "soon" (process at next opportunity).
