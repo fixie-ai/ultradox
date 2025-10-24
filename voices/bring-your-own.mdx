@@ -26,7 +26,7 @@ You can do that in the [Ultravox console](https://app.ultravox.ai/settings/) or 
   You can skip this step if you're using the "generic" ExternalVoice integration.
 </Note>
 
-## Providers
+## Named Providers
 
 When setting an [ExternalVoice](/api-reference/calls/calls-post#body-external-voice) on your agent or call,
 there are a few different providers available. The named providers such as ElevenLabs and Cartesia have
@@ -35,18 +35,20 @@ Ultravox uses their streaming API and takes advantage of audio timing informatio
 synchronize transcripts.  While you'll still need to work with the provider to ensure your agent's requests will
 be fulfilled reliably and quickly, you can be confident that Ultravox knows how to interact with your provider.
 
-If you'd like to use some other TTS provider, you may be able to get by with our "generic" integration option.
-This route gives you much more flexibility to define requests to your provider. Any provider that accepts json
-post requests and that returns either WAV or raw PCM audio (including within JSON bodies) ought to work.
+If you'd like to use some other TTS provider, you may be able to get by with our [Generic TTS](#generic-tts-options) integration option.
 
-Since generic integrations don't stream text in (but can stream audio out) Ultravox has to buffer input text
-before sending it to your provider, which means slightly higher agent response times and possible audio
-discontinuities at sentence boundaries.
+### Cartesia
 
-Additionally since generic integrations don't provide audio timing information, transcript timing must be approximated.
-Once Ultravox has a full generation (and therefore the true audio duration), it assumes each character requires
-the same duration and approximates transcripts based on that. While the first generation is still streaming, Ultravox
-relies on an estimated words-per-minute speaking rate to approximate transcripts.
+Cartesia also provides many high quality voices. We use their websocket API to stream text in and audio out in
+parallel. Cartesia provides word-level timing information interspersed with audio, helping to keep transcripts
+in sync with audio.
+
+```json
+"cartesia": {
+  "voiceId": "af346552-54bf-4c2b-a4d4-9d2820f51b6c",
+  "model": "sonic-2"
+}
+```
 
 ### Eleven Labs
 
@@ -71,19 +73,6 @@ what was spoken in the event of an interruption.
 }
 ```
 
-### Cartesia
-
-Cartesia also provides many high quality voices. We use their websocket API to stream text in and audio out in
-parallel. Cartesia provides word-level timing information interspersed with audio, helping to keep transcripts
-in sync with audio.
-
-```json
-"cartesia": {
-  "voiceId": "af346552-54bf-4c2b-a4d4-9d2820f51b6c",
-  "model": "sonic-2"
-}
-```
-
 ### LMNT
 
 LMNT's "aurora" model lags the other providers in terms of quality, though their experimental "blizzard" model shows
@@ -97,6 +86,21 @@ text in and audio out in parallel and provides audio timing information to help 
   "model": "blizzard"
 }
 ```
+
+
+## Generic TTS Options
+
+The "generic" TTS route gives you much more flexibility to define requests to your provider. Any provider that accepts json
+post requests and that returns either WAV or raw PCM audio (including within JSON bodies) ought to work.
+
+Since generic integrations don't stream text in (but can stream audio out) Ultravox has to buffer input text
+before sending it to your provider, which means slightly higher agent response times and possible audio
+discontinuities at sentence boundaries.
+
+Additionally since generic integrations don't provide audio timing information, transcript timing must be approximated.
+Once Ultravox has a full generation (and therefore the true audio duration), it assumes each character requires
+the same duration and approximates transcripts based on that. While the first generation is still streaming, Ultravox
+relies on an estimated words-per-minute speaking rate to approximate transcripts.
 
 ### Deepgram
 
@@ -146,6 +150,32 @@ Google's TTS API returns json, so it requires an extra `jsonAudioFieldPath` in y
 }
 ```
 
+### Inworld
+Inworld's TTS API returns json, so it requires an extra `jsonAudioFieldPath` field. To use the streaming endpoint, you'll also need to override the `responseMimeType` field so we know to treat the response as [json lines](https://jsonlines.org/).
+
+```json
+{
+  "url": "https://api.inworld.ai/tts/v1/voice:stream",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": "Basic YOUR_INWORLD_BASIC_API_KEY"
+  },
+  "body": {
+    "voiceId": "Hades",
+    "modelId": "inworld-tts-1",
+    "text": "{text}",
+    "audioConfig": {
+        "audioEncoding": "LINEAR16",
+        "speakingRate": 1.0,
+        "sampleRateHertz": 48000
+    }
+  },
+  "responseSampleRate": 48000,
+  "responseMimeType": "application/jsonl",
+  "jsonAudioFieldPath": "result.audioContent"
+}
+```
+
 ### OpenAI
 
 OpenAI also has a TTS API you can use with our generic ExternalVoice option.
@@ -165,28 +195,6 @@ OpenAI also has a TTS API you can use with our generic ExternalVoice option.
     "speed": 1.0
   },
   "responseSampleRate": 24000
-}
-```
-
-### Resemble
-
-Resemble also has a TTS API you can use with our generic ExternalVoice option.
-
-```json
-{
-  "url": "https://p.cluster.resemble.ai/stream",
-  "headers": {
-    "Authorization": "Bearer YOUR_RESEMBLE_API_KEY",
-    "Content-Type": "application/json",
-    "Accept": "audio/wav"
-  },
-  "body": {
-    "data": "{text}",
-    "voice_uuid": "0842fdf9",
-    "precision": "PCM_16",
-    "sample_rate": 44100
-  },
-  "responseSampleRate": 44100
 }
 ```
 
@@ -217,30 +225,51 @@ You can use a generic ExternalVoice with your self-hosted Orpheus instance:
 }
 ```
 
+### Resemble
 
-### Inworld
-Inworld's TTS API returns json, so it requires an extra `jsonAudioFieldPath` field. To use the streaming endpoint, you'll also need to override the `responseMimeType` field so we know to treat the response as [json lines](https://jsonlines.org/).
+Resemble also has a TTS API you can use with our generic ExternalVoice option.
 
 ```json
 {
-  "url": "https://api.inworld.ai/tts/v1/voice:stream",
+  "url": "https://p.cluster.resemble.ai/stream",
   "headers": {
+    "Authorization": "Bearer YOUR_RESEMBLE_API_KEY",
     "Content-Type": "application/json",
-    "Authorization": "Basic YOUR_INWORLD_BASIC_API_KEY"
+    "Accept": "audio/wav"
   },
   "body": {
-    "voiceId": "Hades",
-    "modelId": "inworld-tts-1",
-    "text": "{text}",
-    "audioConfig": {
-        "audioEncoding": "LINEAR16",
-        "speakingRate": 1.0,
-        "sampleRateHertz": 48000
-    }
+    "data": "{text}",
+    "voice_uuid": "0842fdf9",
+    "precision": "PCM_16",
+    "sample_rate": 44100
   },
-  "responseSampleRate": 48000,
-  "responseMimeType": "application/jsonl",
-  "jsonAudioFieldPath": "result.audioContent"
+  "responseSampleRate": 44100
+}
+```
+
+### Rime
+
+Rime provides a [spell()](https://docs.rime.ai/api-reference/spell) tool to help nail the pronunciation of unique IDs, email addresses, etc.
+
+```json
+{
+  "url": "https://users.rime.ai/v1/rime-tts",
+  "headers": {
+    "Authorization": "Bearer YOUR_RIME_API_KEY",
+    "Content-Type": "application/json",
+    "Accept": "audio/pcm"
+  },
+  "body": {
+    "text": "{text}",
+    "repetition_penalty": 1.5,
+    "top_p": 1,
+    "speaker": "luna",
+    "modelId": "arcana",
+    "samplingRate": 24000,
+    "max_tokens": 1200,
+    "temperature": 0.5
+  },
+  "responseSampleRate": 24000
 }
 ```
 
