@@ -14,6 +14,7 @@ Ultravox Realtime includes several built-in tools that provide common functional
 | leaveVoicemail | Leaves a voicemail and ends the call. Intended to be used with outbound phone calls.                                                              |
 | hangUp         | Terminates the call programmatically. Useful for ending conversations gracefully.                                                                 |
 | playDtmfSounds | Plays dual-tone multi-frequency (dialpad) tones. See [DTMF documentation](/telephony/overview#dtmf) for sending and receiving tones.              |
+| coldTransfer   | Transfers the current call to a human operator. See [Call Transfers](/telephony/call-transfers) for more details.                                 |
 
 More information about these can be found below in [Tool Details →](#built-in-tool-details)
 <Info>
@@ -25,7 +26,7 @@ Using built-in tools is the same as using any other [custom durable tool](./cust
 
 For example, if you created a durable tool named "hangUp" and then provide that tool by name (i.e. not by the toolId), then your tool would be used instead of the built-in hangUp tool.
 
-Add built-in tools to your agents when creating calls or [call stages](/agents/call-stages):
+Add built-in tools when creating agents, calls, or [call stages](/agents/call-stages):
 
 ### Using Tool Names
 
@@ -161,7 +162,7 @@ A dynamic `message` parameter is used for the message that will be left. Optiona
 
 **Static Parameters:**
 <ParamField query="strict" type="bool" default="true">
-  `true` ends the call regardless of user interaction. If set to `false`, any user interaction (i.e. speech or interrupting the voicemail) will cause the call to continue. 
+  `true` ends the call regardless of user interaction. If set to `false`, any user interaction (i.e. speech or interrupting the voicemail) will cause the call to continue.
 </ParamField>
 <ParamField query="result" type="string" default="[Leaving voicemail...]">
   The message that is returned from the tool call. Will be added to conversation history.
@@ -203,7 +204,7 @@ Optionally accepts a dynamic parameter called `reason`. A static parameter calle
 
 **Static Parameters:**
 <ParamField query="strict" type="bool" default="true">
-  `true` ends the call regardless of user interaction. If set to `false`, any user interaction (i.e. speech) will cause the call to continue. 
+  `true` ends the call regardless of user interaction. If set to `false`, any user interaction (i.e. speech) will cause the call to continue.
 </ParamField>
 
 ### `playDtmfSounds`
@@ -247,6 +248,58 @@ Requires a dynamic parameter called `digits`. Static parameters for `toneDuratio
 </ParamField>
 <ParamField query="spaceDuration" type="string" default="0.1s">
   The length (in seconds) that spaces (AKA silence between DTMF tones) will be emitted.
+</ParamField>
+
+
+### `coldTransfer`
+
+Transfers the current call to a human operator.
+
+Requires the transfer target. You can optionally include additional headers that will be used in the sip REFER.
+
+**Example Usage:**
+```js Using coldTransfer Tool
+
+// Basic usage
+{
+  "selectedTools": [
+    {
+      "toolName": "coldTransfer",
+      "parameterOverrides": {
+        "target": "sip:user@mytrunk.com"
+      }
+    }
+  ]
+}
+
+// With headers and name/description overrides
+{
+  "selectedTools": [
+    {
+      "toolName": "coldTransfer",
+      "nameOverride": "escalateToManager",
+      "descriptionOverride": "Transfers the call to your shift manager.",
+      "parameterOverrides": {
+        "target": "sip:manager@mytrunk.com",
+        "extraHeaders": {
+          "Referred-By": "sip:agent@mytrunk.com",
+          "X-Custom-Header": "customValue"
+        }
+      }
+    }
+  ]
+}
+```
+#### Parameters
+**Required Parameter Override:**
+<ParamField body="target" type="string" required>
+  The target of the transfer. This is who the user's client should be REFER'ed to.
+  A SIP URI is always allowed. A phone number in E.164 format may be allowed depending on your medium and telephony configuration.
+</ParamField>
+
+**Optional Parameter:**
+<ParamField body="extraHeaders" type="object">
+  A string-to-string map of headers to include in the REFER request. Custom headers should use the "X-" prefix to avoid conflicts with standard SIP headers.
 </ParamField>
 
 ## Customizing Built-in Tools
