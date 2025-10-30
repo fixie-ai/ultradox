@@ -280,9 +280,9 @@ Requires the transfer target. You can optionally include additional headers that
       "nameOverride": "escalateToManager",
       "descriptionOverride": "Transfers the call to your shift manager.",
       "parameterOverrides": {
-        "target": "sip:user@mytrunk.com",
+        "target": "sip:manager@mytrunk.com",
         "extraHeaders": {
-          "Referred-By": "sip:userPhoneNumber@mytrunk.com",
+          "Referred-By": "sip:agent@mytrunk.com",
           "X-Custom-Header": "customValue"
         }
       }
