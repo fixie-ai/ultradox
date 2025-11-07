@@ -6,9 +6,9 @@ tag: "NEW"
 ---
 
 <Danger>
-  <b>SIP Billing Starts October 27, 2025</b>
+  <b>SIP Billing Starts November 10, 2025</b>
   <br />
-  Calls via the SIP medium will start to incur additional charges on Monday, October 27, 2025.
+  Calls via the SIP medium will start to incur additional charges on Monday, November 10, 2025.
 
   See https://ultravox.ai/pricing for details.
 </Danger>
@@ -36,10 +36,12 @@ Ultravox supports two setups for incoming SIP calls: IP allowlisting and SIP reg
 
 In either setup, you can choose to allow incoming calls to all of your agents or to specific agents only. Calls will be created automatically from your agent's call template when a SIP invite is received.
 
+By default, calls must be directed to the sip user `agent_{agent_id}` to reach your agent, but you can override this with your own regex matching. The regex for your agents will be checked in order with the first matching agent used for the call. If none match, the global `agent_{agent_id}` will be used if allowAllAgents is enabled. Otherwise (or if that doesn't match either), the call will be rejected.
+
 ### IP Allowlisting
 To set up IP Allowlisting, use the [sip configuration API](/api-reference/sip/sip-partial-update) to add your SIP system's public IP addresses to the `allowedCidrRanges` list. Entries in this list must be IPv4 [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) ranges, e.g. `0.0.0.0/0` for any IP address (not recommended) or `91.200.160.14/32` for the single `91.200.160.14` IP address.
 
-Once your SIP system's IP address(es) are allowed, you can have them send SIP invites to your agents using the pattern `agent_{agent_id}@{your_account_sip_domain}`. The value for `{your_account_sip_domain}` is available when you [view your SIP configuration](/api-reference/sip/sip-get).
+Once your SIP system's IP address(es) are allowed, you can have them send SIP invites to your agents using the pattern `agent_{agent_id}@{your_account_sip_domain}` by default. The value for `{your_account_sip_domain}` is available when you [view your SIP configuration](/api-reference/sip/sip-get). The user portion of the SIP address may be overridden by setting your own per-agent regex.
 
 ### SIP Registration
 In the registration model, Ultravox acts as a SIP client (similar to a softphone) and registers with your SIP server as the user you specify. To set this up, you'll need to create a user in your PBX, configure your PBX to send relevant calls to that user, and then [create a registration](/api-reference/sip/sip-registrations-create) for that user in Ultravox.
@@ -48,6 +50,9 @@ When creating a registration, you'll need to provide the following information:
 * `username`: The username of the user you created in your PBX.
 * `password`: The password for that user.
 * `proxy`: The domain or IP address of your SIP server.
+
+In this case, you'll most likely want to alter the regex for your agents since the to address on invites is unlikely to be `agent_{agent_id}`.
+For example, if your PBX sends calls to `sip:sales@your_sip_domain`, you could set the regex for your sales agent to `^sales$`. Similarly, if your SIP server interacts with PSTN, you could have your agent answer calls to +1-555-123-4567 and +1-555-765-4321 by setting the regex to `^15551234567$|^15557654321$`.
 
 ### Personalizing the Call
 Many parts of an agent can use context to personalize a call. (See [Call Template Configuration](/agents/building-and-editing-agents#call-template-configuration).) You can use SIP headers to populate template context for incoming SIP calls. Each header value is interpretted as JSON to allow for complex values.
