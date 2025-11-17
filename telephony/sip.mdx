@@ -120,6 +120,16 @@ When you create the call, Ultravox will automatically send a SIP invite using th
     }
 ```
 
+## Supported Transport Protocols
+By default, UDP is used as the SIP transport protocol. You may optionally use TCP and/or TLS by explicitly adding a port and transport parameter to the target SIP URL.
+
+| Protocol | How to Use in SIP URL                                |
+|----------|------------------------------------------------------|
+| UDP      | Default. No action required.                         |
+| TCP      |  `sip:<destination>@<sip_domain>:5060;transport=tcp` |
+| TLS      | `sip:<destination>@<sip_domain>:5060;transport=tls`  |
+
+
 ## Supported Codecs
 
 Ultravox Realtime supports wideband (AKA "HD audio") and narrowband SIP via various codecs:
