@@ -61,9 +61,9 @@ For example including the headers `X-Customer-Name: Bob` and `X-Complex-Value: {
 
 In addition to headers you send, Ultravox will automatically add the following context values for incoming SIP calls, provided they are allowed by your agent's context schema:
 
-* ultravox.sip.caller_id: The caller id presented for the incoming call, typically a phone number.
-* ultravox.sip.from_display_name: The display name of the caller, often the name of a person or business if known and a phone number otherwise.
-* ultravox.sip.from_uri: The full SIP URI of the caller.
+* `ultravox.sip.caller_id`: The caller id presented for the incoming call, typically a phone number.
+* `ultravox.sip.from_display_name`: The display name of the caller, often the name of a person or business if known and a phone number otherwise.
+* `ultravox.sip.from_uri`: The full SIP URI of the caller.
 
 If your agent's context allows additional properties (or allows these properties explicitly), the added context will be structured as:
 
