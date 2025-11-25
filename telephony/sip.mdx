@@ -59,6 +59,26 @@ Many parts of an agent can use context to personalize a call. (See [Call Templat
 
 For example including the headers `X-Customer-Name: Bob` and `X-Complex-Value: {"subkey": "value"}` becomes `{"customer_name": "Bob", "complex_value": {"subkey": "value"}}`.
 
+In addition to headers you send, Ultravox will automatically add the following context values for incoming SIP calls, provided they are allowed by your agent's context schema:
+
+* `ultravox.sip.caller_id`: The caller id presented for the incoming call, typically a phone number.
+* `ultravox.sip.from_display_name`: The display name of the caller, often the name of a person or business if known and a phone number otherwise.
+* `ultravox.sip.from_uri`: The full SIP URI of the caller.
+
+If your agent's context allows additional properties (or allows these properties explicitly), the added context will be structured as:
+
+```json
+{
+  "ultravox": {
+    "sip": {
+      "caller_id": "<caller_id>",
+      "from_display_name": "<from_display_name>",
+      "from_uri": "<from_uri>"
+    }
+  }
+}
+```
+
 ## Outgoing SIP Calls
 For outgoing calls, you can create a SIP call with Ultravox Realtime [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) endpoints using the `sip` medium with `outgoing` property.
 
