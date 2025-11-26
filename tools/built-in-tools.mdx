@@ -324,6 +324,12 @@ For bridge transfers (sip medium only), you can override the `sipVerb` parameter
 <ParamField body="extraHeaders" type="object">
   A string-to-string map of headers to include in the REFER (or INVITE) request. Custom headers should use the "X-" prefix to avoid conflicts with standard SIP headers.
 </ParamField>
+<ParamField body="holdMusicUrl" type="string | null">
+  Music to play to the user while the transfer is in progress. Set to `null` to disable hold music.
+  Note that hold music will not be present in Ultravox call recordings as it is added at the SIP level.
+  If you elect to use your own hold music, make sure it is either mp3 or wav, can be downloaded without authentication, and does not exceed 5MB.
+  Default: <audio controls><source src="https://storage.googleapis.com/fixie-web-public/defaultHold.mp3" type="audio/mpeg" />"https://storage.googleapis.com/fixie-web-public/defaultHold.mp3"</audio>
+</ParamField>
 <ParamField body="sipVerb" type="string">
   The SIP method to use for the transfer. Can be either `REFER` (default) or `INVITE` (for bridge transfers).
 </ParamField>
