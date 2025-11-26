@@ -27,15 +27,15 @@ There are two main types of call transfers you can implement:
 
 Additionally, there are two methods by which a transfer may be implemented:
 
-**Refer** → The SIP REFER verb is used to connect the caller with the human operator, removing the agent and related sip stack altogether. This is almost always preferable as long as all the relevant SIP providers support it.
+**Refer** → The SIP REFER verb is used to connect the caller with the human operator, removing the agent and related SIP stack altogether. This is almost always preferable as long as all the relevant SIP providers support it.
 
-**Bridge** → The human operator is dialed using a second SIP INVITE. While the agent leaves the call, the sip stack remains and bridges audio between the caller and the human operator. This is less efficient and will incur additional costs, but may be necessary if your SIP provider does not support REFER transfers.
+**Bridge** → The human operator is dialed using a second SIP INVITE. While the agent leaves the call, the SIP stack remains and bridges audio between the caller and the human operator. This is less efficient and will incur additional costs, but may be necessary if your SIP provider does not support REFER transfers.
 
 
 <Note>
   <b>Bridge Transfers Cost More</b>
 
-  Using bridge transfers will result in sip charges beyond the Ultravox call duration as our sip infrastructure remains active to bridge audio between the caller and human operator.
+  Using bridge transfers will result in SIP charges beyond the Ultravox call duration as our SIP infrastructure remains active to bridge audio between the caller and human operator.
 </Note>
 
 
