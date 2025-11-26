@@ -255,7 +255,9 @@ Requires a dynamic parameter called `digits`. Static parameters for `toneDuratio
 
 Transfers the current call to a human operator.
 
-Requires the transfer target. You can optionally include additional headers that will be used in the sip REFER.
+Requires the transfer target. You can optionally include additional headers that will be used in the SIP REFER (or INVITE).
+
+For bridge transfers (sip medium only), you can override the `sipVerb` parameter from `REFER` to `INVITE` when adding the tool to your agent or call. You may also wish to set `from`, `username`, and/or `password` in order to authenticate the subsequent INVITE. Note that bridge transfers will incur additional cost.
 
 **Example Usage:**
 ```js Using coldTransfer Tool
@@ -289,6 +291,27 @@ Requires the transfer target. You can optionally include additional headers that
     }
   ]
 }
+
+// With bridge transfer (sip medium only)
+{
+  "selectedTools": [
+    {
+      "toolName": "coldTransfer",
+      "nameOverride": "escalateToManager",
+      "descriptionOverride": "Transfers the call to your shift manager.",
+      "parameterOverrides": {
+        "target": "sip:manager@mytrunk.com",
+        "extraHeaders": {
+          "X-Custom-Header": "customValue"
+        },
+        "sipVerb": "INVITE",
+        "from": "+15551234567",  // Caller ID for the INVITE. Defaults to the user's number.
+        "username": "authorized_user",  // Optional username for authenticating the INVITE
+        "password": "password_for_authorized_user"  // Optional password for authenticating as username
+      }
+    }
+  ]
+}
 ```
 #### Parameters
 **Required Parameter Override:**
@@ -297,9 +320,21 @@ Requires the transfer target. You can optionally include additional headers that
   A SIP URI is always allowed. A phone number in E.164 format may be allowed depending on your medium and telephony configuration.
 </ParamField>
 
-**Optional Parameter:**
+**Optional Parameters:**
 <ParamField body="extraHeaders" type="object">
-  A string-to-string map of headers to include in the REFER request. Custom headers should use the "X-" prefix to avoid conflicts with standard SIP headers.
+  A string-to-string map of headers to include in the REFER (or INVITE) request. Custom headers should use the "X-" prefix to avoid conflicts with standard SIP headers.
+</ParamField>
+<ParamField body="sipVerb" type="string">
+  The SIP method to use for the transfer. Can be either `REFER` (default) or `INVITE` (for bridge transfers).
+</ParamField>
+<ParamField body="from" type="string">
+  The caller ID to use when performing an INVITE transfer. Defaults to the user's number. (Unused for REFER transfers.)
+</ParamField>
+<ParamField body="username" type="string">
+  Optional username for authenticating the INVITE request. (Unused for REFER transfers.)
+</ParamField>
+<ParamField body="password" type="string">
+  Optional password for authenticating as `username` in the INVITE request. (Unused for REFER transfers.)
 </ParamField>
 
 ## Customizing Built-in Tools
