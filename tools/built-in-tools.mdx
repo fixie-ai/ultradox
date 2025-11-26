@@ -255,7 +255,9 @@ Requires a dynamic parameter called `digits`. Static parameters for `toneDuratio
 
 Transfers the current call to a human operator.
 
-Requires the transfer target. You can optionally include additional headers that will be used in the sip REFER.
+Requires the transfer target. You can optionally include additional headers that will be used in the sip REFER (or INVITE).
+
+For bridge transfers (sip medium only), you can override the `sipVerb` parameter from `REFER` to `INVITE` when adding the tool to your agent or call. You may also wish to set `from`, `username`, and/or `password` in order to authenticate the subsequent INVITE. Note that bridge transfers will incur additional cost.
 
 **Example Usage:**
 ```js Using coldTransfer Tool
@@ -285,6 +287,27 @@ Requires the transfer target. You can optionally include additional headers that
           "Referred-By": "sip:agent@mytrunk.com",
           "X-Custom-Header": "customValue"
         }
+      }
+    }
+  ]
+}
+
+// With bridge transfer (sip medium only)
+{
+  "selectedTools": [
+    {
+      "toolName": "coldTransfer",
+      "nameOverride": "escalateToManager",
+      "descriptionOverride": "Transfers the call to your shift manager.",
+      "parameterOverrides": {
+        "target": "sip:manager@mytrunk.com",
+        "extraHeaders": {
+          "X-Custom-Header": "customValue"
+        },
+        "sipVerb": "INVITE",
+        "from": "+15551234567",  // Caller ID for the INVITE. Defaults to the user's number.
+        "username": "authorized_user",  // Optional username for authenticating the INVITE
+        "password": "password_for_authorized_user"  // Optional password for authenticating as username
       }
     }
   ]
