@@ -22,7 +22,7 @@ There are two main types of call transfers you can implement:
 
 **Cold Transfer** → The call is immediately transferred to the human operator without any preparation or context sharing. Also known as a blind transfer or unattended transfer.
 
-**Warm Transfer** → The agent provides context about the converation to the human operator before the caller is connected. Also known as an attended transfer or whisper transfer.
+**Warm Transfer** → The agent provides context about the conversation to the human operator before the caller is connected. Also known as an attended transfer or whisper transfer.
 
 
 Additionally, there are two methods by which a transfer may be implemented:
@@ -53,7 +53,7 @@ Should the transfer fail (e.g., the human operator declines the call or otherwis
 <Info>
   <b>Built-in coldTransfer tool with Twilio</b>
   <br />
-  The built-in `coldTransfer` tool also works with Twilio, but be aware that invoking the tool will immediately end the Ultravox call regardless of whether the transfer succeeds.
+  The built-in `coldTransfer` tool also works with Twilio if you've [added your credentials](/telephony/supported-providers#providing-telephony-credentials), but be aware that invoking the tool will immediately end the Ultravox call regardless of whether the transfer succeeds.
 </Info>
 
 To implement call transfers:
