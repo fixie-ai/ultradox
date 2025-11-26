@@ -320,7 +320,7 @@ For bridge transfers (sip medium only), you can override the `sipVerb` parameter
   A SIP URI is always allowed. A phone number in E.164 format may be allowed depending on your medium and telephony configuration.
 </ParamField>
 
-**Optional Parameter:**
+**Optional Parameters:**
 <ParamField body="extraHeaders" type="object">
   A string-to-string map of headers to include in the REFER (or INVITE) request. Custom headers should use the "X-" prefix to avoid conflicts with standard SIP headers.
 </ParamField>
@@ -328,13 +328,13 @@ For bridge transfers (sip medium only), you can override the `sipVerb` parameter
   The SIP method to use for the transfer. Can be either `REFER` (default) or `INVITE` (for bridge transfers).
 </ParamField>
 <ParamField body="from" type="string">
-  The caller ID to use when performing an INVITE transfer. Defaults to the user's number.
+  The caller ID to use when performing an INVITE transfer. Defaults to the user's number. (Unused for REFER transfers.)
 </ParamField>
 <ParamField body="username" type="string">
-  Optional username for authenticating the INVITE request.
+  Optional username for authenticating the INVITE request. (Unused for REFER transfers.)
 </ParamField>
 <ParamField body="password" type="string">
-  Optional password for authenticating as `username` in the INVITE request.
+  Optional password for authenticating as `username` in the INVITE request. (Unused for REFER transfers.)
 </ParamField>
 
 ## Customizing Built-in Tools
