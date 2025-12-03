@@ -1,0 +1,67 @@
+---
+title: "Migrating from Qwen3 32B Model"
+description: How to migrate from the Qwen3 32B model as part of its deprecation.
+---
+
+On December 15, 2025, `fixie-ai/ultravox-qwen3-32b-preview` is being removed.
+
+It will be replaced with GLM 4.6 as the recommended model for most use cases.
+
+## Why Change?
+We're removing Qwen3 32B due to low usage and because GLM 4.6 outperforms it across all our benchmarks. GLM 4.6 offers:
+- Better instruction following
+- More reliable tool calling
+- Improved accuracy with numbers and precise information
+
+This change represents a significant upgrade for voice AI applications while maintaining the same pricing.
+
+## Timeline
+- **December 3, 2025**: Deprecation announced
+- **December 15, 2025**: `fixie-ai/ultravox-qwen3-32b-preview` will no longer work
+
+## How to Migrate
+
+### Option 1: Migrate to GLM 4.6 (Recommended)
+
+Update your model string to use GLM 4.6:
+
+```python
+# Before
+model = "fixie-ai/ultravox-qwen3-32b-preview"
+
+# After
+model = "fixie-ai/ultravox-v0.7"
+```
+
+**Testing Your Prompts:**
+GLM 4.6 is a better instruction follower than Qwen3. If you've emphasized importance with phrases like "you must..." or "always...", ensure these don't harm performance with the new model. GLM 4.6 takes instructions seriously and may over-index on strongly worded directives.
+
+### Option 2: Alternative Models
+
+If your use case has specific requirements, you can choose from other available models:
+
+**Llama 3.3 70B:**
+```python
+model = "fixie-ai/ultravox-llama3.3-70b"
+```
+
+**Gemma 27B:**
+```python
+model = "fixie-ai/ultravox-gemma3-27b-preview"
+```
+
+See the [News page](/changelog/news) for a complete list of available models and their status.
+
+## What Happens If You Don't Migrate?
+
+Starting December 15, 2025, any calls using `fixie-ai/ultravox-qwen3-32b-preview` will fail until you update your model configuration.
+
+## Pricing Impact
+
+None. GLM 4.6 and all other models remain at $0.05 per minute.
+
+<Note>
+  **Need Help?**
+  
+  If you need assistance with this migration, please visit our [Discord community](https://discord.gg/62X253zeWB).
+</Note>

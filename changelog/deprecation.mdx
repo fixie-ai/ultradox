@@ -7,9 +7,13 @@ description: 'Track upcoming breaking changes, migration timelines, and deprecat
 
 ### Currently Scheduled Changes
 
-| Feature/API | Status       | Deprecation Date | Removal Date | Migration Guidance               |
-| ----------- | ------------ | ---------------- | ------------ |----------------------------------|
-| `initiator` | ⚠️ < 30 days  | 2024-10-01       | 2024-12-31   | [Guide](/changelog/migration/firstspeaker) |
+| Feature/API                           | Status        | Deprecation Date | Removal Date | Migration Guidance                  |
+| ------------------------------------- | ------------- | ---------------- | ------------ |-------------------------------------|
+| `fixie-ai/ultravox-qwen3-32b-preview` | ⚠️ < 30 days  | 2025-12-03       | 2025-12-15   | [Guide](/changelog/migration/qwen3) |
+
+### Current Migration Guides
+- [Migrating from Qwen3 32B Model](/changelog/migration/qwen3)
+
 
 ## Deprecation Process
 We recognize that breaking changes and deprecation notices are not fun and we try to avoid them when possible.
@@ -48,13 +52,17 @@ Critical security updates may bypass the standard deprecation timeline. These wi
 - Communicated directly to affected users
 - Accompanied by immediate mitigation steps
 
-## Migration Guides
-
-### Current Migrations
-- [Migrating from Call `initiator`](/changelog/migration/firstspeaker)
-
 <Note>
   <b>Need Help?</b>
 
   If you need assistance with a migration, please visit our [Discord community ](https://discord.gg/62X253zeWB).
 </Note>
+
+## Past Deprecations
+
+| Feature/API | Status       | Deprecation Date | Removal Date | Migration Guidance               |
+| ----------- | ------------ | ---------------- | ------------ |----------------------------------|
+| `initiator` | ⚠️ < 30 days  | 2024-10-01       | 2024-12-31   | [Guide](/changelog/migration/firstspeaker) |
+
+### Past Migrations
+- [Migrating from Call `initiator`](/changelog/migration/firstspeaker)
