@@ -41,11 +41,21 @@ Additionally, there are two methods by which a transfer may be implemented:
 
 ## SIP Call Transfers
 
-For SIP calls, transfers can be achieved using built-in tools. Warm transfers are coming soon. For cold transfers, use the [coldTransfer tool](/tools/built-in-tools#coldtransfer).
+For SIP calls, transfers can be achieved using built-in tools for [cold transfers](/tools/built-in-tools#coldtransfer) or [warm transfers](/tools/built-in-tools#warmtransfer).
 
-The built-in tools use refer transfers by default. If you need to use bridge transfers instead, you can override the `sipVerb` parameter from `REFER` to `INVITE` when adding the tool to your agent (or call). You may also wish to set `from`, `username`, and/or `password` in order to authenticate the subsequent INVITE.
+### Cold Transfers
+
+Cold transfer uses refer transfers by default. If you need to use bridge transfers instead, you can override the `sipVerb` parameter from `REFER` to `INVITE` when adding the tool to your agent (or call). You may also wish to set `from`, `username`, and/or `password` in order to authenticate the subsequent INVITE. The `from` parameter defaults to the user's sip address if not specified.
 
 Should the transfer fail (e.g., the human operator declines the call or otherwise fails to answer), the caller will be returned to the AI agent to continue the conversation. Transfers may be retried by the agent as needed.
+
+### Warm Transfers
+
+When an agent begins a warm transfer, a second SIP call is created to connect the agent with a human operator. This always happens with an INVITE, so you likely want to set `from`, `username`, and `password` parameter overrides in addition to the required `target` parameter override. As with `coldTransfer`, the `from` parameter defaults to the user's sip address if not specified.
+
+When the human operator answers, they speak with the agent to receive context about the caller and reason for the transfer. They may accept or reject the transfer using natural conversation. If they reject the transfer, the agent reconnects with the original caller and explains that the transfer was rejected, offering a reason if provided by the human operator.
+
+If the human operator accepts the transfer, the human operator and original caller are connected and the agent leaves the call.  By default the connection happens using an in-session REFER while falling back on bridging the calls if the REFER fails. You can override this behavior by setting the `transferType` parameter to either `REFER` or `BRIDGE` to force a specific transfer method. (The default is called `TRY_REFER`.)
 
 
 ## Call Transfers with Other Telephony Providers
