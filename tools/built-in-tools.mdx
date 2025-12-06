@@ -348,7 +348,7 @@ For bridge transfers (sip medium only), you can override the `sipVerb` parameter
 
 Transfers the current call to a human operator, with a warm handoff.
 
-Requires the transfer target. See [call transfers](/telephony//call-transfers) for more details.
+Requires the transfer target. See [call transfers](/telephony/call-transfers) for more details.
 
 **Example Usage:**
 ```js Using warmTransfer Tool
@@ -376,11 +376,11 @@ Requires the transfer target. See [call transfers](/telephony//call-transfers) f
         "target": "sip:manager@mytrunk.com",
         "from": "+15551234567",  // Caller ID for the INVITE. Defaults to the user's number.
         "username": "authorized_user",  // Optional username for authenticating the INVITE
-        "password": "password_for_authorized_user"  // Optional password for authenticating as username
+        "password": "password_for_authorized_user",  // Optional password for authenticating as username
         "inviteHeaders": {
           "X-Custom-Header": "customValue"
         },
-        "transferSystemPromptTemplate": "You are a drive-thru order taker at a donut shop called \"Dr. Donut.\" You've just called your manager to transfer a customer to them. You have this context from your call with the customer:\n\n{context}"
+        "transferSystemPromptTemplate": "You are a drive-thru order taker at a donut shop called \"Dr. Donut.\" You've just called your manager to transfer a customer to them. You have this context from your call with the customer:\n\n{context}",
         "referHeaders": {
           "Referred-By": "sip:agent@mytrunk.com",
           "X-Custom-Header": "customValue"

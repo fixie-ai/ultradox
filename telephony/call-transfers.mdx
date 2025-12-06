@@ -53,7 +53,7 @@ Should the transfer fail (e.g., the human operator declines the call or otherwis
 
 When an agent begins a warm transfer, a second SIP call is created to connect the agent with a human operator. This always happens with an INVITE, so you likely want to set `from`, `username`, and `password` parameter overrides in addition to the required `target` parameter override. As with `coldTransfer`, the `from` parameter defaults to the user's sip address if not specified.
 
-When the human operator answers, they speak with the agent to receive context about the caller and reason for the transfer. They may accept or reject the transfer using natural converation. If they reject the transfer, the agent reconnects with the original caller and explains that the transfer was rejected, offering a reason if provided by the human operator.
+When the human operator answers, they speak with the agent to receive context about the caller and reason for the transfer. They may accept or reject the transfer using natural conversation. If they reject the transfer, the agent reconnects with the original caller and explains that the transfer was rejected, offering a reason if provided by the human operator.
 
 If the human operator accepts the transfer, the human operator and original caller are connected and the agent leaves the call.  By default the connection happens using an in-session REFER while falling back on bridging the calls if the REFER fails. You can override this behavior by setting the `transferType` parameter to either `REFER` or `BRIDGE` to force a specific transfer method. (The default is called `TRY_REFER`.)
 
