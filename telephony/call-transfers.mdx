@@ -47,11 +47,11 @@ For SIP calls, transfers can be achieved using built-in tools for [cold transfer
 
 Cold transfer uses refer transfers by default. If you need to use bridge transfers instead, you can override the `sipVerb` parameter from `REFER` to `INVITE` when adding the tool to your agent (or call). You may also wish to set `from`, `username`, and/or `password` in order to authenticate the subsequent INVITE. The `from` parameter defaults to the user's sip address if not specified.
 
-Should the transfer fail (e.g., the human operator declines the call or otherwise fails to answer), the caller will be returned to the AI agent to continue the conversation. Transfers may be retried by the agent as needed (though some SIP providers may reject subsequent REFERs to the same target).
+Should the transfer fail (e.g., the human operator declines the call or otherwise fails to answer), the caller will be returned to the AI agent to continue the conversation. Transfers may be retried by the agent as needed.
 
 ### Warm Transfers
 
-When an agent begins a warm transfer, a second SIP call is created to connect the agent with a human operator. This always happens with an INVITE, so you likely want to set `from`, `username`, and `password` parameter overrides. As with `coldTransfer`, the `from` parameter defaults to the user's sip address if not specified.
+When an agent begins a warm transfer, a second SIP call is created to connect the agent with a human operator. This always happens with an INVITE, so you likely want to set `from`, `username`, and `password` parameter overrides in addition to the required `target` parameter override. As with `coldTransfer`, the `from` parameter defaults to the user's sip address if not specified.
 
 When the human operator answers, they speak with the agent to receive context about the caller and reason for the transfer. They may accept or reject the transfer using natural converation. If they reject the transfer, the agent reconnects with the original caller and explains that the transfer was rejected, offering a reason if provided by the human operator.
 
