@@ -12,25 +12,59 @@ Call transfers work by providing your AI agent with a custom tool that enables i
 
 <Note>
   <b>Agent-Initiated Transfers</b>
-  
+
   The AI agent decides when to transfer calls based on your instructions. You control this behavior through your system prompt and tool configuration.
 </Note>
 
-### Transfer Types
+### Transfer Variants
 
 There are two main types of call transfers you can implement:
 
-**Blind Transfer** → The call is immediately transferred to the human operator without any preparation or context sharing. Also known as a cold transfer or unattended transfer.
+**Cold Transfer** → The call is immediately transferred to the human operator without any preparation or context sharing. Also known as a blind transfer or unattended transfer.
 
-**Attended Transfer** → A summary message is provided to the human operator before the caller is connected, giving the operator context about the conversation and reason for transfer. Also known as a warm transfer or whisper transfer. Ensure your agent provides helpful context to the human operator, including the customer's issue and any relevant details from the conversation.
+**Warm Transfer** → The agent provides context about the conversation to the human operator before the caller is connected. Also known as an attended transfer or whisper transfer.
 
 
-## Implementation Overview
-<Warning>
-  <b>Call Transfers with SIP</b>
+Additionally, there are two methods by which a transfer may be implemented:
+
+**Refer** → The SIP REFER verb is used to connect the caller with the human operator, removing the agent and related SIP stack altogether. This is almost always preferable as long as all the relevant SIP providers support it.
+
+**Bridge** → The human operator is dialed using a second SIP INVITE. While the agent leaves the call, the SIP stack remains and bridges audio between the caller and the human operator. This is less efficient and will incur additional costs, but may be necessary if your SIP provider does not support REFER transfers.
+
+
+<Note>
+  <b>Bridge Transfers Cost More</b>
+
+  Using bridge transfers will result in SIP charges beyond the Ultravox call duration as our SIP infrastructure remains active to bridge audio between the caller and human operator.
+</Note>
+
+
+## SIP Call Transfers
+
+For SIP calls, transfers can be achieved using built-in tools for [cold transfers](/tools/built-in-tools#coldtransfer) or [warm transfers](/tools/built-in-tools#warmtransfer).
+
+### Cold Transfers
+
+Cold transfer uses refer transfers by default. If you need to use bridge transfers instead, you can override the `sipVerb` parameter from `REFER` to `INVITE` when adding the tool to your agent (or call). You may also wish to set `from`, `username`, and/or `password` in order to authenticate the subsequent INVITE. The `from` parameter defaults to the user's sip address if not specified.
+
+Should the transfer fail (e.g., the human operator declines the call or otherwise fails to answer), the caller will be returned to the AI agent to continue the conversation. Transfers may be retried by the agent as needed.
+
+### Warm Transfers
+
+When an agent begins a warm transfer, a second SIP call is created to connect the agent with a human operator. This always happens with an INVITE, so you likely want to set `from`, `username`, and `password` parameter overrides in addition to the required `target` parameter override. As with `coldTransfer`, the `from` parameter defaults to the user's sip address if not specified.
+
+When the human operator answers, they speak with the agent to receive context about the caller and reason for the transfer. They may accept or reject the transfer using natural conversation. If they reject the transfer, the agent reconnects with the original caller and explains that the transfer was rejected, offering a reason if provided by the human operator.
+
+If the human operator accepts the transfer, the human operator and original caller are connected and the agent leaves the call.  By default the connection happens using an in-session REFER while falling back on bridging the calls if the REFER fails. You can override this behavior by setting the `transferType` parameter to either `REFER` or `BRIDGE` to force a specific transfer method. (The default is called `TRY_REFER`.)
+
+
+## Call Transfers with Other Telephony Providers
+
+<Info>
+  <b>Built-in coldTransfer tool with Twilio</b>
   <br />
-  The native `sip` call medium does not currently support call transfers. Voximplant and jambonz each provide APIs to accomplish transfers when you are using SIP for calls.
-</Warning>
+  The built-in `coldTransfer` tool also works with Twilio if you've [added your credentials](/telephony/supported-providers#providing-telephony-credentials), but be aware that invoking the tool will immediately end the Ultravox call regardless of whether the transfer succeeds.
+</Info>
 
 To implement call transfers:
 
@@ -40,7 +74,7 @@ To implement call transfers:
   </Step>
   <Step title="Configure Agent Instructions">
     Update your system prompt to instruct the agent when and how to use the transfer tool. Include guidelines for all transfer scenarios and when transfers should occur (e.g., "Transfer when you cannot answer billing questions" or "Transfer if the customer asks for a manager").
-    
+
     Instruct your agent to politely explain the transfer to the customer before initiating it (e.g., "I'm going to connect you with a specialist who can better help with your billing question").
   </Step>
   <Step title="Handle Transfer Logic">
@@ -58,14 +92,12 @@ To implement call transfers:
       "description": "The phone number to transfer the call to"
     },
     "transferReason": {
-      "type": "string", 
+      "type": "string",
       "description": "Brief explanation of why the call is being transferred"
     }
   }
 }
 ```
-
-## Provider-Specific Implementation
 
 ### Twilio
 
@@ -77,7 +109,7 @@ Twilio supports both blind and attended transfers through different APIs. Blind 
 
 The attended transfer process involves:
 1. Putting the caller on hold with music
-2. Creating a conference call 
+2. Creating a conference call
 3. Calling the human agent with the transfer reason
 4. Requiring the agent to press a key to join
 5. Connecting all parties to the conference
@@ -85,7 +117,7 @@ The attended transfer process involves:
 
 <Tip>
   <b>Complete Example Available</b>
-  
+
   We have a full working example of Twilio call transfers (including both blind and attended transfers) available in the [`ultravox-examples`](https://github.com/fixie-ai/ultravox-examples/tree/main/telephony/twilio-call-transfer-ts) repo.
 </Tip>
 

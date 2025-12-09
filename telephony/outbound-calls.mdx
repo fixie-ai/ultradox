@@ -2,11 +2,117 @@
 title: 'Outbound Calls'
 description: 'Configure AI agents to make outbound phone calls to users.'
 icon: 'phone-arrow-up-right'
+tag: 'UPDATED'
 ---
+
+import OCSHighlights from '/snippets/ocsHighlights.mdx'
 
 It's easy to have your Ultravox agent make outbound calls for appointment reminders, customer outreach, surveys, proactive customer service, or anything else you can dream up.
 
-## How Outbound Calls Work
+## The Easy Way: Built-in Telephony
+
+The simplest way to make outbound calls is using Ultravox's built-in telephony integration. Configure your telephony provider credentials once, then Ultravox handles call creation automatically.
+
+<Steps>
+  <Step title="Configure Provider Credentials">
+    [Import credentials](/telephony/supported-providers#providing-telephony-credentials) for Twilio, Telnyx, or Plivo.
+  </Step>
+  <Step title="Create Outbound Call">
+    Create an Ultravox call with the `outgoing` parameter added to the call medium - no external API calls needed.
+  </Step>
+  <Step title="Call Initiated Automatically">
+    Ultravox creates and connects the call using your provider credentials.
+  </Step>
+</Steps>
+
+<Info>
+  For outbound calls, make sure to set [`firstSpeakerSettings`](#firstspeakersettings) to `user` if you expect the call recipient to answer before the agent speaks. Also see the [user fallback](/api-reference/schema/call-definition#schema-first-speaker-settings-user-fallback).
+</Info>
+
+### Example: Direct Outbound Call
+
+```js Built-in Telephony Example
+{
+  "systemPrompt": "You are calling to remind John Doe about their appointment.",
+  "firstSpeakerSettings": { "user": {} },
+  "medium": {
+    "twilio": {
+      "outgoing": {
+        "to": "+15551234567",
+        "from": "+15559876543",
+        "additionalParams": {
+          "statusCallback": "https://your-server.com/status"
+        }
+      }
+    }
+  }
+}
+```
+
+### Outgoing Parameters by Provider
+
+<Tabs>
+  <Tab title="Twilio">
+    ```js Twilio Outgoing
+    // When `to` is a SIP address, `from` does not have to be a phone number.
+    {
+      "twilio": {
+        "outgoing": {
+          "to": "+15551234567",        // Phone number or SIP address
+          "from": "+15559876543",      // Your Twilio phone number or a string
+          "additionalParams": {        // See Twilio docs for all options
+            "statusCallback": "https://your-server.com/status"
+            "record": true
+          }
+        }
+      }
+    }
+    ```
+    
+    See [Twilio Call API](https://www.twilio.com/docs/voice/api/call-resource#request-body-parameters) for all `additionalParams` options.
+  </Tab>
+  
+  <Tab title="Telnyx">
+    ```js Telnyx Outgoing
+    {
+      "telnyx": {
+        "outgoing": {
+          "to": "+15551234567",        // Phone number in E.164 format
+          "from": "+15559876543",      // Your Telnyx phone number
+          "additionalParams": {        // See Telnyx docs for all options
+            "statusCallback": "https://your-server.com/webhook"
+          }
+        }
+      }
+    }
+    ```
+    
+    See [Telnyx Call API](https://developers.telnyx.com/api/call-scripting/initiate-texml-call) for all `additionalParams` options.
+  </Tab>
+  
+  <Tab title="Plivo">
+    ```js Plivo Outgoing
+    {
+      "plivo": {
+        "outgoing": {
+          "to": "+15551234567",        // Phone number or SIP URI
+          "from": "+15559876543",      // Your Plivo phone number
+          "additionalParams": {        // See Plivo docs for all options
+            "hangup_url": "https://your-server.com/answer"
+          }
+        }
+      }
+    }
+    ```
+    
+    See [Plivo Call API](https://www.plivo.com/docs/voice/api/call/make-a-call) for all `additionalParams` options.
+  </Tab>
+</Tabs>
+
+## The Other Way: External Integration
+
+You can also integrate Ultravox with your existing telephony workflows by creating calls manually through your provider's API.
+
 <Steps>
   <Step title="Call Trigger">
     Your application triggers an outbound call (user action, scheduled event, etc.).
@@ -19,7 +125,13 @@ It's easy to have your Ultravox agent make outbound calls for appointment remind
   </Step>
 </Steps>
 
+## Bulk Outbound Calls
 
+For scheduling large volumes of outbound calls, use the [Outbound Call Scheduler (OCS)](/telephony/outbound-call-scheduler) which provides:
+
+<OCSHighlights/>
+
+The OCS supports both the simplified built-in telephony approach and external integration methods.
 
 ## `firstSpeakerSettings`
 By default, Ultravox calls assume the agent begins conversations. This is typically what you want for inbound calls (i.e. an agent answering incoming customer support calls). However, outbound calls require modifying this behavior since the user will typically answer the phone with something like "Hello".
@@ -50,3 +162,4 @@ For more see [Template Context →](/agents/making-calls#template-context-and-va
 - Check out the [Outbound Call Quickstart](/gettingstarted/quickstart/telephony-outbound)
 - Learn about [Call Transfers](/telephony/call-transfers) to escalate calls to human agents
 - Read [Managing Concurrency](/gettingstarted/concurrency) to learn how to keep the pipe full when making many calls
+- Use [Outbound Call Scheduler](/telephony/outbound-call-scheduler) for bulk calling campaigns

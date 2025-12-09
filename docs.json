@@ -13,6 +13,10 @@
     }
   },
   "favicon": "/favicon.svg",
+  "banner": {
+    "content": "⚠️ SIP Billing Starts November 10, 2025 - See [Ultravox Pricing](https://ultravox.ai/pricing) for details.",
+    "dismissible": false
+  },
   "navigation": {
     "tabs": [
       {
@@ -173,7 +177,9 @@
               "api-reference/accounts/accounts-me-get",
               "api-reference/accounts/accounts-me-usage-calls-get",
               "api-reference/accounts/accounts-me-tts-api-keys-partial-update",
-              "api-reference/accounts/accounts-me-tts-api-keys-retrieve"
+              "api-reference/accounts/accounts-me-tts-api-keys-retrieve",
+              "api-reference/accounts/accounts-me-telephony-config-partial-update",
+              "api-reference/accounts/accounts-me-telephony-config-retrieve"
             ]
           },
           {
@@ -220,7 +226,9 @@
               "api-reference/calls/calls-stages-message-audio-get",
               "api-reference/calls/calls-deleted-calls-list",
               "api-reference/calls/calls-deleted-calls-get",
-              "api-reference/calls/calls-events-list"
+              "api-reference/calls/calls-events-list",
+              "api-reference/calls/calls-sip-logs-get",
+              "api-reference/calls/calls-send-data-message-post"
             ]
           },
           {
@@ -277,6 +285,18 @@
               "api-reference/webhooks/webhooks-put",
               "api-reference/webhooks/webhooks-patch",
               "api-reference/webhooks/webhooks-delete"
+            ]
+          },
+          {
+            "group": "SIP Configuration",
+            "pages": [
+              "api-reference/sip/sip-get",
+              "api-reference/sip/sip-partial-update",
+              "api-reference/sip/sip-registrations-create",
+              "api-reference/sip/sip-registrations-list",
+              "api-reference/sip/sip-registrations-get",
+              "api-reference/sip/sip-registrations-partial-update",
+              "api-reference/sip/sip-registrations-delete"
             ]
           },
           {

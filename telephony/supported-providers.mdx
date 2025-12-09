@@ -9,14 +9,48 @@ Ultravox integrates with multiple telephony providers and voice platforms.
 ## Native Integrations
 Ultravox provides native integrations for the following. Each has their own unique call [`medium`](api-reference/schema/call-definition#schema-medium) that must be used when creating calls.
 
-| Provider   | Call Medium    | Streaming API                                                                                  |
-|------------|--------------- |------------------------------------------------------------------------------------------------|
-| **Twilio** | `"twilio": {}` | [Media Streams](https://www.twilio.com/docs/voice/media-streams)                               |
-| **Telnyx** | `"telnyx": {}` | [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming) |
-| **Plivo**  | `"plivo": {}`  | [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)                        |
-| **Exotel** | `"exotel": {}` | [Voice Streaming](https://developer.exotel.com/api/product-voice-version-3)                    |
+| Provider   | Call Medium    | Streaming API                                                                                  | Import Credentials? | Out of Band DTMF? |
+|------------|--------------- |------------------------------------------------------------------------------------------------|---------------------|-------------------|
+| **Twilio** | `"twilio": {}` | [Media Streams](https://www.twilio.com/docs/voice/media-streams)                               | ✅                  | ❌                |
+| **Telnyx** | `"telnyx": {}` | [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming) | ✅                  | ✅                |
+| **Plivo**  | `"plivo": {}`  | [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)                        | ✅                  | ✅                |
+| **Exotel** | `"exotel": {}` | [Voice Streaming](https://developer.exotel.com/api/product-voice-version-3)                    | ❌                  | ❌                |
 
-### SIP
+
+## Providing Telephony Credentials
+If you are using Twilio, Telnyx, or Plivo, you can import your credentials to unlock new capabilities:
+
+* **Simplified Outbound Calling** → Allow Ultravox to create and connect [all outbound calls](/telephony/outbound-calls#the-easy-way%3A-built-in-telephony) for Twilio, Telnyx, and Plivo.
+* **Outbound Call Scheduler** → [Schedule batches of outbound calls](/telephony/outbound-call-scheduler) and let us manage the call concurrency and retry logic.
+* **Out of Band DTMF** → By default, the built-in [`playDtmfSounds`](/tools/built-in-tools#playdtmfsounds) tool emits in-band DTMF. When you import credentials for Telnyx or Plivo (Twilio doesn't support out of band DTMF), the `playDtmfSounds` tool will use out of band DTMF.
+* **Simplified Incoming Call Handling** → Configure your provider to send webhooks directly to Ultravox for incoming calls. No need to run your own server.
+
+### Importing Credentials
+To import credentials for Twilio, Telnyx, or Plivo:
+1. Use the [Set Telephony Credentials](/api-reference/accounts/accounts-me-telephony-config-partial-update) API
+1. Provide your credentials (up to one per provider) in the request body:
+```js Example: Proving telephony credentials
+{
+  "twilio": {
+    "accountSid": "string",
+    "authToken": "string"
+  },
+  "telnyx": {
+    "accountSid": "string",
+    "apiKey": "string",
+    "publicKey": "string",
+    "applicationSid": "string"
+  },
+  "plivo": {
+    "authId": "string",
+    "authToken": "string"
+  }
+}
+```
+
+For each provider, you may also choose which agents can be used with [simplified incoming call handling](/telephony/inbound-calls). You can set `callCreationAllowAllAgents` to `true` to allow all of your agents or you can set `callCreationAllowedAgentIds` to specific agent ids to allow only those agents. For any allowed agent, you can direct your telephony provider to send webhooks to `https://app.ultravox.ai/api/agents/{agent_id}/telephony_xml` to have incoming phone calls automatically create and connect to Ultravox calls.
+
+## SIP
 Ultravox Realtime has native support for SIP. See the [SIP Guide](./sip) for more.
 
 ## Partner Integrations
@@ -95,6 +129,8 @@ Our voice platform partners have native integrations for Ultravox:
       stream_url: joinUrl,
       stream_track: "both_tracks",
       stream_bidirectional_mode: "rtp"
+      stream_codec: "PCMU",
+      stream_bidirectional_codec: "PCMU"
     });
     ```
 
@@ -161,11 +197,11 @@ For more details, see the [Telnyx documentation](https://developers.telnyx.com/)
     ```
 
     The answer URL should return:
-    
+
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <Response>
-        <Stream keepCallAlive="true" 
+        <Stream keepCallAlive="true"
                 contentType="audio/x-l16;rate=16000"
                 bidirectional="true">
             ${joinUrl}
@@ -189,7 +225,7 @@ For more details, see the [Telnyx documentation](https://developers.telnyx.com/)
     <?xml version="1.0" encoding="UTF-8"?>
     <Response>
         <Stream keepCallAlive="true"
-                contentType="audio/x-l16;rate=16000" 
+                contentType="audio/x-l16;rate=16000"
                 bidirectional="true">
             ${joinUrl}
         </Stream>
@@ -207,7 +243,7 @@ This gives you the flexibility to choose your carrier of choice, you'll just nee
 
 <Steps>
   <Step title="Add Your Carrier in jambonz">
-    In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any sip network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started. 
+    In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any sip network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started.
   </Step>
 
   <Step title="Add a Speech Provider in jambonz">
@@ -220,7 +256,7 @@ This gives you the flexibility to choose your carrier of choice, you'll just nee
     - Call status webhook URL: For receiving call status updates.​
     - Speech vendors: Your chosen TTS/STT providers.​
 
-    Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. This setup allows you to implement features like speech recognition, text-to-speech, call routing, and integration with AI services. 
+    Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. This setup allows you to implement features like speech recognition, text-to-speech, call routing, and integration with AI services.
   </Step>
 
   <Step title="Add a Phone Number in jambonz">
@@ -257,7 +293,7 @@ session
 .hangup()
 .send();
 ```
-For more details see the `llm` verb in the [jambonz docs](https://docs.jambonz.org/verbs/verbs/llm). 
+For more details see the `llm` verb in the [jambonz docs](https://docs.jambonz.org/verbs/verbs/llm).
 
 
 #### Outbound Calls with jambonz
@@ -273,7 +309,7 @@ In addition to the inbound scenario, you'll have to create a call that connects 
   );
 
   const call = await client.calls.create({
-      from: process.env.FROM_NUMBER,  
+      from: process.env.FROM_NUMBER,
         to: {
           type : 'phone',
           number: phoneNumber,

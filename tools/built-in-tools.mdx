@@ -14,6 +14,7 @@ Ultravox Realtime includes several built-in tools that provide common functional
 | leaveVoicemail | Leaves a voicemail and ends the call. Intended to be used with outbound phone calls.                                                              |
 | hangUp         | Terminates the call programmatically. Useful for ending conversations gracefully.                                                                 |
 | playDtmfSounds | Plays dual-tone multi-frequency (dialpad) tones. See [DTMF documentation](/telephony/overview#dtmf) for sending and receiving tones.              |
+| coldTransfer   | Transfers the current call to a human operator. See [Call Transfers](/telephony/call-transfers) for more details.                                 |
 
 More information about these can be found below in [Tool Details →](#built-in-tool-details)
 <Info>
@@ -25,7 +26,7 @@ Using built-in tools is the same as using any other [custom durable tool](./cust
 
 For example, if you created a durable tool named "hangUp" and then provide that tool by name (i.e. not by the toolId), then your tool would be used instead of the built-in hangUp tool.
 
-Add built-in tools to your agents when creating calls or [call stages](/agents/call-stages):
+Add built-in tools when creating agents, calls, or [call stages](/agents/call-stages):
 
 ### Using Tool Names
 
@@ -161,7 +162,7 @@ A dynamic `message` parameter is used for the message that will be left. Optiona
 
 **Static Parameters:**
 <ParamField query="strict" type="bool" default="true">
-  `true` ends the call regardless of user interaction. If set to `false`, any user interaction (i.e. speech or interrupting the voicemail) will cause the call to continue. 
+  `true` ends the call regardless of user interaction. If set to `false`, any user interaction (i.e. speech or interrupting the voicemail) will cause the call to continue.
 </ParamField>
 <ParamField query="result" type="string" default="[Leaving voicemail...]">
   The message that is returned from the tool call. Will be added to conversation history.
@@ -203,7 +204,7 @@ Optionally accepts a dynamic parameter called `reason`. A static parameter calle
 
 **Static Parameters:**
 <ParamField query="strict" type="bool" default="true">
-  `true` ends the call regardless of user interaction. If set to `false`, any user interaction (i.e. speech) will cause the call to continue. 
+  `true` ends the call regardless of user interaction. If set to `false`, any user interaction (i.e. speech) will cause the call to continue.
 </ParamField>
 
 ### `playDtmfSounds`
@@ -248,6 +249,183 @@ Requires a dynamic parameter called `digits`. Static parameters for `toneDuratio
 <ParamField query="spaceDuration" type="string" default="0.1s">
   The length (in seconds) that spaces (AKA silence between DTMF tones) will be emitted.
 </ParamField>
+
+
+### `coldTransfer`
+
+Transfers the current call to a human operator.
+
+Requires the transfer target. You can optionally include additional headers that will be used in the SIP REFER (or INVITE).
+
+For bridge transfers (sip medium only), you can override the `sipVerb` parameter from `REFER` to `INVITE` when adding the tool to your agent or call. You may also wish to set `from`, `username`, and/or `password` in order to authenticate the subsequent INVITE. Note that bridge transfers will incur additional cost.
+
+**Example Usage:**
+```js Using coldTransfer Tool
+
+// Basic usage
+{
+  "selectedTools": [
+    {
+      "toolName": "coldTransfer",
+      "parameterOverrides": {
+        "target": "sip:user@mytrunk.com"
+      }
+    }
+  ]
+}
+
+// With headers and name/description overrides
+{
+  "selectedTools": [
+    {
+      "toolName": "coldTransfer",
+      "nameOverride": "escalateToManager",
+      "descriptionOverride": "Transfers the call to your shift manager.",
+      "parameterOverrides": {
+        "target": "sip:manager@mytrunk.com",
+        "extraHeaders": {
+          "Referred-By": "sip:agent@mytrunk.com",
+          "X-Custom-Header": "customValue"
+        }
+      }
+    }
+  ]
+}
+
+// With bridge transfer (sip medium only)
+{
+  "selectedTools": [
+    {
+      "toolName": "coldTransfer",
+      "nameOverride": "escalateToManager",
+      "descriptionOverride": "Transfers the call to your shift manager.",
+      "parameterOverrides": {
+        "target": "sip:manager@mytrunk.com",
+        "extraHeaders": {
+          "X-Custom-Header": "customValue"
+        },
+        "sipVerb": "INVITE",
+        "from": "+15551234567",  // Caller ID for the INVITE. Defaults to the user's number.
+        "username": "authorized_user",  // Optional username for authenticating the INVITE
+        "password": "password_for_authorized_user"  // Optional password for authenticating as username
+      }
+    }
+  ]
+}
+```
+#### Parameters
+**Required Parameter Override:**
+<ParamField body="target" type="string" required>
+  The target of the transfer. This is who the user's client should be REFER'ed to.
+  A SIP URI is always allowed. A phone number in E.164 format may be allowed depending on your medium and telephony configuration.
+</ParamField>
+
+**Optional Parameters:**
+<ParamField body="extraHeaders" type="object">
+  A string-to-string map of headers to include in the REFER (or INVITE) request. Custom headers should use the "X-" prefix to avoid conflicts with standard SIP headers.
+</ParamField>
+<ParamField body="holdMusicUrl" type="string | null">
+  Music to play to the user while the transfer is in progress. Set to `null` to disable hold music.
+  Note that hold music will not be present in Ultravox call recordings as it is added at the SIP level.
+  If you elect to use your own hold music, make sure it is either mp3 or wav, can be downloaded without authentication, and does not exceed 5MB.
+  Default: <audio controls><source src="https://storage.googleapis.com/fixie-web-public/defaultHold.mp3" type="audio/mpeg" />"https://storage.googleapis.com/fixie-web-public/defaultHold.mp3"</audio>
+</ParamField>
+<ParamField body="sipVerb" type="string">
+  The SIP method to use for the transfer. Can be either `REFER` (default) or `INVITE` (for bridge transfers).
+</ParamField>
+<ParamField body="from" type="string">
+  The caller ID to use when performing an INVITE transfer. Defaults to the user's number. (Unused for REFER transfers.)
+</ParamField>
+<ParamField body="username" type="string">
+  Optional username for authenticating the INVITE request. (Unused for REFER transfers.)
+</ParamField>
+<ParamField body="password" type="string">
+  Optional password for authenticating as `username` in the INVITE request. (Unused for REFER transfers.)
+</ParamField>
+
+
+### `warmTransfer`
+
+Transfers the current call to a human operator, with a warm handoff.
+
+Requires the transfer target. See [call transfers](/telephony/call-transfers) for more details.
+
+**Example Usage:**
+```js Using warmTransfer Tool
+
+// Basic usage
+{
+  "selectedTools": [
+    {
+      "toolName": "warmTransfer",
+      "parameterOverrides": {
+        "target": "sip:user@mytrunk.com"
+      }
+    }
+  ]
+}
+
+// With more customization
+{
+  "selectedTools": [
+    {
+      "toolName": "warmTransfer",
+      "nameOverride": "escalateToManager",
+      "descriptionOverride": "Transfers the call to your shift manager.",
+      "parameterOverrides": {
+        "target": "sip:manager@mytrunk.com",
+        "from": "+15551234567",  // Caller ID for the INVITE. Defaults to the user's number.
+        "username": "authorized_user",  // Optional username for authenticating the INVITE
+        "password": "password_for_authorized_user",  // Optional password for authenticating as username
+        "inviteHeaders": {
+          "X-Custom-Header": "customValue"
+        },
+        "transferSystemPromptTemplate": "You are a drive-thru order taker at a donut shop called \"Dr. Donut.\" You've just called your manager to transfer a customer to them. You have this context from your call with the customer:\n\n{context}",
+        "referHeaders": {
+          "Referred-By": "sip:agent@mytrunk.com",
+          "X-Custom-Header": "customValue"
+        }
+      }
+    }
+  ]
+}
+```
+#### Parameters
+**Required Parameter Override:**
+<ParamField body="target" type="string" required>
+  The target of the transfer. This is who an INVITE will be sent to for the second call.
+  Must be a valid SIP URI.
+</ParamField>
+
+**Optional Parameters:**
+<ParamField body="from" type="string">
+  The caller ID to use for the INVITE. Defaults to the user's number.
+</ParamField>
+<ParamField body="username" type="string">
+  Optional username for authenticating the INVITE request.
+</ParamField>
+<ParamField body="password" type="string">
+  Optional password for authenticating as `username` in the INVITE request.
+</ParamField>
+<ParamField body="inviteHeaders" type="object">
+  A string-to-string map of extra headers to include in the INVITE request. Custom headers should use the "X-" prefix to avoid conflicts with standard SIP headers.
+</ParamField>
+<ParamField body="holdMusicUrl" type="string | null">
+  Music to play to the user while the transfer is in progress. Set to `null` to disable hold music.
+  Note that hold music will not be present in Ultravox call recordings as it is added at the SIP level.
+  If you elect to use your own hold music, make sure it is either mp3 or wav, can be downloaded without authentication, and does not exceed 5MB.
+  Default: <audio controls><source src="https://storage.googleapis.com/fixie-web-public/defaultHold.mp3" type="audio/mpeg" />"https://storage.googleapis.com/fixie-web-public/defaultHold.mp3"</audio>
+</ParamField>
+<ParamField body="transferSystemPromptTemplate" type="string">
+  The system prompt the agent will use when talking with the transfer target. The `{context}` variable may be added anywhere you like and will be replaced with context generated by the agent when invoking `warmTransfer` initially.
+</ParamField>
+<ParamField body="transferType" type="string">
+  The type of transfer to perform once the human operator accepts the transfer. Can be either `REFER`, `BRIDGE`, or `TRY_REFER` (default). `TRY_REFER` will first attempt an in-session REFER and fall back on bridging the calls if the REFER fails.
+</ParamField>
+<ParamField body="referHeaders" type="object">
+  A string-to-string map of extra headers to include in the REFER request (if any). Custom headers should use the "X-" prefix to avoid conflicts with standard SIP headers.
+</ParamField>
+
 
 ## Customizing Built-in Tools
 

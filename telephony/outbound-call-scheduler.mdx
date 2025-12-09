@@ -4,6 +4,7 @@ description: 'Schedule and manage batches of outbound calls automatically with c
 icon: 'calendar-clock'
 tag: "NEW"
 ---
+import OCSHighlights from '/snippets/ocsHighlights.mdx'
 
 <Callout icon="star" color="#FFC107" iconType="regular">
   <b>Premium Feature</b>
@@ -13,17 +14,20 @@ tag: "NEW"
   See https://ultravox.ai/pricing for details.
 </Callout>
 
-The Outbound Call Scheduler (OCS) enables you to create and manage batches of outbound calls without worrying about concurrency limits or retry logic. Simply define a time window and upload your call list - Ultravox handles the rest.
+
+The Outbound Call Scheduler (OCS) enables you to create and manage batches of outbound calls that will be sent by Ultravox. This allows you to simplify your deployment and stop worrying about things like retry logic. Simply define a time window and upload your call list - Ultravox handles the rest.
 
 ## Overview
 
 The OCS eliminates the complexity of managing outbound call campaigns by:
 
-- **Automatic Concurrency Management** - No more 429 errors from hitting rate limits
-- **Flexible Scheduling** - Define time windows for when calls should be made
-- **SIP Integration** - Use the `sip` call medium for 'set it and forget it' simplicity
-- **Webhook Integration** - Get notified when calls are ready to be initiated for custom connectivity
-- **Batch Management** - Track progress and control execution
+<OCSHighlights />
+
+<Danger>
+  <b>Call Delivery Not Guaranteed</b>
+  <br />
+  Unless your call batch is scheduled without an end date/time, using OCS does not guarantee that all calls will be made. If capacity limitations result in calls not being made by the end of your window, those scheduled calls will have the `EXPIRED` status.
+</Danger>
 
 ## How It Works
 
@@ -32,10 +36,10 @@ The OCS eliminates the complexity of managing outbound call campaigns by:
     Pick an agent and upload a batch of calls with a time window and configuration.
   </Step>
   <Step title="Automatic Processing">
-    Ultravox processes calls within your specified window, respecting concurrency limits.
+    Ultravox processes calls within your specified window, maximizing allowed utilization.
   </Step>
   <Step title="Call Execution">
-    Calls are either initiated automatically (SIP) or via webhook notifications.
+    Calls are either initiated automatically or via webhook notifications.
   </Step>
   <Step title="Monitor Progress">
     Track batch status and individual call outcomes.
@@ -44,52 +48,9 @@ The OCS eliminates the complexity of managing outbound call campaigns by:
 
 ## Creating a Scheduled Batch
 
-Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-post) API to upload your call batch:
-
-```js Example: Creating a Scheduled Batch
-{
-  "windowStart": "2025-09-25T09:00:00Z",
-  "windowEnd": "2025-09-25T17:00:00Z",
-  "webhookUrl": "https://your-server.com/call-webhook",
-  "webhookSecret": "your-secret-key",
-  "calls": [
-    {
-      "medium": {
-        "sip": {
-          "outgoing": {
-            "to": "sip:+15551234567@carrier.com",
-            "from": "Your Company"
-          }
-        }
-      },
-      "templateContext": {
-        "customerName": "John Doe",
-        "appointmentTime": "3 PM tomorrow"
-      },
-      "metadata": {
-        "customer_id": "12345",
-        "campaign": "appointment_reminders"
-      }
-    },
-    {
-      "medium": {
-        "twilio": {}
-      },
-      "templateContext": {
-        "customerName": "Jane Smith", 
-        "appointmentTime": "2 PM tomorrow"
-      },
-      "metadata": {
-        "customer_id": "67890",
-        "campaign": "appointment_reminders"
-      }
-    }
-  ]
-}
-```
+Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-post) API to upload your call batch.
 
 ### Batch Parameters
-
 <ParamField body="windowStart" type="string" format="date-time">
   The earliest time when calls in this batch can be initiated.
 </ParamField>
@@ -108,61 +69,100 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
 
 <ParamField body="calls" type="array" required>
   Array of call configurations. Each call can include:
-  - `medium` - Call medium (SIP, Twilio, etc.)
+  - `medium` - Must be a valid call [medium](/api-reference/schema/call-definition#schema-medium)
+    - Automatic outgoing calls work with `sip`, `twilio`, `telnyx`, or `plivo`
+    - `webRtc` or `serverWebSocket` require providing a webhook URL
   - `templateContext` - Variables for agent template substitution
   - `metadata` - Key-value pairs associated with the call
   - `experimentalSettings` - Advanced call configuration
 </ParamField>
 
-## Call Execution Methods
-
-The OCS supports two execution methods:
-
-### Method 1: Automatic Execution
-When all calls in your batch have an `outgoing` `sip` medium, Ultravox initiates calls automatically:
-
-```js Automatic Execution Example
-{
-  "calls": [
+### Examples
+<Tabs>
+  <Tab title="Creating a Batch" icon="plus">
+    When all calls in your batch have an `outgoing` medium, Ultravox initiates calls automatically.
+    
+    ```js Example: Creating a Scheduled Batch
     {
-      "medium": {
-        "sip": {
-          "outgoing": {
-            "to": "sip:+15551234567@carrier.com",
-            "from": "Your Company"
+      "windowStart": "2025-09-25T09:00:00Z",
+      "windowEnd": "2025-09-25T17:00:00Z",
+      "calls": [
+        {
+          "medium": {
+            "sip": {
+              "outgoing": {
+                "to": "sip:+15551234567@carrier.com",
+                "from": "Your Company"
+              }
+            }
+          },
+          "templateContext": {
+            "customerName": "John Doe",
+            "appointmentTime": "3 PM tomorrow"
+          },
+          "metadata": {
+            "customer_id": "12345",
+            "campaign": "appointment_reminders"
+          }
+        },
+        {
+          "medium": {
+            "twilio": {
+              "outgoing": {
+                "to": "+15551234567",
+                "from": "+15559876543"
+              }
+            }
+          },
+          "templateContext": {
+            "customerName": "Jane Smith", 
+            "appointmentTime": "2 PM tomorrow"
+          },
+          "metadata": {
+            "customer_id": "67890",
+            "campaign": "appointment_reminders"
           }
         }
-      },
-      "templateContext": { "customerName": "John" }
+      ]
     }
-  ]
-}
-```
+    ```
+  </Tab>
+  <Tab title="Example: Webhook Notification" icon="webhook">
+    When calls don't have outgoing mediums or you want more control, Ultravox notifies your webhook when capacity is available and your call is created. Your endpoint's job is to then join and connect the call.
 
-### Method 2: Webhook Notifications
-When calls don't have outgoing mediums or you want more control, Ultravox notifies your webhook when capacity is available:
-
-```js Webhook Method Example
-{
-  "webhookUrl": "https://your-server.com/call-ready",
-  "calls": [
+    ```js Example: Webhook Notification
     {
-      "templateContext": { "customerName": "John" },
-      "metadata": { "phone": "+15551234567" }
+      "webhookUrl": "https://your-server.com/call-ready",
+      "webhookSecret": "your-secret-key",
+      "calls": [
+        {
+          "medium": {"webRtc": {}},
+          "templateContext": { "customerName": "John" },
+          "metadata": { "phone": "+15551234567" }
+        }
+      ]
     }
-  ]
-}
-```
+    ```
 
-Your webhook receives notifications like:
-```js Webhook Payload
-{
-  "batchId": "uuid",
-  "callId": "uuid", 
-  "templateContext": { "customerName": "John" },
-  "metadata": { "phone": "+15551234567" }
-}
-```
+    Your webhook receives the payload for the [call.started](/webhooks/available-webhooks#event-payload-reference) webhook event:
+    ```js Call Definition Webhook Payload
+    {
+      "event": "call.started",
+      "call": {
+        "callId": "3c90c3cc-0d44-4b50-8888-8dd25736052a",
+        "created": "2023-11-07T05:31:56Z",
+        "joined": "2023-11-07T05:31:56Z",
+        ...
+      }
+    }
+    ```
+    <Warning>
+      <b>No Retries</b>
+      <br />
+     OCS webhooks do not retry failed notifications automatically. When your endpoint is unavailable, the system marks that delivery as "ERROR" and proceeds to the next scheduled call after a delay period.
+    </Warning>
+  </Tab>
+</Tabs>
 
 ## Managing Batches
 
