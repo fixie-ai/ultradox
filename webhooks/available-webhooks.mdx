@@ -14,6 +14,7 @@ The following events are available and can be specified when creating or updatin
 | call.started | Fired when a call starts.    |
 | call.ended   | Fired when a call ends.      |
 | call.joined  | Fired when a call is joined. |
+| call.billed  | Fired when a call is billed. |
 
 ### Event Payload Reference
 
@@ -50,6 +51,7 @@ The `event` field contains the exact event name you subscribed to:
 - `"call.started"`
 - `"call.ended"`  
 - `"call.joined"`
+- `"call.billed"`
 
 #### Call Object
 The `call` object contains the complete [call definition](/api-reference/schema/call-definition), identical to what you'd receive from the [Get Call API endpoint](/api-reference/calls/calls-get). This ensures consistency across your application whether you're receiving webhook data or making API requests.
@@ -110,6 +112,11 @@ app.post('/ultravox-webhook', (req, res) => {
     case 'call.ended':
       console.log('Call ended:', event.call.callId, 'Reason:', event.call.endReason);
       // Clean up resources, analyze results, etc.
+      break;
+    
+    case 'call.billed':
+      console.log('Call billed:', event.call.callId);
+      // Update customer invoice, etc.
       break;
   }
   
