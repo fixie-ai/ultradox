@@ -52,18 +52,18 @@
                   "gettingstarted/examples",
                   "gettingstarted/examples/outbound-phone-call",
                   "gettingstarted/examples/inbound-phone-call",
-
                   {
-                "group": "Tutorials",
-                "icon": "chalkboard-user",
-                "pages": [
-                  "tutorials/callstages",
-                  "tutorials/clienttools"
-                ]
-              }
+                    "group": "Tutorials",
+                    "icon": "chalkboard-user",
+                    "pages": [
+                      "tutorials/callstages",
+                      "tutorials/clienttools"
+                    ]
+                  }
                 ]
               },
-              "gettingstarted/getting-help"
+              "gettingstarted/getting-help",
+              "gettingstarted/faq"
             ]
           },
           {

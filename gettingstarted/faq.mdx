@@ -1,0 +1,97 @@
+---
+title: 'FAQ'
+description: 'Answers to common questions'
+icon: 'circle-question'
+---
+
+## Ultravox Web Console
+
+### <Icon icon="circle-question" size={24} /> What is the web console?
+Available at https://app.ultravox.ai, the console provides:
+
+* [Agent Builder](https://app.ultravox.ai/agents/new) → Build and view your existing voice agents. Blocky, our AI agent builder, is here to help you get started, iterate, and incorporate best-practices.
+* [Dashboard](https://app.ultravox.ai/dashboard) → See charts for your usage along with views for the number of live calls happening for your account.
+* [Call History](https://app.ultravox.ai/calls) → See all the details (timestamps, durations, summaries, full transcripts, and more) for every call that's been made in your account. Easily copy call IDs to use for troubleshooting or diving in deeper via the REST API.
+* [Voices Explorer](https://app.ultravox.ai/voices) → Create custom voices and discover all the built-in voices your agents can use.
+* [Tools](https://app.ultravox.ai/tools) → View, create, edit, and test agent [tools](/tools/overview).
+* [RAG](https://app.ultravox.ai/rag) → Create and manage knowledge bases (we call them "corpora") that your agents can use to answer questions specific to your company, product, or topic.
+* [Webhooks](https://app.ultravox.ai/webhooks) → Create and edit active [webhooks](/webhooks/overview) to drive integrations and automations.
+* [Settings](https://app.ultravox.ai/settings) → Create and manage API keys to integrate your agents with your application, set custom TTS keys, and dive into billing and invoice details.
+
+### <Icon icon="circle-question" size={24} /> What are "unlimited playground calls"?
+These are calls that you make in the agent builder using the [web console application](#what-is-the-web-console). There is no charge for these calls and we encourage you to make use of this feature to thoroughly test your agents before deploying them.
+
+## Billing
+
+### <Icon icon="circle-question" size={24} /> How can I see my usage details? What about invoices?
+The [Dashboard](https://app.ultravox.ai/dashboard) provides charts to see usage. [Call History](https://app.ultravox.ai/calls) gives granular details for each call and you can use the [REST API](https://docs.ultravox.ai/api-reference/introduction) to go even deeper.
+
+View your [list of invoices](https://app.ultravox.ai/billing/invoices), click on one, and then click on "View invoice and payment details" to view details on your usage for the given billing period.
+
+### <Icon icon="circle-question" size={24} /> When does Ultravox send out bills?
+We send out monthly invoices to bill for usage (calls and SIP) in the prior period (AKA billing in arrears). If you are a Pro plan subscriber, we bill you at the beginning of each period to cover your subscription usage in advance.
+
+Pay as you go (PAYGO) and Pro plan customers may also receive bills before the regular monthly cycle if usage exceeds the set threshold (`$10` for PAYGO, `$100` for Pro plan).
+
+### <Icon icon="circle-question" size={24} /> How does Ultravox bill for calls that are less than a full minute?
+Calls are rounded to the nearest "deciminute" (every six seconds). This means that we effectively bill our standard `$0.05` per minute rate as `$0.005` for every six seconds of call time. This chart provides some examples:
+
+| Call Length (seconds) | Rounded To (seconds)   | Billed Amount |
+| --------------------- | ---------------------- | ------------- |
+| 0                     | 0                      | $0.000        |
+| 1                     | 6                      | $0.005        |
+| 12                    | 12                     | $0.010        |
+| 37                    | 42                     | $0.035        |
+| 55                    | 60                     | $0.050        |
+
+### <Icon icon="circle-question" size={24} /> Why is billing duration sometimes different than the length of the call recording?
+When you choose to enable a recording for your call, the recording is force aligned with the user audio we receive. Billing duration is based on the clock that is running for the entire length of the call. Depending on your setup, there may be overhead incurred before Ultravox receives any user audio (this would mean billed duration > call recording).
+
+Additionally, call summaries are generated in parallel with ending the call recording. This can add a couple of seconds of additional drift between recording length and billed duration.
+
+Finally, all calls are rounded up to the [nearest deciminute.](#how-does-ultravox-bill-for-calls-that-are-less-than-a-full-minute)
+
+<Warning>
+**Continuous PCM**
+
+Large duration mismatches typically indicate Ultravox didn't receive continuous user audio. Send continuous raw PCM (s16le) audio from your integration (e.g. websocket server).
+</Warning>
+
+## Miscellaneous
+
+### <Icon icon="circle-question" size={24} /> How do I get my agent to best handle voicemail when making outgoing calls?
+
+<Steps>
+  <Step title="Use the `leaveVoicemail` tool">
+    Ultravox provides the [built-in `leaveVoicemail` tool](/tools/built-in-tools#leavevoicemail) that the agent will use to leave a message and end the call. By default, the agent will dynamically create the message, or you can choose to override the message parameter with a pre-canned message if you prefer.
+
+    ```js Overriding with a set message
+
+    {
+      "selectedTools": [
+        {
+          "toolName": "leaveVoicemail",
+          "parameterOverrides": {
+            "message": "Hi, {{first_name}}. This is Anna from Acme Corporation. I'm calling because {{reason_for_call}}. Please give us a call back at your convenience. Thank you."
+          }
+        }
+      ]
+    }
+    ```
+
+  </Step>
+  <Step title="Prompt the agent">
+    Prompt the agent with explicit instructions on how you want voicemail handled. For example, to have the agent leave a message that was passed in via a [context variable](/agents/making-calls#template-context-and-variables) we could use the following:
+
+    ```bash Sample Voicemail Prompt Instructions
+    <custom_voicemail_instructions>
+    # Custom Voicemail Instructions
+
+    If you encounter a voicemail, leave a message for {{first_name}} explaining you are calling about {{reason_for_call}}. Then invoke `hangUp` to end the call.
+
+    </custom_voicemail_instructions>
+    ```
+  </Step>
+
+</Steps>
+
