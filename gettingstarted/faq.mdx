@@ -45,7 +45,7 @@ Calls are rounded to the nearest "deciminute" (every six seconds). This means th
 | 55                    | 60                     | $0.050        |
 
 ### <Icon icon="circle-question" size={24} /> Why is billing duration sometimes different than the length of the call recording?
-When you choose to enable a recording for your call, the recording is forced to align with the user audio we receive. Billing duration is based on the clock that is running for the entire length of the call. Depending on your setup, there may be overhead incurred before Ultravox receives any user audio (this would mean billed duration > call recording).
+When you choose to enable a recording for your call, the recording is force aligned with the user audio we receive. Billing duration is based on the clock that is running for the entire length of the call. Depending on your setup, there may be overhead incurred before Ultravox receives any user audio (this would mean billed duration > call recording).
 
 Additionally, call summaries are generated in parallel with ending the call recording. This can add a couple of seconds of additional drift between recording length and billed duration.
 
