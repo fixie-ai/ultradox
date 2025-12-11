@@ -9,14 +9,36 @@ Ultravox offers several webhook events that you can subscribe to for real-time n
 ## Available Events
 The following events are available and can be specified when creating or updating a webhoook.
 
-| event        | description                  |
-|------------- | ---------------------------- |
-| call.started | Fired when a call starts.    |
-| call.ended   | Fired when a call ends.      |
-| call.joined  | Fired when a call is joined. |
-| call.billed  | Fired when a call is billed. |
+| event        | description                                |
+|------------- | ------------------------------------------ |
+| call.started | Fires when a call is created.              |
+| call.joined  | Fires when a client connects to your call. |
+| call.ended   | Fires when a call ends.                    |
+| call.billed  | Fires when a call is billed.               |
 
-### Event Payload Reference
+### `call.started`
+Fires when a call is created.
+
+If you create calls directly using either the [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) API, you likely won't need this event as a 201 response to your call creation request is equivalent.
+
+The `call.started` event is most useful with telephony integrations where you've allowed calls to be created on your behalf either in response to qualified [SIP INVITEs](/telephony/sip#incoming-sip-calls) or verified requests from your [telephony](/telephony/inbound-calls) provider (Twilio, Telnyx, or Plivo).
+
+### `call.joined`
+Fires when a client connects to your call.
+
+Useful if you need to keep track of live calls or for monitoring deltas in timing from call creation.
+
+### `call.ended`
+Fires when a call ends.
+
+The call's messages are now immutable because the call is over. However, billing information may not be available yet (in particular for SIP calls, where the SIP session could be ongoing — see [call.billed](#call-billed)). This event is also sent for unjoined calls when their join timeout is reached.
+
+### `call.billed`
+Fires when a call is billed.
+
+Billing information will always be available. Typically you'll only want one of `call.ended` or `call.billed`. If you aren't using SIP or don't need billing details for your integration, `call.ended` may be preferable.
+
+## Event Payload Reference
 
 All webhooks follow a consistent structure. The payload always includes:
 - **event**: The type of event that triggered the webhook.
@@ -46,14 +68,14 @@ All webhooks follow a consistent structure. The payload always includes:
   </Tab>
 </Tabs>
 
-#### Event Name
+### Event Name
 The `event` field contains the exact event name you subscribed to:
 - `"call.started"`
 - `"call.ended"`  
 - `"call.joined"`
 - `"call.billed"`
 
-#### Call Object
+### Call Object
 The `call` object contains the complete [call definition](/api-reference/schema/call-definition), identical to what you'd receive from the [Get Call API endpoint](/api-reference/calls/calls-get). This ensures consistency across your application whether you're receiving webhook data or making API requests.
 
 **Key call object fields:**
