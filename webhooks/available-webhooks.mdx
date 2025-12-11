@@ -26,7 +26,7 @@ The `call.started` event is most useful with telephony integrations where you've
 ### `call.ended`
 Fires when a call ends.
 
-The call's messages are immutable because the call is over. However, billing information may not be available yet (in particular for SIP calls, where the SIP session could be ongoing...see [call.billed](#call-billed). This event is also sent for unjoined calls when their join timeout is reached.
+The call's messages are now immutable because the call is over. However, billing information may not be available yet (in particular for SIP calls, where the SIP session could be ongoing — see [call.billed](#call-billed). This event is also sent for unjoined calls when their join timeout is reached.
 
 ### `call.joined`
 Fires when a client connects to your call.
