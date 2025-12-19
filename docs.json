@@ -14,7 +14,7 @@
   },
   "favicon": "/favicon.svg",
   "banner": {
-    "content": "⚠️ SIP Billing Starts November 10, 2025 - See [Ultravox Pricing](https://ultravox.ai/pricing) for details.",
+    "content": "⚠️ Default Model Upgrade and Model Deprecations - December 22, 2025 - See [Changelog](/changelog/news#2025-12-03-ultravox-v0-7-model) for details.",
     "dismissible": false
   },
   "navigation": {

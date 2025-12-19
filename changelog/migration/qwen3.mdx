@@ -3,7 +3,7 @@ title: "Migrating from Qwen3 32B Model"
 description: How to migrate from the Qwen3 32B model as part of its deprecation.
 ---
 
-On December 15, 2025, `fixie-ai/ultravox-qwen3-32b-preview` is being removed.
+On December 22, 2025, `fixie-ai/ultravox-qwen3-32b-preview` is being removed.
 
 It will be replaced with GLM 4.6 as the recommended model for most use cases.
 
@@ -17,7 +17,7 @@ This change represents a significant upgrade for voice AI applications while mai
 
 ## Timeline
 - **December 3, 2025**: Deprecation announced
-- **December 15, 2025**: `fixie-ai/ultravox-qwen3-32b-preview` will no longer work
+- **December 22, 2025**: `fixie-ai/ultravox-qwen3-32b-preview` will no longer work
 
 ## How to Migrate
 
@@ -30,7 +30,7 @@ Update your model string to use GLM 4.6:
 model = "fixie-ai/ultravox-qwen3-32b-preview"
 
 # After
-model = "fixie-ai/ultravox-v0.7"
+model = "ultravox-v0.7"
 ```
 
 **Testing Your Prompts:**
@@ -42,19 +42,19 @@ If your use case has specific requirements, you can choose from other available 
 
 **Llama 3.3 70B:**
 ```python
-model = "fixie-ai/ultravox-llama3.3-70b"
+model = "ultravox-v0.6"
 ```
 
 **Gemma 27B:**
 ```python
-model = "fixie-ai/ultravox-gemma3-27b-preview"
+model = "ultravox-v0.6-gemma3-27b"
 ```
 
 See the [News page](/changelog/news) for a complete list of available models and their status.
 
 ## What Happens If You Don't Migrate?
 
-Starting December 15, 2025, any call creation requests using `fixie-ai/ultravox-qwen3-32b-preview` will be rejected.
+Starting December 22, 2025, any call creation requests using `fixie-ai/ultravox-qwen3-32b-preview` will be rejected.
 
 ## Pricing Impact
 

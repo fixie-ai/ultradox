@@ -14,46 +14,62 @@ description: 'Stay informed about Ultravox platform announcements.'
 We're announcing an important upgrade to Ultravox's default model that will deliver better instruction following, more reliable tool calling, and improved accuracy for your voice AI applications.
 
 #### Default Model Switching to GLM 4.6
-* **The Big Change** → On December 15, 2025, our default model will switch from Llama 3.3 70B to GLM 4.6. While Llama has served us well, GLM 4.6 delivers superior performance in critical areas: instruction following, tool calling accuracy, and overall speech understanding. It's a significant upgrade for voice AI applications.
+* **The Big Change** → On December 22, 2025, our default model will switch from Llama 3.3 70B to GLM 4.6. While Llama has served us well, GLM 4.6 delivers superior performance in critical areas: instruction following, tool calling accuracy, and overall speech understanding. It's a significant upgrade for voice AI applications.
 * **Production Ready** → The new model is production-ready today and we've already upgraded Blocky, our built-in agent builder, to use it.
 * **Same Great Price** → Stays at our standard $0.05 per minute rate. Better model, same price.
+
+
+<Danger>
+**Calls Default to v0.7**
+Not setting a model string or using the generic `fixie-ai/ultravox` string will default to using the v0.7 model. If you are not ready to migrate from Llama, use the `ultravox-v0.6` model string.
+</Danger>
 
 #### Model Timeline and Migration Details
 
 **What You Need to Do:**
-Depending on your current agent settings, expect the following changes on December 15:
-* Agents and calls using the default `fixie-ai/ultravox` model will automatically switch from Llama 3.3 70B to GLM 4.6.
-* Agents and calls using `fixie-ai/ultravox-llama3.3-70b` will continue to use Llama 3.3 70B.
-* If your agent is configured to use `fixie-ai/ultravox-qwen3-32b-preview`, you will need to choose a different model before December 15. If you do not select a different model before that date, your calls will fail until you update your configuration.
+Depending on your current agent settings, expect the following changes on December 22:
+* **Default Model Change** → Agents and calls not setting the model or using the default `fixie-ai/ultravox` model will automatically switch from Llama 3.3 70B to GLM 4.6.
+* **Stick with Llama** → If you are not ready to switch from Llama, we are adding the model string `ultravox-v0.6` (or `ultravox-v0.6-llama3.3-70b`) that will continue to use Llama 3.3 70B. `fixie-ai/ultravox-llama3.3-70b` will continue to work.
+* **Qwen Support Ends** → If your agent is configured to use `fixie-ai/ultravox-qwen3-32b-preview`, you will need to choose a different model before December 22. If you do not select a different model before that date, your calls will fail until you update your configuration.
 
 <Warning>
 **Start Testing Today:**
-Use model string `fixie-ai/ultravox-v0.7` to test the new GLM 4.6 backed model with your agents now.
+Use model string `ultravox-v0.7` to test the new GLM 4.6 backed model with your agents now.
 </Warning>
 
 
 **Timeline:**
-* **Today (December 3)** → Start testing with `fixie-ai/ultravox-v0.7` and adjust your prompts as needed (GLM is a much better instruction follower so you may need to cut down on repetitive or overt instructions used to get Llama to comply).
-* **December 15**:
-  * Default model becomes GLM 4.6 (affects `fixie-ai/ultravox` and unspecified model strings)
-  * Llama 3.3 70B remains available via `fixie-ai/ultravox-llama3.3-70b`
+* **Today (December 3)** → Start testing with `ultravox-v0.7` and adjust your prompts as needed (GLM is a much better instruction follower so you may need to cut down on repetitive or overt instructions used to get Llama to comply).
+* **December 22**:
+  * Default model becomes GLM 4.6 (model string `ultravox-v0.7`)
+  * Llama 3.3 70B remains available via `ultravox-v0.6` (or `ultravox-v0.6-llama3.3-70b`)
   * Qwen3 support ends (`fixie-ai/ultravox-qwen3-32b-preview` will no longer work)
 
 #### Available Models and Status
 
-| Model | Model String | Status |
-|-------|--------------|--------|
-| Ultravox Default | `fixie-ai/ultravox` | Currently points to Llama 3.3 70B<br/>Will point to GLM 4.6 starting on Dec 15 |
-| GLM 4.6 | `fixie-ai/ultravox-v0.7` and `fixie-ai/ultravox-glm4.6-355b-preview` | Available now and ongoing |
-| GLM 4.5 (Preview) | `fixie-ai/ultravox-glm4.5-355b-preview` | Redirects to GLM 4.6 |
-| Llama 3.3 70B | `fixie-ai/ultravox-llama3.3-70b` | Available now and will continue post Dec 15<br/>The only way to use this model post Dec 15 is to manually set the full model string |
-| Qwen 3 32B (Preview) | `fixie-ai/ultravox-qwen3-32b-preview` | Will be removed on Dec 15 |
-| Gemma 27B (Preview) | `fixie-ai/ultravox-gemma3-27b-preview` | Available now and ongoing |
+##### Currently Supported Models
+| Model String                 | Base LLM      | Status |
+|------------------------------|---------------|--------|
+| `ultravox-v0.7`              | GLM 4.6       | ✅     |
+| `ultravox-v0.6`              | Llama 3.3 70B | ✅     |
+| `ultravox-v0.6-llama3.3-70b` | Llama 3.3 70B | ✅     |
+| `ultravox-v0.6-gemma3-27b`   | Gemma 27B     | ✅     |
+
+##### Model Transition Status
+
+| Model                | Model String                                                         | Status |
+|----------------------|----------------------------------------------------------------------|--------|
+| Ultravox Default     | `fixie-ai/ultravox`                                                  | Currently points to `ultravox-v0.6-llama3.3-70b`<br/>Will instead point to `ultravox-v0.7` beginning Dec 22 |
+| GLM 4.6              | `fixie-ai/ultravox-v0.7` and `fixie-ai/ultravox-glm4.6-355b-preview` | Available now and ongoing as model string `ultravox-v0.7`  |
+| GLM 4.5 (Preview)    | `fixie-ai/ultravox-glm4.5-355b-preview`                              | Redirects to GLM 4.6. Switch to `ultravox-v0.7` |
+| Llama 3.3 70B        | `fixie-ai/ultravox-llama3.3-70b`                                     | Available now and will continue post Dec 22<br/>The only way to use this model post Dec 22 is to manually set the full model string to either `ultravox-v0.6` (recommended) or `ultravox-v0.6-llama3.3-70b` |
+| Qwen 3 32B (Preview) | `fixie-ai/ultravox-qwen3-32b-preview`                                | Will be removed on Dec 22 |
+| Gemma 27B (Preview)  | `fixie-ai/ultravox-gemma3-27b-preview`                               | Available now and ongoing as model string `ultravox-v0.6-gemma3-27b` |
 
 #### What's Next
 **Multiple Models for Flexibility** → We train multiple Ultravox model variants using various LLMs to give customers choice and flexibility. While GLM 4.6 will become our default due to superior performance, we'll continue to make other models like Llama 3.3 and Gemma available for customers who find they work better for specific scenarios.
 
-**Testing Recommendation** → If you're not specifying a model string for your calls or are using `fixie-ai/ultravox`, your agents will automatically get GLM 4.6 on December 15. We strongly recommend testing before then to ensure your prompts work as expected. If you're using Llama and have emphasized importance to the model with phrases like "you must...", ensure those instructions don't harm performance with GLM 4.6, which is a better instruction follower.
+**Testing Recommendation** → If you're not specifying a model string for your calls or are using `fixie-ai/ultravox`, your agents will automatically get GLM 4.6 on December 22. We strongly recommend upgrading to `ultravox-v0.7` immediately and testing before then to ensure your prompts work as expected. If you're using Llama and have emphasized importance to the model with phrases like "you must...", ensure those instructions don't harm performance with GLM 4.6, which is a better instruction follower.
 
 ## Prior Updates
 
