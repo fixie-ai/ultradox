@@ -5,7 +5,7 @@ description: ''
 
 import { SDKCards } from '/snippets/sdkcards.mdx'
 
-The Ultravox [REST API](/api-reference/) is used to create calls but you must use one of the Ultravox client SDKs to join and end calls. This page primarily uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
+The Ultravox [REST API](/api-reference/) is used to create calls but a client must still join the call. For web and mobile applications, you can do this with one of our SDKs. This page primarily uses examples in JavaScript. The concepts are the same across all the [different SDK implementations](#sdk-implementations).
 
 ## Methods
 The core of the SDK is the `UltravoxSession`. The session is used to join and leave calls. The `UltravoxSession` contains methods for:
@@ -50,7 +50,7 @@ sendText(text: string, deferResponse?: boolean): void
 </ParamField>
 
 ### setOutputMedium()
-Sets the agent's output medium for future utterances. If the agent is currently speaking, this will take effect at the end of the agent's utterance. 
+Sets the agent's output medium for future utterances. If the agent is currently speaking, this will take effect at the end of the agent's utterance.
 
 ```ts
 setOutputMedium(medium: Medium): void
@@ -93,7 +93,7 @@ For example:
 Convenience batch wrapper for [`registerToolImplementation`](#registertoolimplementation).
 
 ```ts
-registerToolImplementations(implementationMap: { [name: string]: ClientToolImplementation }): void 
+registerToolImplementations(implementationMap: { [name: string]: ClientToolImplementation }): void
 ```
 
 <ParamField body="implementationMap" type="Object" required>
@@ -148,7 +148,7 @@ Ultravox has robust support for [tools](/tools/overview). The SDK has support fo
 
 <Note>
   <b>Message Size Limit</b>
-  
+
   Messages larger than 15-16KB may cause timeouts. Keep payload sizes within this limit.
 </Note>
 
@@ -164,7 +164,7 @@ Client tools are defined just like "server" tools with three exceptions:
 <Steps>
   <Step title="'client' not 'http'">
     You don't add the URL and HTTP method for client tools.
-    
+
     Instead, you add `"client": {}` to the tool definition.
     <CodeGroup>
       <clientTool />
@@ -175,7 +175,7 @@ Client tools are defined just like "server" tools with three exceptions:
     Your client tool must be registered in your client code. Here's a snippet that might be found in client code to register the client tool and implement the logic for the tool.
 
     See the SDK method [`registerToolImplementation()`](#registertoolimplementation) for more information.
-    
+
     <toolReg />
 
   </Step>
@@ -234,10 +234,10 @@ Transcripts are returned as an array of transcript objects.
       True if the transcript represents a complete utterance. False if it is a fragment of an utterance that is still underway.
     </ResponseField>
     <ResponseField name="speaker" type="Role">
-      Either "user" or "agent". Denotes who was speaking. 
+      Either "user" or "agent". Denotes who was speaking.
     </ResponseField>
     <ResponseField name="medium" type="Medium">
-      Either "voice" or "text". Denotes how the message was sent. 
+      Either "voice" or "text". Denotes how the message was sent.
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -246,7 +246,7 @@ Transcripts are returned as an array of transcript objects.
 
 <Warning>
   <b>No Guarantee</b>
-  
+
   Debug messages from Ultravox should be treated as debug logs. They can change regularly and don't have a contract. Relying on the specific structure or content should be avoided.
 </Warning>
 
