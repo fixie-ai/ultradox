@@ -127,10 +127,12 @@ Our voice platform partners have native integrations for Ultravox:
       to: phoneNumber,
       from: telnyxPhoneNumber,
       stream_url: joinUrl,
-      stream_track: "both_tracks",
+      stream_track: "inbound_track",
       stream_bidirectional_mode: "rtp"
-      stream_codec: "PCMU",
-      stream_bidirectional_codec: "PCMU"
+      stream_codec: "L16",
+      stream_bidirectional_codec: "L16",
+      stream_bidirectional_sampling_rate: 16000,
+      stream_bidirectional_target_legs: "opposite",
     });
     ```
 
@@ -140,7 +142,7 @@ Our voice platform partners have native integrations for Ultravox:
     <?xml version="1.0" encoding="UTF-8"?>
     <Response>
       <Connect>
-        <Stream url="${joinUrl}" bidirectionalMode="rtp"  codec="PCMU" bidirectionalCodec="PCMU"/>
+        <Stream url="${joinUrl}" bidirectionalMode="rtp"  codec="L16" bidirectionalCodec="L16" bidirectionalSamplingRate="16000"/>
       </Connect>
     </Response>
     ```
@@ -159,7 +161,7 @@ Our voice platform partners have native integrations for Ultravox:
     <?xml version="1.0" encoding="UTF-8"?>
     <Response>
       <Connect>
-        <Stream url="${joinUrl}" bidirectionalMode="rtp" codec="PCMU" bidirectionalCodec="PCMU"/>
+        <Stream url="${joinUrl}" bidirectionalMode="rtp"  codec="L16" bidirectionalCodec="L16" bidirectionalSamplingRate="16000"/>
       </Connect>
     </Response>
     ```
@@ -169,7 +171,7 @@ Our voice platform partners have native integrations for Ultravox:
 <Warning>
   <b>Telnyx `codec`</b>
   <br />
-  Telnyx allows setting both `codec` and `bidirectionalCodec`. The former controls user audio while the latter controls agent audio. When using with Ultravox, **these must have the same value** because Telnyx only tells us about one of them! If your users are mostly in Europe, you'll likely want to set both to PCMA. Otherwise setting both to PCMU is preferred but leaving them both unset is fine to get started.
+  Telnyx allows setting both `codec` and `bidirectionalCodec`. The former controls user audio while the latter controls agent audio. When using with Ultravox, **these must have the same value** because Telnyx only tells us about one of them! Now that Telnyx supports HD Audio, you most likely want "L16" for both.
 </Warning>
 
 For more details, see the [Telnyx documentation](https://developers.telnyx.com/).
