@@ -95,3 +95,8 @@ Large duration mismatches typically indicate Ultravox didn't receive continuous 
 
 </Steps>
 
+### <Icon icon="circle-question" size={24} /> Why are user transcripts wrong despite the agent responding correctly to the user input?
+
+The Ultravox model is audio native. It never sees text transcripts since it processes user utterances directly instead. This allows the system to be faster and robust to transcription failures while also retaining paralinguistic context (e.g. tone) that would otherwise be lost by transcription.
+
+By default, text transcripts are created by traditional ASR systems and exist solely to help you quickly understand what's happening in your calls. If you are seeing discrepancies between the user transcripts and the agent's responses, the most common cause is that the text transcript is inaccurate. You can verify this by listening to the call recording. If you listen to the recording and it turns out ASR was right and the model failed to understand (and the conversation is happening in a supported language), let us know!
