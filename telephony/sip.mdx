@@ -125,7 +125,7 @@ When you create the call, Ultravox will automatically send a SIP invite using th
     }
 ```
 
-## SIP Pricing
+## SIP Billing
 
 Serving SIP calls requires additional infrastructure (provided by our SIP partner, Voximplant). Consequently, SIP
 calls incur costs for SIP minutes in addition to the regular cost of call minutes. Like call minutes, SIP minutes are billed
@@ -133,6 +133,8 @@ per-deciminute (i.e. six second increments), rounded up to the nearest deciminut
 billed when SIP infrastructure is active**, not just while your agent is connected to a user. In particular, **outgoing calls
 are billed from the start of the call, not the point at which your user answers**. This means that an outgoing SIP call may
 be billed for 0 minutes and non-zero SIP minutes if the call is not answered.
+
+See https://ultravox.ai/pricing for current rates for SIP minutes.
 
 The examples below illustrate how different call scenarios affect SIP billing. Red blocks correspond to segments of the call
 that count toward the SIP duration while the blue block shows when your agent is connected (i.e. regular call minutes).
