@@ -158,19 +158,19 @@ gantt
     dateFormat x
     axisFormat %M:%S.%L
 
-    section InitialCall
+    section Initial Call
     Ringing                       :crit, 0, 20000ms
     Talking to Agent              :crit, 30000ms
     On Hold                       :crit, 50000ms
     Talking to Transfer Target -> :crit, 0ms
 
-    section TransferTargetCall
+    section Transfer Call
     Ringing                    :crit, 50000, 10000ms
     Talking to Agent           :crit, 40000ms
     Talking to Initial User -> :crit, 0ms
 
-    Agent connected           : vert, 20000, 0ms
-    Agent disconnects         : vert, 100000, 0ms
+    section Agent
+    Connected                 :active, 20000, 80000ms
 ```
 
 
