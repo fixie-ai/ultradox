@@ -5,38 +5,22 @@ icon: 'network-wired'
 tag: "NEW"
 ---
 
-<Danger>
-  <b>SIP Billing Starts November 10, 2025</b>
-  <br />
-  Calls via the SIP medium will start to incur additional charges on Monday, November 10, 2025.
-
-  See https://ultravox.ai/pricing for details.
-</Danger>
-
 Session Initiation Protocol (SIP) enables Ultravox agents to connect with your existing phone systems and SIP clients. This guide explains how to set up both incoming and outgoing SIP calls with Ultravox agents.
 
-## SIP Quickstart
-
-The fastest way to start using SIP with Ultravox:
-<Steps>
-  <Step title="Create an Agent">Create an agent using the [Ultravox Realtime console](https://app.ultravox.ai/agents).</Step>
-  <Step title="Create a SIP Call">Create an agent call using the [Create Agent Call](/api-reference/agents/agents-calls-post) API and use the `sip` medium.</Step>
-</Steps>
-
-<Note>
-  <b>API Key Required</b>
-  <br />
-  Make sure you have an Ultravox API key. You can create one in the [console](https://app.ultravox.ai/settings/).
-</Note>
-
 ## Incoming SIP Calls
-For incoming calls, you can configure Ultravox to accept calls from your SIP system then send a sip invite directly to your agent. The SIP invite will create an Ultravox call and connect to it, no other requests required.
+<Info>
+  <b>Agents Required</b>
+  <br />
+  For incoming SIP, Ultravox will automatically create calls on your behalf in response to SIP INVITE requests. To facilitate this, you'll need to create an agent to receive calls before you set up incoming SIP.
+</Info>
+
+For incoming calls, you can configure Ultravox to accept calls from your SIP system then send a SIP invite directly to your agent. The SIP invite will create an Ultravox call and connect to it, no other requests required.
 
 Ultravox supports two setups for incoming SIP calls: IP allowlisting and SIP registration. IP allowlisting works well with dedicated PBX systems, while SIP registration is recommended for cloud PBX setups.
 
 In either setup, you can choose to allow incoming calls to all of your agents or to specific agents only. Calls will be created automatically from your agent's call template when a SIP invite is received.
 
-By default, calls must be directed to the sip user `agent_{agent_id}` to reach your agent, but you can override this with your own regex matching. The regex for your agents will be checked in order with the first matching agent used for the call. If none match, the global `agent_{agent_id}` will be used if allowAllAgents is enabled. Otherwise (or if that doesn't match either), the call will be rejected.
+By default, calls must be directed to the SIP user `agent_{agent_id}` to reach your agent, but you can override this with your own regex matching. The regex for your agents will be checked in order with the first matching agent used for the call. If none match, the global `agent_{agent_id}` will be used if allowAllAgents is enabled. Otherwise (or if that doesn't match either), the call will be rejected.
 
 ### IP Allowlisting
 To set up IP Allowlisting, use the [sip configuration API](/api-reference/sip/sip-partial-update) to add your SIP system's public IP addresses to the `allowedCidrRanges` list. Entries in this list must be IPv4 [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) ranges, e.g. `0.0.0.0/0` for any IP address (not recommended) or `91.200.160.14/32` for the single `91.200.160.14` IP address.
@@ -51,7 +35,7 @@ When creating a registration, you'll need to provide the following information:
 * `password`: The password for that user.
 * `proxy`: The domain or IP address of your SIP server.
 
-In this case, you'll most likely want to alter the regex for your agents since the to address on invites is unlikely to be `agent_{agent_id}`.
+In this case, you'll most likely want to alter the regex for your agents (see [above](#incoming-sip-calls)) since the to address on invites is unlikely to be `agent_{agent_id}`.
 For example, if your PBX sends calls to `sip:sales@your_sip_domain`, you could set the regex for your sales agent to `^sales$`. Similarly, if your SIP server interacts with PSTN, you could have your agent answer calls to +1-555-123-4567 and +1-555-765-4321 by setting the regex to `^15551234567$|^15557654321$`.
 
 ### Personalizing the Call
@@ -141,13 +125,62 @@ When you create the call, Ultravox will automatically send a SIP invite using th
     }
 ```
 
+## SIP Pricing
+
+Serving SIP calls requires additional infrastructure (provided by our SIP partner, Voximplant). Consequently, SIP
+calls incur costs for SIP minutes in addition to the regular cost of call minutes. Like call minutes, SIP minutes are billed
+per-deciminute (i.e. six second increments), rounded up to the nearest deciminute. Unlike call minutes, *SIP minutes are
+billed when SIP infrastructure is active*, not just while your agent is connected to a user. In particular, *outgoing calls
+are billed from the start of the call, not the point at which your user answers*. This means that an outgoing SIP call may
+be billed for 0 minutes and non-zero SIP minutes if the call is not answered.
+
+### Transfers
+
+Transfers often involve additional call legs that may increase the effective SIP duration of your call at double speed or
+extend your call duration well beyond the duration during which your agent is active. Some examples follow:
+
+* *Cold transfer with SIP REFER*: If the REFER is successful, all Ultravox infrastructure is removed from the call, so the SIP clock stops immediately. The SIP billing clock never runs at double rate for REFER cold transfers.
+* *Bridged cold transfer*: A second call leg is created for the transfer target, so SIP minutes accumulate at double the normal rate while both calls are active. If the transfer is accepted, both legs remain active and continue billing even after the agent leaves the call.
+* *Warm transfer with REFER*: During the warm transfer process, a second call leg is created to connect the agent with the human operator and thus SIP minutes temporarily accumulate at double the normal rate. If the REFER is successful, all Ultravox infrastructure is removed from the call and thus the SIP clock stops immediately. If the REFER fails (and bridge fallback is not selected), the agent reconnects with the original user and continues the conversation as if the transfer were rejected. The SIP clock goes back to running at the normal rate as their is only one call leg remaining.
+* *Bridged warm transfer*: A second call leg is created to connect the agent with the human operator, so SIP minutes accumulate at double the normal rate while both calls are active. If the transfer is accepted, both legs remain active and continue billing even after the agent leaves the call.
+* *Warm transfer with TRY_REFER*: This will attempt to behave as in the REFER case, but will fallback to the bridged case (and thus cause additional SIP costs) if the REFER fails.
+
+<Note>
+  <b>Uncounted SIP time</b>
+  <br />
+  Due to some technical limitations, outgoing SIP calls with transfers may not be billed for the full ring time. This will only ever decrease the billed SIP duration.
+</Note>
+
+
+```mermaid
+gantt
+    title Referred warm transfer (outgoing)
+    dateFormat x
+    axisFormat %M:%S.%L
+
+    section InitialCall
+    Ringing                       :crit, 0, 20000ms
+    Talking to Agent              :crit, 30000ms
+    On Hold                       :crit, 50000ms
+    Talking to Transfer Target -> :crit, 0ms
+
+    section TransferTargetCall
+    Ringing                    :crit, 50000, 10000ms
+    Talking to Agent           :crit, 40000ms
+    Talking to Initial User -> :crit, 0ms
+
+    Agent connected           : vert, 20000, 0ms
+    Agent disconnects         : vert, 100000, 0ms
+```
+
+
 ## Supported Transport Protocols
 By default, UDP is used as the SIP transport protocol. You may optionally use TCP and/or TLS by explicitly adding a port and transport parameter to the target SIP URL.
 
 | Protocol | How to Use in SIP URL                                |
 |----------|------------------------------------------------------|
 | UDP      | Default. No action required.                         |
-| TCP      |  `sip:<destination>@<sip_domain>:5060;transport=tcp` |
+| TCP      | `sip:<destination>@<sip_domain>:5060;transport=tcp`  |
 | TLS      | `sip:<destination>@<sip_domain>:5060;transport=tls`  |
 
 
