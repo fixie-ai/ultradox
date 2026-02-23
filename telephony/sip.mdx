@@ -145,10 +145,10 @@ gantt
 
     section SIP Call
     Ringing                    :crit, 0, 20000ms
-    Talking to Agent           :crit, 30000ms
+    Talking to Agent           :crit, 120000ms
 
     section Agent
-    Connected         :active, 20000, 30000ms
+    Connected         :active, 20000, 120000ms
 ```
 
 ```mermaid
@@ -158,10 +158,10 @@ gantt
     axisFormat %M:%S.%L
 
     section SIP Call
-    Talking to Agent           :crit, 0, 30000ms
+    Talking to Agent           :crit, 0, 120000ms
 
     section Agent
-    Connected         :active, 0, 30000ms
+    Connected         :active, 0, 120000ms
 ```
 
 ### Transfers
@@ -179,12 +179,12 @@ gantt
 
     section SIP Call
     Ringing                    :crit, 0, 20000ms
-    Talking to Agent           :crit, 30000ms
+    Talking to Agent           :crit, 60000ms
     Refer ringing              :crit, 10000ms
     Talking to Transfer Target -> :crit, 0ms
 
     section Agent
-    Connected                  :active, 20000, 40000ms
+    Connected                  :active, 20000, 70000ms
 ```
 
 * **Bridged cold transfer**: A second call leg is created for the transfer target, so SIP minutes accumulate at double the normal rate while both calls are active. If the transfer is accepted, both legs remain active and continue billing even after the agent leaves the call.
