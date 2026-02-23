@@ -134,23 +134,81 @@ billed when SIP infrastructure is active*, not just while your agent is connecte
 are billed from the start of the call, not the point at which your user answers*. This means that an outgoing SIP call may
 be billed for 0 minutes and non-zero SIP minutes if the call is not answered.
 
+The examples below illustrate how different call scenarios affect SIP billing. Red blocks correspond to segments of the call
+that count toward the SIP duration while the blue block shows when your agent is connected.
+
+```mermaid
+gantt
+    title Typical outgoing call
+    dateFormat x
+    axisFormat %M:%S.%L
+
+    section SIP Call
+    Ringing                    :crit, 0, 20000ms
+    Talking to Agent           :crit, 30000ms
+
+    section Agent
+    Connected         :active, 20000, 30000ms
+```
+
+```mermaid
+gantt
+    title Typical incoming call
+    dateFormat x
+    axisFormat %M:%S.%L
+
+    section SIP Call
+    Talking to Agent           :crit, 0, 30000ms
+
+    section Agent
+    Connected         :active, 0, 30000ms
+```
+
 ### Transfers
 
 Transfers often involve additional call legs that may increase the effective SIP duration of your call at double speed or
 extend your call duration well beyond the duration during which your agent is active. Some examples follow:
 
 * *Cold transfer with SIP REFER*: If the REFER is successful, all Ultravox infrastructure is removed from the call, so the SIP clock stops immediately. The SIP billing clock never runs at double rate for REFER cold transfers.
+
+```mermaid
+gantt
+    title Referred cold transfer (outgoing)
+    dateFormat x
+    axisFormat %M:%S.%L
+
+    section SIP Call
+    Ringing                    :crit, 0, 20000ms
+    Talking to Agent           :crit, 30000ms
+    Refer ringing              :crit, 10000ms
+
+    section Agent
+    Connected                  :active, 20000, 40000ms
+```
+
 * *Bridged cold transfer*: A second call leg is created for the transfer target, so SIP minutes accumulate at double the normal rate while both calls are active. If the transfer is accepted, both legs remain active and continue billing even after the agent leaves the call.
+
+```mermaid
+gantt
+    title Bridged cold transfer (outgoing)
+    dateFormat x
+    axisFormat %M:%S.%L
+
+    section Initial Call
+    Ringing                    :crit, 0, 20000ms
+    Talking to Agent           :crit, 30000ms
+    On Hold                    :crit, 10000ms
+    Talking to Transfer Target :crit, 300000ms
+
+    section Transfer Call
+    Ringing                    :crit, 50000, 10000ms
+    Talking to Initial User    :crit, 300000ms
+
+    section Agent
+    Connected                  :active, 20000, 40000ms
+```
+
 * *Warm transfer with REFER*: During the warm transfer process, a second call leg is created to connect the agent with the human operator and thus SIP minutes temporarily accumulate at double the normal rate. If the REFER is successful, all Ultravox infrastructure is removed from the call and thus the SIP clock stops immediately. If the REFER fails (and bridge fallback is not selected), the agent reconnects with the original user and continues the conversation as if the transfer were rejected. The SIP clock goes back to running at the normal rate as their is only one call leg remaining.
-* *Bridged warm transfer*: A second call leg is created to connect the agent with the human operator, so SIP minutes accumulate at double the normal rate while both calls are active. If the transfer is accepted, both legs remain active and continue billing even after the agent leaves the call.
-* *Warm transfer with TRY_REFER*: This will attempt to behave as in the REFER case, but will fallback to the bridged case (and thus cause additional SIP costs) if the REFER fails.
-
-<Note>
-  <b>Uncounted SIP time</b>
-  <br />
-  Due to some technical limitations, outgoing SIP calls with transfers may not be billed for the full ring time. This will only ever decrease the billed SIP duration.
-</Note>
-
 
 ```mermaid
 gantt
@@ -170,8 +228,59 @@ gantt
     Talking to Initial User -> :crit, 0ms
 
     section Agent
-    Connected                 :active, 20000, 80000ms
+    Connected                  :active, 20000, 80000ms
 ```
+
+```mermaid
+gantt
+    title Rejected warm transfer (outgoing)
+    dateFormat x
+    axisFormat %M:%S.%L
+
+    section Initial Call
+    Ringing                    :crit, 0, 20000ms
+    Talking to Agent           :crit, 30000ms
+    On Hold                    :crit, 50000ms
+    Talking to Agent           :crit, 30000ms
+
+    section Transfer Call
+    Ringing                    :crit, 50000, 10000ms
+    Talking to Agent           :crit, 40000ms
+
+    section Agent
+    Connected                  :active, 20000, 110000ms
+```
+
+* *Bridged warm transfer*: A second call leg is created to connect the agent with the human operator, so SIP minutes accumulate at double the normal rate while both calls are active. If the transfer is accepted, both legs remain active and continue billing even after the agent leaves the call.
+
+```mermaid
+gantt
+    title Bridged warm transfer (outgoing)
+    dateFormat x
+    axisFormat %M:%S.%L
+
+    section Initial Call
+    Ringing                    :crit, 0, 20000ms
+    Talking to Agent           :crit, 30000ms
+    On Hold                    :crit, 50000ms
+    Talking to Transfer Target :crit, 300000ms
+
+    section Transfer Call
+    Ringing                    :crit, 50000, 10000ms
+    Talking to Agent           :crit, 40000ms
+    Talking to Initial User    :crit, 300000ms
+
+    section Agent
+    Connected                  :active, 20000, 80000ms
+```
+
+* *Warm transfer with TRY_REFER*: This will attempt to behave as in the REFER case, but will fallback to the bridged case (and thus cause additional SIP costs) if the REFER fails.
+
+<Note>
+  <b>Uncounted SIP time</b>
+  <br />
+  Due to some technical limitations, outgoing SIP calls with transfers may not be billed for the full ring time. This will only ever decrease the billed SIP duration.
+</Note>
 
 
 ## Supported Transport Protocols
