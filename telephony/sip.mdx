@@ -211,7 +211,7 @@ gantt
     Connected                  :active, 20000, 40000ms
 ```
 
-* **Warm transfer with REFER**: During the warm transfer process, a second call leg is created to connect the agent with the human operator and thus SIP minutes temporarily accumulate at double the normal rate. If the REFER is successful, all Ultravox infrastructure is removed from the call and thus the SIP clock stops immediately. If the REFER fails (and bridge fallback is not selected), the agent reconnects with the original user and continues the conversation as if the transfer were rejected. The SIP clock goes back to running at the normal rate as their is only one call leg remaining.
+* **Warm transfer with REFER**: During the warm transfer process, a second call leg is created to connect the agent with the human operator and thus SIP minutes temporarily accumulate at double the normal rate. If the REFER is successful, all Ultravox infrastructure is removed from the call and thus the SIP clock stops immediately. If the REFER fails (and bridge fallback is not selected), the agent reconnects with the original user and continues the conversation as if the transfer were rejected. The SIP clock goes back to running at the normal rate as there is only one call leg remaining.
 
 ```mermaid
 gantt
