@@ -57,6 +57,27 @@ Finally, all calls are rounded up to the [nearest deciminute.](#how-does-ultravo
 Large duration mismatches typically indicate Ultravox didn't receive continuous user audio. Send continuous raw PCM (s16le) audio from your integration (e.g. websocket server).
 </Warning>
 
+## Data Retention
+
+### <Icon icon="circle-question" size={24} /> How long does Ultravox retain my call data?
+
+Call data is retained until you delete it.
+
+### <Icon icon="circle-question" size={24} /> How can I delete call data from Ultravox?
+
+Use the [call deletion API](/api-reference/calls/calls-delete) to remove call data from Ultravox. This deletes all associated messages, recordings, call stages, and summaries.
+
+Many customers choose to archive call data prior to deletion. To do this:
+
+1. Set up a [call.ended](/webhooks/available-webhooks#call-ended) webhook.
+2. When your server receives the webhook, use our APIs to retrieve [call messages](/api-reference/calls/calls-messages-list) and [recordings](/api-reference//calls/calls-recording-get).
+3. Save all data to your own storage location.
+4. Delete the call from Ultravox using the [call deletion API](/api-reference/calls/calls-delete).
+
+<Warning>
+Call deletion on Ultravox is permanent. Only a record of the call ID and information required for billing purposes is retained after deletion.
+</Warning>
+
 ## Miscellaneous
 
 ### <Icon icon="circle-question" size={24} /> How do I get my agent to best handle voicemail when making outgoing calls?
