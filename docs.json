@@ -298,12 +298,15 @@
               "api-reference/telephony/twilio-get",
               "api-reference/telephony/twilio-post",
               "api-reference/telephony/twilio-patch",
+              "api-reference/telephony/twilio-delete",
               "api-reference/telephony/telnyx-get",
               "api-reference/telephony/telnyx-post",
               "api-reference/telephony/telnyx-patch",
+              "api-reference/telephony/telnyx-delete",
               "api-reference/telephony/plivo-get",
               "api-reference/telephony/plivo-post",
               "api-reference/telephony/plivo-patch",
+              "api-reference/telephony/plivo-delete",
               "api-reference/accounts/accounts-me-telephony-config-partial-update",
               "api-reference/accounts/accounts-me-telephony-config-retrieve"
             ]
