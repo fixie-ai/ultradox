@@ -177,9 +177,7 @@
               "api-reference/accounts/accounts-me-get",
               "api-reference/accounts/accounts-me-usage-calls-get",
               "api-reference/accounts/accounts-me-tts-api-keys-partial-update",
-              "api-reference/accounts/accounts-me-tts-api-keys-retrieve",
-              "api-reference/accounts/accounts-me-telephony-config-partial-update",
-              "api-reference/accounts/accounts-me-telephony-config-retrieve"
+              "api-reference/accounts/accounts-me-tts-api-keys-retrieve"
             ]
           },
           {
@@ -288,7 +286,7 @@
             ]
           },
           {
-            "group": "SIP Configuration",
+            "group": "Telephony",
             "pages": [
               "api-reference/sip/sip-get",
               "api-reference/sip/sip-partial-update",
@@ -296,7 +294,21 @@
               "api-reference/sip/sip-registrations-list",
               "api-reference/sip/sip-registrations-get",
               "api-reference/sip/sip-registrations-partial-update",
-              "api-reference/sip/sip-registrations-delete"
+              "api-reference/sip/sip-registrations-delete",
+              "api-reference/telephony/twilio-get",
+              "api-reference/telephony/twilio-post",
+              "api-reference/telephony/twilio-patch",
+              "api-reference/telephony/twilio-delete",
+              "api-reference/telephony/telnyx-get",
+              "api-reference/telephony/telnyx-post",
+              "api-reference/telephony/telnyx-patch",
+              "api-reference/telephony/telnyx-delete",
+              "api-reference/telephony/plivo-get",
+              "api-reference/telephony/plivo-post",
+              "api-reference/telephony/plivo-patch",
+              "api-reference/telephony/plivo-delete",
+              "api-reference/accounts/accounts-me-telephony-config-partial-update",
+              "api-reference/accounts/accounts-me-telephony-config-retrieve"
             ]
           },
           {
