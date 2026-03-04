@@ -13,10 +13,6 @@
     }
   },
   "favicon": "/favicon.svg",
-  "banner": {
-    "content": "🎉 Try Inworld voices, earn up to $100 in credits — [Learn more →](https://go.ultravox.ai/ultravox-x-inworld-promo)",
-    "dismissible": false
-  },
   "navigation": {
     "tabs": [
       {
