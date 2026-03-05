@@ -14,6 +14,13 @@ During tool execution, conversations are essentially frozen. Users can continue 
 - **Conversation Flow**: Delays break natural conversation rhythm.
 - **Tool Timeout**: Tools are limited to 2.5 seconds by default (max of 40 seconds).
 
+<Note>
+<b>Threads</b>
+
+For longer operations, consider using [Threads](/agents/threads) to handle the task asynchronously while keeping the main conversation responsive.
+</Note>
+
+
 ### Tool Invocation Timing
 By default, tool invocations are always included in the conversation history. This is done so that you can always understand the timing and context of all tool invocations. In cases when the LLM produces a combination of an agent utterance + a tool call, maintaining this conversation history requires delaying tool invocations until after the agent is done speaking speaking. Otherwise, there's no way to ensure the agent wouldn't be interrupted by the user (and potentially render the queued tool call irrelevant).
 

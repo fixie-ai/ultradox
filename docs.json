@@ -70,9 +70,9 @@
               "agents/building-and-editing-agents",
               "agents/making-calls",
               "agents/call-management",
+              "agents/threads",
               "agents/guiding-agents",
               "agents/call-stages",
-              "agents/threads",
               "agents/testing-and-debugging"
             ]
           },
