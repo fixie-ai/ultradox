@@ -134,6 +134,10 @@ limits may be capped by Ultravox.
 
 When any limit is exceeded, the thread is marked FAILED and a `threadTerminated` data message with the reason is sent.
 
+Note that there is also a platform-enforced concurrency limit. A call can create as many threads as are useful, but the number
+actively generating at the same time may be limited. If a thread attempts a generation when the concurrency limit is reached,
+its generation request will be enqueued and will run once another thread finishes generating.
+
 ### Filtering Available Tools
 
 Use `toolFilter` to restrict which tools a thread can access:
@@ -165,7 +169,7 @@ the result is routed to the specified thread as a message. This allows threads t
 * Synchronize state
 * Effect a change on the UI thread (e.g., speak a message, end the call)
 
-When a thread receives a message, it gets added to a queue. If the thread was IDLE, it will transition handle the message immediately. Otherwise it will
+When a thread receives a message, it gets added to a queue. If the thread was IDLE, it will transition to handle the message immediately. Otherwise it will
 add the message to its conversation history at the next opportunity (e.g., after finishing its current generation or tool call). The UI thread works
 similarly except that the message's urgency determines whether it can interrupt and whether it can cause a new generation to start immediately. For side
 threads, messages are always treeated as if they had "soon" urgency—i.e., they never interrupt what the thread is doing but they can always cause a new
@@ -190,15 +194,56 @@ session.sendData({
 
 The message is handled identically to if another thread had sent the message via a tool response.
 
-## Listening for Thread Generations
+## Observability
 
-Your client or data connection can listen for generations from side threads by subscribing to these data messages:
+### During a call
 
-1. **`sideGenerationDelta`** — Streaming text deltas as the thread generates (similar to transcript deltas).
-2. **`sideGenerationCompleted`** — The full response text and any tool calls once generation finishes.
+During a call, your client or data connection can listen for data messages to know what threads are doing.
+See [Thread Messages](/apps/datamessages#thread-messages) for the full message reference.
 
-See [Thread Messages](/apps/datamessages#thread-messages) for the full message reference. If you listen for generations,
-it is highly recommended to use your own thread IDs when spawning threads so you can correlate these messages with their thread.
+#### Thread Messages
+| Message | Description |
+| ----- | ----------- |
+| `threadSpawned` | A thread was successfully spawned. |
+| `threadRejected` | A thread spawn was rejected (e.g., due to duplicate ID). |
+| `threadTerminated` | A thread was terminated due to failure or cancellation. |
+
+#### Generation Messages
+| Message | Description |
+| ----- | ----------- |
+| `sideGenerationDelta` | Streaming text deltas as the thread generates (similar to transcript deltas). |
+| `sideGenerationCompleted` | The full response text and any tool calls once generation finishes. |
+
+If you listen for generations, it is highly recommended to use your own thread IDs when spawning threads so you can correlate these messages with their thread.
+
+### After a call
+
+Thread activity is recorded as [call events](/api-reference/calls/calls-events-list) that you can query after the call ends. These are useful for debugging and monitoring thread behavior.
+
+### Thread Lifecycle Events
+| Event | Description |
+| ----- | ----------- |
+| `thread.canceled` | The thread was cancelled (e.g., call ended or stage changed). |
+| `thread.limit_reached` | The thread exceeded one of its configured resource limits. |
+| `thread.failed` | The thread failed for another reason. |
+
+These events include `total_input_tokens`, `total_output_tokens`, and `total_generations` in their extras.
+
+### Side Generation Events
+| Event | Description |
+| ----- | ----------- |
+| `side_generation.completed` | A thread's generation succeeded. |
+| `side_generation.failed` | A thread's generation encountered an error. |
+| `side_generation.canceled` | A thread's generation was cancelled. |
+
+These events include token usage in their extras.
+
+### Thread Communication Events
+| Event | Description |
+| ----- | ----------- |
+| `thread_comms.non_existent_thread` | A message was sent to a thread that doesn't exist. |
+| `thread_comms.failed_thread` | A message was sent to a thread that has already failed. |
+| `thread_comms.unsupported_call_change` | A thread attempted an unsupported call change (e.g., hang-up or stage change directly from a side thread). |
 
 ## Examples
 
@@ -301,49 +346,40 @@ respond with `send-to-thread` and a `ForcedAgentMessage` with the relevant tool 
 }
 ```
 
-## Replacing an Existing Thread
+**Having a thread re-sync conversation state following a tool call**
 
-By default, spawning a thread with an ID that already exists will be rejected. You can set `ifExists` to `"replace"` to terminate the existing thread and spawn a fresh one with the same ID. This is useful when you want to re-sync a thread with the current conversation state:
+Suppose you want some other LLM-based observer to periodically check how a call is going and then call a tool to report progress or effect changes.
+Instead of spawning a new single-shot thread for each check, you can have the thread re-sync its conversation history after each tool invocation by
+responding with a `send-to-thread` response type and a `SpawnThread` message that uses "UI" as the `parentThreadId`, sets its own threadId as the
+`newThreadId`, and sets `ifExists` to "replace". This will cause the thread to be terminated and re-spawned with a fresh copy of the UI thread's
+conversation history.
 
 ```js
-session.sendData({
-  type: "spawn_thread",
-  newThreadId: "research-task-1",
-  ifExists: "replace",
-  additionalMessages: [
-    { type: "user_text_message", text: "Start over with updated context." }
-  ]
-});
+{
+  "type": "client_tool_result",
+  "invocationId": "matching-invocation-id",
+  "result": JSON.stringify({
+    "callingThreadResultText": "OK",
+    "dataMessage": {
+      "type": "spawn_thread",
+      "parentThreadId": "UI",
+      "newThreadId": "monitor", // Same as existing thread id
+      "ifExists": "replace", // Terminate existing thread and spawn a new one with the same ID
+      "additionalMessages": [
+        // If there are messages you want to retain from the thread's prior history, include them here.
+        // You can use the CONVERSATION_HISTORY automatic parameter as usual to get the thread's history.
+        {
+          "type": "user_text_message",
+          // Restart the analysis to continue the loop
+          "text": "Analyze the conversation and <do something>. Take your time and think through your response then invoke myTool to report in."
+        }
+      ]
+    }
+  }),
+  "responseType": "send-to-thread",
+  "agentReaction": "listens"
+}
 ```
-
-## Call Events
-
-Thread activity is recorded as [call events](/api-reference/calls/calls-events-list) that you can query after the call ends. These are useful for debugging and monitoring thread behavior.
-
-### Thread Lifecycle Events
-| Event | Description |
-| ----- | ----------- |
-| `thread.canceled` | The thread was cancelled (e.g., call ended or stage changed). |
-| `thread.limit_reached` | The thread exceeded one of its configured resource limits. |
-| `thread.failed` | The thread failed for another reason. |
-
-These events include `total_input_tokens`, `total_output_tokens`, and `total_generations` in their extras.
-
-### Side Generation Events
-| Event | Description |
-| ----- | ----------- |
-| `side_generation.completed` | A thread's generation succeeded. |
-| `side_generation.failed` | A thread's generation encountered an error. |
-| `side_generation.canceled` | A thread's generation was cancelled. |
-
-These events include token usage and concurrency metrics in their extras.
-
-### Thread Communication Events
-| Event | Description |
-| ----- | ----------- |
-| `thread_comms.non_existent_thread` | A message was sent to a thread that doesn't exist. |
-| `thread_comms.failed_thread` | A message was sent to a thread that has already failed. |
-| `thread_comms.unsupported_call_change` | A thread attempted an unsupported call change (e.g., hang-up or stage change directly from a side thread). |
 
 ## Next Steps
 
