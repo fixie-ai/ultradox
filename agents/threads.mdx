@@ -5,14 +5,14 @@ icon: 'code-branch'
 ---
 
 Threads allow you to spawn independent, parallel conversations that run alongside the main call. Each thread forks from the parent's conversation history and state
-then executes autonomously—generating responses and calling tools—without interrupting or blocking the user-facing conversation.
+then executes autonomously, generating responses and calling tools without interrupting or blocking the user-facing conversation.
 
 <Note>
   <b>Advanced Feature</b>
 
   Threads are designed for use cases that require background processing or parallel reasoning during a live call. For many applications, the main
-  conversation is sufficient and you won't need to worry about multi-threading. Make sure you're comfortable with [Agents](/agents/overview) and
-  [Data Messages](/apps/datamessages) before diving in.
+  conversation is sufficient and you won't need to worry about multi-threading. Make sure you're comfortable with [Custom Tools](/tools/overview)
+  and [Data Messages](/apps/datamessages) before diving in.
 </Note>
 
 ## When to Use Threads
@@ -23,11 +23,13 @@ Threads are useful when you need the agent to do work in the background without 
 
 **Parallel Task Execution** → Spawn threads to manage long-running tasks concurrently instead of sequentially blocking the conversation for each.
 
-**Delegated Tasks** → Hand off subtasks (e.g., filling out a form, validating data) to a thread while the conversation continues.
+**Delegated Tasks** → Hand off subtasks like generating images or changing code to a thread while the conversation continues.
+
+**Observer** → Have a separate process monitor the conversation to provide real-time status updates or intervene if certain conditions are met.
 
 ## How to Think About Threads
 
-Ultravox uses the term "thread" to draw on familiar concepts—the communication app concept for a branch of a conversation and the computer science
+Ultravox uses the term "thread" to draw on familiar concepts: the communication app concept for a branch of a conversation and the computer science
 concept for parallel execution. Both are related.
 
 Like conversation threads, Ultravox threads rely on context from the parent conversation, but once forked follow their own path.
@@ -35,9 +37,9 @@ Like computer science threads (or even moreso Dart's [isolates](https://dart.dev
 don't share state with each other except through well-defined channels.
 
 If you're familiar with mobile app development, you're probably used to a "main" or "UI" thread that handles user interactions and your primary
-code flow. The same idea applies in Ultravox. When a call starts, you can think of it as running on the "UI" thread ("UI" is literally the ID
-used to identify this thread in Ultravox). If you block the UI thread (e.g. with a slow tool call), the conversation will be frozen much like a
-mobile application waiting on a network request. If the conversation can reasonably continue while that tool runs, you should put that work on a
+code flow. The same idea applies in Ultravox. When a call starts, you can think of it as running on the "UI" thread ("UI" is the ID used to
+identify this thread in Ultravox). If you block the UI thread (e.g. with a slow tool call), the conversation will be frozen much like a mobile
+application waiting on a network request. If the conversation can reasonably continue while that tool runs, you should put that work on a
 background thread to keep your conversation responsive.
 
 In Ultravox, only the UI thread can interface with the user. Only the UI thread receives audio input and produces audio output. In addition,
@@ -60,7 +62,7 @@ As a thread runs, it progresses through a series of states:
 * **FAILED** → The thread encountered an error or exceeded its limits. This is a terminal state. A [`threadTerminated`](/apps/datamessages#threadterminated) data message with the failure reason is sent when a thread enters this state.
 
 Unless a thread fails (typically due to exceeding configured limits), it will remain available until the call ends or a stage change occurs. **All side threads
-are cancelled when the call ends or a stage change occurs.**
+are canceled when the call ends or a stage change occurs.**
 
 ## Spawning a Thread
 
@@ -87,7 +89,7 @@ The server responds with a [`threadSpawned`](/apps/datamessages#threadspawned) m
 The `additionalMessages` field lets you give the thread its initial instructions. These are appended to the forked conversation history before the thread starts generating. You can use:
 
 - **`user_text_message`** — Adds a user message.
-- **`forced_agent_message`** — Adds agent messages add tool call/result messages.
+- **`forced_agent_message`** — Adds agent messages and tool call/result messages.
 
 If a spawned thread's history ends with a user message or tool result, it will begin in GENERATING state and immediately start generating a response. If it ends with a tool call,
 the thread will being in CALLING_TOOL state and immediately start executing that tool. If it ends with an agent message (or an empty history), the thread will begin in IDLE state
@@ -130,13 +132,17 @@ session.sendData({
 ```
 
 See the [data message](/apps/datamessages#spawnthread) for all the limits that may be imposed. Note that the per-generation
-limits may be capped by Ultravox.
+limits may be additionally capped by Ultravox.
 
 When any limit is exceeded, the thread is marked FAILED and a `threadTerminated` data message with the reason is sent.
 
-Note that there is also a platform-enforced concurrency limit. A call can create as many threads as are useful, but the number
+<Note>
+<b>Concurrency Limit</b>
+
+There is also a platform-enforced concurrency limit that cannot be set. A call can create as many threads as are useful, but the number
 actively generating at the same time may be limited. If a thread attempts a generation when the concurrency limit is reached,
 its generation request will be enqueued and will run once another thread finishes generating.
+</Note>
 
 ### Filtering Available Tools
 
@@ -158,10 +164,14 @@ See the [data message](/apps/datamessages#spawnthread) for filtering details. No
 conversation history, they are also often aware of tools they aren't allowed to use. If the model attempts to call a filtered tool,
 it will immediately get a response indicating the tool is unavailable so it can adjust accordingly.
 
-## Inter-Thread Communication
+## Thread Communication
 
-Threads can communicate with each other (including the UI thread) through tools. When a tool returns a `send-to-thread` response type,
-the result is routed to the specified thread as a message. This allows threads to:
+Threads communicate with each other (including the UI thread) through tools. Other participants may communicate
+with threads using data messages.
+
+### Pushing Messages from one Thread to Another
+
+Tools may return a `send-to-thread` response type, which routes a message to the specified thread. This allows threads to:
 
 * Report findings back to their parent
 * Delegate tasks to other threads
@@ -169,30 +179,79 @@ the result is routed to the specified thread as a message. This allows threads t
 * Synchronize state
 * Effect a change on the UI thread (e.g., speak a message, end the call)
 
-When a thread receives a message, it gets added to a queue. If the thread was IDLE, it will transition to handle the message immediately. Otherwise it will
-add the message to its conversation history at the next opportunity (e.g., after finishing its current generation or tool call). The UI thread works
-similarly except that the message's urgency determines whether it can interrupt and whether it can cause a new generation to start immediately. For side
-threads, messages are always treeated as if they had "soon" urgency—i.e., they never interrupt what the thread is doing but they can always cause a new
-generation (or tool invocation).
+A `send-to-thread` response includes a `callingThreadResultText` that determines the tool result message added to the calling thread's
+conversation history and a `dataMessage` field that specifies the message to send and the target thread.
+The message can be a `UserTextMessage`, a `ForcedAgentMessage`, or a `SpawnThreadMessage`.
 
-In addition to pushed messages, threads can pull the state of other threads by invoking a tool that uses the THREAD_STATES automatic parameter. This can
-be useful for monitoring progress or coordinating actions across threads. For example, if a user asks how some subtask is progressing, the UI thread may
-check the relevant thread's state to let the user know how it's doing.
+For spawn messages, the message is handled by the thread indicated by the `parentThreadId`. If that id is the same as the calling thread,
+the conversation history is forked *before* the tool call and response are added.
 
-## Sending Messages to a Thread
+For user and agent messages, the message is added to the relevant thread's queue. For the UI thread, the message's urgency determines whether the
+message can interrupt ("immediate" urgency) and whether it can cause a generation on its own or should be deferred until the next natural generation
+("later" urgency). For side threads, messages are always treated as if they had "soon" urgency. They never interrupt what the thread is doing,
+and they can always cause a new generation (or tool invocation). If the side thread is IDLE, it will transition to handle the message immediately.
+Otherwise it will add the message to its conversation history at the next opportunity (e.g., after finishing its current generation or tool call).
 
-After spawning, you can send additional messages to a thread by including `threadId` on a `user_text_message` or `forced_agent_message`:
+<Note>
+<b>The `_PARENT` thread id</b>
+
+Tools invoked on side threads may use the special value `_PARENT` as the target thread id to send a message to their parent thread,
+allowing messages to be pushed to the parent thread even if its id is not known by the child thread.
+</Note>
+
+### Sending Data Messages to a Thread
+
+You can send messages to a thread by including `threadId` on a `user_text_message` or `forced_agent_message`:
 
 ```js
 // Send a follow-up message to an existing thread
 session.sendData({
   type: "user_text_message",
-  text: "Also check for any pending refunds.",
+  text: "Now check for any pending refunds.",
   threadId: "research-task-1"
 });
 ```
 
-The message is handled identically to if another thread had sent the message via a tool response.
+Similarly, you can spawn a new thread from a side thread by including `parentThreadId` on a `spawn_thread` message:
+
+```js
+// Spawn a new thread from an existing thread
+session.sendData({
+  type: "spawn_thread",
+  parentThreadId: "research-task-1",
+  newThreadId: "research-task-1-subtask",
+  additionalMessages: [
+    {
+      type: "user_text_message",
+      text: "Also look up the refund policy for our top 3 competitors then call the `onComplete` tool with your findings."
+    }
+  ]
+});
+```
+
+In either case, the message is handled identically to if another thread had sent the message via a tool response. If `thread_id` (or
+`parentThreadId` for spawning) is not provided, the message is handled by the UI thread by default.
+
+### Pulling Thread State
+
+In addition to pushed messages, threads can pull the state of other threads by invoking a tool that uses the THREAD_STATES automatic parameter. This can
+be useful for monitoring progress or coordinating actions across threads. For example, if a user asks how some subtask is progressing, the UI thread may
+check the relevant thread's state to let the user know how it's doing.
+
+When the THREAD_STATES automatic parameter is requested, the tool call will include an object with an entry for each thread_id (excluding "UI") and the
+thread's current state. If the thread is idle, the tool will also receive the thread's last response text, if any. For example:
+
+```json
+{
+  "research-task-1": {
+    "state": "GENERATING",
+  },
+  "research-task-1-subtask": {
+    "state": "IDLE",
+    "lastResponse": "Our competitors each offer 30-day no-fault returns."
+  }
+}
+```
 
 ## Observability
 
@@ -214,8 +273,6 @@ See [Thread Messages](/apps/datamessages#thread-messages) for the full message r
 | `sideGenerationDelta` | Streaming text deltas as the thread generates (similar to transcript deltas). |
 | `sideGenerationCompleted` | The full response text and any tool calls once generation finishes. |
 
-If you listen for generations, it is highly recommended to use your own thread IDs when spawning threads so you can correlate these messages with their thread.
-
 ### After a call
 
 Thread activity is recorded as [call events](/api-reference/calls/calls-events-list) that you can query after the call ends. These are useful for debugging and monitoring thread behavior.
@@ -223,7 +280,7 @@ Thread activity is recorded as [call events](/api-reference/calls/calls-events-l
 ### Thread Lifecycle Events
 | Event | Description |
 | ----- | ----------- |
-| `thread.canceled` | The thread was cancelled (e.g., call ended or stage changed). |
+| `thread.canceled` | The thread was canceled (e.g., call ended or stage changed). |
 | `thread.limit_reached` | The thread exceeded one of its configured resource limits. |
 | `thread.failed` | The thread failed for another reason. |
 
@@ -234,7 +291,7 @@ These events include `total_input_tokens`, `total_output_tokens`, and `total_gen
 | ----- | ----------- |
 | `side_generation.completed` | A thread's generation succeeded. |
 | `side_generation.failed` | A thread's generation encountered an error. |
-| `side_generation.canceled` | A thread's generation was cancelled. |
+| `side_generation.canceled` | A thread's generation was canceled. |
 
 These events include token usage in their extras.
 
@@ -247,7 +304,7 @@ These events include token usage in their extras.
 
 ## Examples
 
-Here are some concrete examples of how threads can be used in your applications. When tools are involved, the examples use client tools
+Here are some concrete examples of specific use cases. When tools are involved, the examples use client tools
 to show the response succinctly, but the same principles work equivalently with data connection and http tools as well.
 
 **Moving a tool to a background thread**
@@ -305,8 +362,8 @@ Note that there's nothing special about the format for this user data message re
 in your system prompt so that the model knows what to expect and how to handle it. If your UI thread has a `checkThreadState` tool available, you may choose to
 structure the response as a `ForcedAgentMessage` with a tool call to `checkThreadState` and a known result that includes the tool result. That way the model thinks
 it just asked for the thread's state and doesn't have to reason about the message's source. Alternatively, you could use a `ForcedAgentMessage` with the real tool
-call and result, though that may lead the model to believe it can call this tool again and get an immediate response. (We'll have stronger advice here once we've
-seen more usage. Let us know what works for you!)
+call and result, though that may lead the model to believe it can call this tool again and get an immediate response. It's important to consider your agent's
+specific circumstances when evaluating these trade-offs.
 
 **Causing hang-up from a side thread**
 
@@ -348,9 +405,9 @@ respond with `send-to-thread` and a `ForcedAgentMessage` with the relevant tool 
 
 **Having a thread re-sync conversation state following a tool call**
 
-Suppose you want some other LLM-based observer to periodically check how a call is going and then call a tool to report progress or effect changes.
+Suppose you want another observer to periodically check how a call is going and then call a tool to report progress or effect changes.
 Instead of spawning a new single-shot thread for each check, you can have the thread re-sync its conversation history after each tool invocation by
-responding with a `send-to-thread` response type and a `SpawnThread` message that uses "UI" as the `parentThreadId`, sets its own threadId as the
+responding with a `send-to-thread` response with a `SpawnThread` message that uses "UI" as the `parentThreadId`, sets its own threadId as the
 `newThreadId`, and sets `ifExists` to "replace". This will cause the thread to be terminated and re-spawned with a fresh copy of the UI thread's
 conversation history.
 
@@ -366,7 +423,7 @@ conversation history.
       "newThreadId": "monitor", // Same as existing thread id
       "ifExists": "replace", // Terminate existing thread and spawn a new one with the same ID
       "additionalMessages": [
-        // If there are messages you want to retain from the thread's prior history, include them here.
+        // If there are messages you want to retain from the thread's current history, include them here.
         // You can use the CONVERSATION_HISTORY automatic parameter as usual to get the thread's history.
         {
           "type": "user_text_message",

@@ -322,7 +322,7 @@ Forces the agent to say a specific message or invoke tools.
       }
     }
   ],
-  "knownToolResults": [  // Optional, skips execution of matching tool calls using these results intead
+  "knownToolResults": [  // Optional, skips execution of matching tool calls using these results instead
     {
       "invocationId": "unique-invocation-id",
       "result": "Tool execution result",
@@ -485,7 +485,7 @@ Sent by the server when a thread stops running.
   The ID of the terminated thread.
 </ResponseField>
 <ResponseField name="reason" type="string" required>
-  Why the thread was terminated. Common reasons include: limit reached, inference error, or cancellation.
+  Why the thread was terminated. Common reasons include: limit reached or cancellation.
 </ResponseField>
 
 ### SideGenerationDelta
