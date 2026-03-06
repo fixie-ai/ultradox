@@ -301,6 +301,50 @@ respond with `send-to-thread` and a `ForcedAgentMessage` with the relevant tool 
 }
 ```
 
+## Replacing an Existing Thread
+
+By default, spawning a thread with an ID that already exists will be rejected. You can set `ifExists` to `"replace"` to terminate the existing thread and spawn a fresh one with the same ID. This is useful when you want to re-sync a thread with the current conversation state:
+
+```js
+session.sendData({
+  type: "spawn_thread",
+  newThreadId: "research-task-1",
+  ifExists: "replace",
+  additionalMessages: [
+    { type: "user_text_message", text: "Start over with updated context." }
+  ]
+});
+```
+
+## Call Events
+
+Thread activity is recorded as [call events](/api-reference/calls/calls-events-list) that you can query after the call ends. These are useful for debugging and monitoring thread behavior.
+
+### Thread Lifecycle Events
+| Event | Description |
+| ----- | ----------- |
+| `thread.canceled` | The thread was cancelled (e.g., call ended or stage changed). |
+| `thread.limit_reached` | The thread exceeded one of its configured resource limits. |
+| `thread.failed` | The thread failed for another reason. |
+
+These events include `total_input_tokens`, `total_output_tokens`, and `total_generations` in their extras.
+
+### Side Generation Events
+| Event | Description |
+| ----- | ----------- |
+| `side_generation.completed` | A thread's generation succeeded. |
+| `side_generation.failed` | A thread's generation encountered an error. |
+| `side_generation.canceled` | A thread's generation was cancelled. |
+
+These events include token usage and concurrency metrics in their extras.
+
+### Thread Communication Events
+| Event | Description |
+| ----- | ----------- |
+| `thread_comms.non_existent_thread` | A message was sent to a thread that doesn't exist. |
+| `thread_comms.failed_thread` | A message was sent to a thread that has already failed. |
+| `thread_comms.unsupported_call_change` | A thread attempted an unsupported call change (e.g., hang-up or stage change directly from a side thread). |
+
 ## Next Steps
 
 <CardGroup cols={2}>

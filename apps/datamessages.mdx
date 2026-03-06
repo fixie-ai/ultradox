@@ -42,7 +42,6 @@ Details on each message type appear below in [Data Message Details](#data-messag
 | Threads      | [ThreadTerminated](#threadterminated)                                                                           | Indicates a thread has stopped running.                      |
 | Threads      | [SideGenerationDelta](#sidegenerationdelta)                                                                     | Streaming text delta from a thread's generation.             |
 | Threads      | [SideGenerationCompleted](#sidegenerationcompleted)                                                             | A thread's generation has completed.                         |
-| Threads      | [SideGenerationFailed](#sidegenerationfailed)                                                                   | A thread's generation has failed.                            |
 | Tools        | [ClientToolInvocation and DataConnectionToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation) | Asks the client or data connection to invoke a tool.         |
 
 
@@ -386,6 +385,7 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
   "type": "spawn_thread",
   "newThreadId": "my-thread-1",       // Optional, auto-generated if omitted
   "parentThreadId": "UI",             // Optional, defaults to "UI" (main conversation)
+  "ifExists": "reject",              // Optional, defaults to "reject"
   "additionalMessages": [             // Optional
     {
       "type": "user_text_message",
@@ -404,10 +404,16 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
 
 **Fields**
 <ResponseField name="newThreadId" type="string">
-  Unique identifier for the new thread. If omitted, an id will be auto-generated. If present and a thread with the same ID already exists, this spawn attempt will be rejected.
+  Unique identifier for the new thread. If omitted, an id will be auto-generated.
 </ResponseField>
 <ResponseField name="parentThreadId" type="string" default="UI">
   The thread to fork from. Defaults to "UI" (the main conversation).
+</ResponseField>
+<ResponseField name="ifExists" type="string" default="reject">
+  Controls behavior when `newThreadId` matches an existing thread. Options:
+
+  * `reject` (default) → The spawn request is rejected and a [ThreadRejected](#threadrejected) message is sent.
+  * `replace` → The existing thread is terminated and a new thread is spawned with the same ID. Useful for re-syncing a thread with the current conversation state.
 </ResponseField>
 <ResponseField name="additionalMessages" type="array">
   Messages to append to the forked history before the thread starts generating. Each element must be either a [UserTextMessage](#usertextmessage) or [ForcedAgentMessage](#forcedagentmessage). Every ForcedAgentMessage except the last must have known results for each tool call. The last may have unmatched calls, in which case the thread will begin by executing those.
@@ -422,7 +428,7 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
   * `threadFuzzyInputTokenLimit` (integer) → Approximate total (uncached) input token limit.
   * `generationLimit` (integer) → Max LLM generation rounds.
   * `generationOutputTokenLimit` (integer) → Max output tokens per generation.
-  * `generationInputTokenLimit` (integer) → Approximate (uncached) input token limit per generation.
+  * `generationFuzzyInputTokenLimit` (integer) → Approximate (uncached) input token limit per generation.
 
 </ResponseField>
 
@@ -525,23 +531,6 @@ Sent when a (non-UI) thread's generation round finishes successfully.
 <ResponseField name="toolCalls" type="array">
   Any tool calls the LLM requested during this generation. The thread will execute these automatically.
 </ResponseField>
-
-### SideGenerationFailed
-Sent when a thread's generation round fails.
-
-**Message Structure**
-```js
-{
-  "type": "side_generation_failed",
-  "threadId": "my-thread-1"
-}
-```
-
-**Fields**
-<ResponseField name="threadId" type="string" required>
-  The ID of the thread whose generation failed.
-</ResponseField>
-
 
 ## Sending Messages to Live Calls via REST API
 The [Send Data Message to Call](/api-reference/calls/calls-send-data-message-post) endpoint allows you to inject messages into active calls (calls that are joined and not yet ended).
