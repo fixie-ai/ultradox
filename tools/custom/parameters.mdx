@@ -85,8 +85,10 @@ Here are some of the most common automatic parameters:
 | knownValue                       | Description                                                                                                        |
 |----------------------------------|--------------------------------------------------------------------------------------------------------------------|
 | KNOWN_PARAM_CALL_ID              | Used for sending the current Ultravox call ID to the tool.                                                         |
+| KNOWN_PARAM_THREAD_ID            | Used for sending the ID of the invoking [thread](/agents/threads) to the tool.                                     |
 | KNOWN_PARAM_CONVERSATION_HISTORY | Includes the full conversation history leading up to this tool call. Typically should be in the body of a request. |
 | KNOWN_PARAM_CALL_STATE           | Includes arbitrary state previously set by tools. See [Guiding Agents](/agents/guiding-agents#tool-state).         |
+| KNOWN_PARAM_THREAD_STATES        | Includes the current state of all active side [threads](/agents/threads).                                          |
 
 More details can be found in the [Tool Definition Schema →](/api-reference/schema/base-tool-definition#schema-automatic-parameters)
 
