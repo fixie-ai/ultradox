@@ -430,6 +430,9 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
   * `generationOutputTokenLimit` (integer) → Max output tokens per generation.
   * `generationFuzzyInputTokenLimit` (integer) → Approximate (uncached) input token limit per generation.
 
+  Limits are a useful way to constrain model usage (and thus costs) for a thread, but leaving threads unconstrained
+  is also totally reasonable, especially when the context provided to them keeps them focused on a specific task.
+
 </ResponseField>
 
 ### ThreadSpawned
