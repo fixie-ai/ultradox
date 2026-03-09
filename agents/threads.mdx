@@ -11,8 +11,8 @@ then executes autonomously, generating responses and calling tools without inter
   <b>Advanced Feature</b>
 
   Threads are designed for use cases that require background processing or parallel reasoning during a live call. For many applications, the main
-  conversation is sufficient and you won't need to worry about multi-threading. Make sure you're comfortable with [Custom Tools](/tools/overview)
-  and [Data Messages](/apps/datamessages) before diving in.
+  conversation is sufficient and you won't need to worry about multi-threading. **Make sure you're comfortable with [Tools](/tools/overview)
+  and [Data Messages](/apps/datamessages) before diving in.**
 </Note>
 
 ## When to Use Threads
@@ -21,8 +21,6 @@ Threads are useful when you need the agent to do work in the background without 
 
 **Background Research** → While the agent talks with the user, a thread can query APIs, search databases, or perform analysis and have results ready when needed.
 
-**Parallel Task Execution** → Spawn threads to manage long-running tasks concurrently instead of sequentially blocking the conversation for each.
-
 **Delegated Tasks** → Hand off subtasks like generating images or changing code to a thread while the conversation continues.
 
 **Observer** → Have a separate process monitor the conversation to provide real-time status updates or intervene if certain conditions are met.
@@ -30,7 +28,7 @@ Threads are useful when you need the agent to do work in the background without 
 ## How to Think About Threads
 
 Ultravox uses the term "thread" to draw on familiar concepts: the communication app concept for a branch of a conversation and the computer science
-concept for parallel execution. Both are related.
+concept for parallel execution. Both are instructive here.
 
 Like conversation threads, Ultravox threads rely on context from the parent conversation, but once forked follow their own path.
 Like computer science threads (or even moreso Dart's [isolates](https://dart.dev/language/isolates)), Ultravox threads run independently and
@@ -50,18 +48,17 @@ perform other actions, but they cannot directly produce audio or end the call th
 
 When you spawn a thread, the system:
 
-1. **Forks the conversation history** — The thread gets a copy of the parent's full message history at the point of spawning.
-2. **Copies tool state** — The thread inherits a copy of the parent's current [tool state](/agents/guiding-agents#tool-state).
-3. **Starts running the thread independently** — The thread enters its own generate-and-act loop, processing messages and invoking tools on its own.
+1. **Forks the conversation history** — The thread gets a copy of the parent's full message history, including system prompt and tools, at the point of spawning. (It also gets a copy of the parent's [tool state](/agents/guiding-agents#tool-state) if any.)
+1. **Starts running the thread independently** — The thread enters its own generate-and-act loop, processing messages and invoking tools on its own.
 
 As a thread runs, it progresses through a series of states:
 
-* **IDLE** → The thread has no work to do, typically because it's last response was text with no tool calls. The thread will remain idle until it receives a new message.
+* **IDLE** → The thread has no work to do, typically because its last response was text with no tool calls. The thread will remain idle until it receives a new message.
 * **GENERATING** → The thread is running LLM inference.
 * **CALLING_TOOL** → The thread is executing one or more tool calls.
 * **FAILED** → The thread encountered an error or exceeded its limits. This is a terminal state. A [`threadTerminated`](/apps/datamessages#threadterminated) data message with the failure reason is sent when a thread enters this state.
 
-Unless a thread fails (typically due to exceeding configured limits), it will remain available until the call ends or a stage change occurs. **All side threads
+Unless a thread fails, it will remain available until the call ends or a stage change occurs. **All side threads
 are canceled when the call ends or a stage change occurs.**
 
 ## Spawning a Thread
@@ -70,7 +67,7 @@ Threads are created by sending a [`spawnThread`](/apps/datamessages#spawnthread)
 
 ```js
 // Spawn a thread to research a topic in the background
-session.sendData({
+{
   type: "spawn_thread",
   newThreadId: "research-task-1",
   additionalMessages: [
@@ -79,7 +76,7 @@ session.sendData({
       text: "Look up the latest pricing for the Enterprise plan and summarize it."
     }
   ]
-});
+}
 ```
 
 The server responds with a [`threadSpawned`](/apps/datamessages#threadspawned) message on success or a [`threadRejected`](/apps/datamessages#threadrejected) message if the thread cannot be created.
@@ -96,7 +93,7 @@ the thread will being in CALLING_TOOL state and immediately start executing that
 and wait for a new message before it does any work.
 
 ```js
-session.sendData({
+{
   type: "spawn_thread",
   additionalMessages: [
     {
@@ -109,7 +106,7 @@ session.sendData({
       ]
     }
   ]
-});
+}
 ```
 
 ### Setting Thread Limits
@@ -117,7 +114,7 @@ session.sendData({
 You can constrain a thread's resource usage with the `limits` field:
 
 ```js
-session.sendData({
+{
   type: "spawn_thread",
   newThreadId: "bounded-task",
   limits: {
@@ -128,7 +125,7 @@ session.sendData({
   additionalMessages: [
     { type: "user_text_message", text: "Summarize the conversation so far in 2-3 sentences." }
   ]
-});
+}
 ```
 
 See the [data message](/apps/datamessages#spawnthread) for all the limits that may be imposed. Note that the per-generation
@@ -141,7 +138,8 @@ When any limit is exceeded, the thread is marked FAILED and a `threadTerminated`
 
 There is also a platform-enforced concurrency limit that cannot be set. A call can create as many threads as are useful, but the number
 actively generating at the same time may be limited. If a thread attempts a generation when the concurrency limit is reached,
-its generation request will be enqueued and will run once another thread finishes generating.
+its generation request will be enqueued and will run once another thread finishes generating. (This concurrency limit is unrelated
+to the number of calls that can occur at the same time - it only affects side thread generations within a single call.)
 </Note>
 
 ### Filtering Available Tools
@@ -149,7 +147,7 @@ its generation request will be enqueued and will run once another thread finishe
 Use `toolFilter` to restrict which tools a thread can access:
 
 ```js
-session.sendData({
+{
   type: "spawn_thread",
   toolFilter: {
     allowedTools: ["searchDatabase", "formatResponse"]  // Only these tools
@@ -157,12 +155,12 @@ session.sendData({
   additionalMessages: [
     { type: "user_text_message", text: "Search for recent orders." }
   ]
-});
+}
 ```
 
 See the [data message](/apps/datamessages#spawnthread) for filtering details. Note that since threads inherit their parent's
 conversation history, they are also often aware of tools they aren't allowed to use. If the model attempts to call a filtered tool,
-it will immediately get a response indicating the tool is unavailable so it can adjust accordingly.
+it will immediately get a response indicating the tool is unavailable so it can start a new generation while adjusting accordingly.
 
 ## Thread Communication
 
@@ -205,18 +203,18 @@ You can send messages to a thread by including `threadId` on a `user_text_messag
 
 ```js
 // Send a follow-up message to an existing thread
-session.sendData({
+{
   type: "user_text_message",
   text: "Now check for any pending refunds.",
   threadId: "research-task-1"
-});
+}
 ```
 
 Similarly, you can spawn a new thread from a side thread by including `parentThreadId` on a `spawn_thread` message:
 
 ```js
 // Spawn a new thread from an existing thread
-session.sendData({
+{
   type: "spawn_thread",
   parentThreadId: "research-task-1",
   newThreadId: "research-task-1-subtask",
@@ -226,7 +224,7 @@ session.sendData({
       text: "Also look up the refund policy for our top 3 competitors then call the `onComplete` tool with your findings."
     }
   ]
-});
+}
 ```
 
 In either case, the message is handled identically to if another thread had sent the message via a tool response. If `thread_id` (or
@@ -302,14 +300,26 @@ These events include token usage in their extras.
 | `thread_comms.failed_thread` | A message was sent to a thread that has already failed. |
 | `thread_comms.unsupported_call_change` | A thread attempted an unsupported call change (e.g., hang-up or stage change directly from a side thread). |
 
+## Thread Billing
+
+Threads may increase the cost of a call based on their additional model usage. Invoking tools is free. Generations
+are charged using traditional token-based pricing, except that cached input tokens are free. Since threads are always
+forked from a parent, input tokens for existing messages will be cached, so only the additional messages added when
+spawning plus any messages created by the thread itself contribute to input token usage. See our
+[pricing page](https://ultravox.ai/pricing) for the cost of uncached input tokens and output tokens.
+
 ## Examples
 
 Here are some concrete examples of specific use cases. When tools are involved, the examples use client tools
 to show the response succinctly, but the same principles work equivalently with data connection and http tools as well.
 
-**Moving a tool to a background thread**
+### Moving a tool to a background thread
 
-1. Add the THREAD_ID automatic parameter to your tool definition.
+Suppose you currently have a tool that is very slow but that the agent doesn't necessarily need a response from to continue
+the conversation. You can build a better experience for your users by moving the tool's work to a background thread so the
+conversation can continue while the tool runs.
+
+1. Add the THREAD_ID automatic parameter to your tool definition so that your tool implementation knows which thread is invoking it.
 1. When the tool is invoked, if the thread id is "UI", immediately respond with a `send-to-thread` response type with a `SpawnThread` message that includes the same tool call. This will cause the tool call to be re-executed on a background thread.
 
     ```js
@@ -332,7 +342,10 @@ to show the response succinctly, but the same principles work equivalently with 
                 }
               ]
             }
-          ]
+          ],
+          "limits": {
+            "generationLimit": 0 // Optional. Disallows any generations since this thread only exists to execute this tool call.
+          }
         }
       }),
       "responseType": "send-to-thread",
@@ -365,7 +378,10 @@ it just asked for the thread's state and doesn't have to reason about the messag
 call and result, though that may lead the model to believe it can call this tool again and get an immediate response. It's important to consider your agent's
 specific circumstances when evaluating these trade-offs.
 
-**Causing hang-up from a side thread**
+### Causing hang-up from a side thread
+
+Suppose you have a background thread that is able to use slow tools or more reasoning to decide whether a call is worth continuing.
+At some point, this thread may determine that the call should be ended.
 
 Background threads aren't allowed to end a call directly, but they can force the UI thread to do so. Instead of responding to a tool call with `hang-up`,
 respond with `send-to-thread` and a `ForcedAgentMessage` with the relevant tool result:
@@ -403,7 +419,10 @@ respond with `send-to-thread` and a `ForcedAgentMessage` with the relevant tool 
 }
 ```
 
-**Having a thread re-sync conversation state following a tool call**
+The same pattern may be used to force the agent to speak a particular message or perform other actions that need to be synchronized
+on the UI thread, such as transfering the call or starting a stage change.
+
+### Having a thread re-sync conversation state following a tool call
 
 Suppose you want another observer to periodically check how a call is going and then call a tool to report progress or effect changes.
 Instead of spawning a new single-shot thread for each check, you can have the thread re-sync its conversation history after each tool invocation by

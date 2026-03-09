@@ -407,7 +407,7 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
   Unique identifier for the new thread. If omitted, an id will be auto-generated.
 </ResponseField>
 <ResponseField name="parentThreadId" type="string" default="UI">
-  The thread to fork from. Defaults to "UI" (the main conversation).
+  The thread to fork from. Defaults to "UI" (the main conversation). If the referenced thread has failed or doesn't exist, this spawn attempt will be rejected.
 </ResponseField>
 <ResponseField name="ifExists" type="string" default="reject">
   Controls behavior when `newThreadId` matches an existing thread. Options:
