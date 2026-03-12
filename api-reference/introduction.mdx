@@ -67,6 +67,49 @@ The number of concurrent calls allowed depends on your plan.
 
 See [Scaling & Call Concurrency](/gettingstarted/concurrency) for more details on how call concurrency works in Ultravox Realtime.
 
+## Paging
+
+List endpoints in the Ultravox API return paginated results. Responses include the following fields:
+
+| Field | Description |
+|-------|-------------|
+| `total` | Total number of records matching the query |
+| `results` | Array of records for the current page |
+| `next` | URL for the next page of results, or `null` if on the last page |
+| `previous` | URL for the previous page of results, or `null` if on the first page |
+
+Use the `pageSize` query parameter to control the number of results returned per page. 
+
+The `next` and `previous` URLs include a pre-built cursor and any active query parameters, so you can use them directly without constructing your own pagination logic:
+
+```bash
+# First page
+curl --request GET \
+  --url 'https://api.ultravox.ai/api/calls?pageSize=50' \
+  --header 'X-API-Key: aBCDef.123456'
+
+# Next page (use the 'next' URL from the previous response)
+curl --request GET \
+  --url 'https://api.ultravox.ai/api/calls?cursor=cD0yMDI1...&pageSize=50' \
+  --header 'X-API-Key: aBCDef.123456'
+```
+
+Example response:
+```json 
+{
+  "next": "https://api.ultravox.ai/api/calls?cursor=cD0yMDI1LTEzQTAw",
+  "previous": null,
+  "total": 949,
+  "results": [
+    {
+      "callId": "770c4bd9-fe84-4fea-9fa1-0dbc08e31b53",
+      ...
+    }
+  ]
+}
+```
+
+
 ## Playground
 If you want to quickly experiment with prompts and voices, the fastest way to do that is in the [Ultravox Dashboard](https://app.ultravox.ai/playground).
 
