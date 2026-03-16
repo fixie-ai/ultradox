@@ -78,16 +78,13 @@
           {
             "group": "Telephony",
             "icon": "square-phone",
-            "tag": "NEW",
             "pages": [
               "telephony/overview",
-              "telephony/supported-providers",
-              "telephony/outbound-calls",
-              "telephony/inbound-calls",
-              "telephony/call-transfers",
-              "telephony/ivr-flows",
               "telephony/sip",
-              "telephony/outbound-call-scheduler"
+              "telephony/telephony-platforms",
+              "telephony/outbound-call-scheduler",
+              "telephony/call-transfers",
+              "telephony/ivr-flows"
             ]
           },
           {
@@ -341,7 +338,10 @@
           {
             "group": "Integrations",
             "pages": [
-              "integrations/voximplant"
+              "integrations/voximplant",
+              "integrations/jambonz",
+              "integrations/livekit",
+              "integrations/pipecat"
             ]
           }
         ]

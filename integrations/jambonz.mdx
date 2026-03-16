@@ -1,0 +1,93 @@
+---
+title: 'jambonz'
+description: 'Connecting Ultravox to SIP Using jambonz'
+---
+
+<Note>
+[jambonz](https://www.jambonz.org/) provides a voice platform that runs in a fully managed cloud or can be self-hosted. It offers
+a native Ultravox integration that makes it easy to connect Ultravox with your custom SIP infrastructure. This content has been provided with help from jambonz.
+</Note>
+
+## jambonz Portal Setup
+jambonz is a “bring your own everything” open-source telephony platform that integrates Ultravox directly via their [llm](https://docs.jambonz.org/verbs/verbs/llm) verb.
+This gives you the flexibility to choose your carrier of choice, you'll just need to add it in your jambonz dashboard.
+
+<Steps>
+  <Step title="Add Your Carrier in jambonz">
+    In jambonz, we use the terms “carrier” and “SIP trunk” interchangeably. jambonz is a “Bring your own carrier” platform, which means that you can connect any SIP network provider or device. [Add your carrier of choice](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-carriers) in your jambonz dashboard to get started.
+  </Step>
+
+  <Step title="Add a Speech Provider in jambonz">
+    Next, you need to [add speech credentials](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-speech-credentials) for your chosen vendor.
+  </Step>
+
+  <Step title="Create a New jambonz Application">
+    A jambonz application configured via the jambonz portal defines how calls are handled by linking them to your custom logic through webhooks or WebSocket endpoints. When you create an application, you specify:
+    - Call webhook URL: Where jambonz sends call events.
+    - Call status webhook URL: For receiving call status updates.
+    - Speech vendors: Your chosen TTS/STT providers.
+
+    Once saved, you can associate phone numbers or SIP trunks with this application, ensuring that incoming calls are routed to your specified logic. This setup allows you to implement features like speech recognition, text-to-speech, call routing, and integration with AI services.
+  </Step>
+
+  <Step title="Add a Phone Number in jambonz">
+    Finally, you need to [add a phone number](https://docs.jambonz.org/guides/using-the-jambonz-portal/basic-concepts/creating-phone-numbers) provisioned from your carrier of choice. At the bottom of the page select the jambonz application you just created to link your new virtual number to that application.
+  </Step>
+</Steps>
+
+## Incoming Calls
+
+```js
+// Example using the @jambonz/node-client-ws library
+session
+.pause({length: 1.5})
+.llm({
+  vendor: 'ultravox',
+  model: 'ultravox-v0.7',
+  auth: {
+    apiKey
+  },
+  actionHook: '/final',
+  eventHook: '/event',
+  llmOptions: {
+    systemPrompt: 'You are an agent named Karen. Greet the user and ask how you can help.',
+    firstSpeakerSettings: { agent: {} },
+    initialMessages: [{
+      medium: 'MESSAGE_MEDIUM_VOICE',
+      role: 'MESSAGE_ROLE_USER'
+    }],
+    model: 'ultravox-v0.7',
+    voice: 'Tanya-English',
+    transcriptOptional: true,
+  }
+})
+.hangup()
+.send();
+```
+For more details see the `llm` verb in the [jambonz docs](https://docs.jambonz.org/verbs/verbs/llm).
+
+
+## Outbound Calls
+In addition to the inbound scenario, you'll have to create a call that connects to the destination number (`phoneNumber`) and points to the jambonz application that defines how the call should be handled. Find the `APPLICATION_SID` in the jambonz portal by clicking on the application you created during the setup process.
+
+```js
+  const JambonzClient = require('@jambonz/node-client');
+
+  const client = JambonzClient(
+    process.env.JAMBONZ_ACCOUNT_SID,
+    process.env.JAMBONZ_API_KEY,
+    {baseUrl: process.env.JAMBONZ_REST_API_BASE_URL || 'https://api.jambonz.cloud/v1'}
+  );
+
+  const call = await client.calls.create({
+      from: process.env.FROM_NUMBER,
+        to: {
+          type : 'phone',
+          number: phoneNumber,
+          trunk: process.env.CARRIER
+          },
+      application_sid: process.env.APPLICATION_SID
+  });
+  ```
+
+For more details, see the [jambonz documentation](https://docs.jambonz.org/) and [example code](https://github.com/jambonz/ultravox-s2s-example).

@@ -33,9 +33,9 @@ Additionally, there are two methods by which a transfer may be implemented:
 
 
 <Note>
-  <b>Bridge Transfers Cost More</b>
+  <b>SIP Bridge Transfers Cost More</b>
 
-  Using bridge transfers will result in SIP charges beyond the Ultravox call duration as our SIP infrastructure remains active to bridge audio between the caller and human operator. See [our SIP page](/telephony/sip#sip-billing) for details.
+  Using bridge transfers with the `sip` medium will result in SIP charges beyond the Ultravox call duration as our SIP infrastructure remains active to bridge audio between the caller and human operator. See [our SIP page](/telephony/sip#sip-billing) for details.
 </Note>
 
 
@@ -63,7 +63,7 @@ If the human operator accepts the transfer, the human operator and original call
 <Info>
   <b>Built-in coldTransfer tool with Twilio</b>
   <br />
-  The built-in `coldTransfer` tool also works with Twilio if you've [added your credentials](/telephony/supported-providers#providing-telephony-credentials), but be aware that invoking the tool will immediately end the Ultravox call regardless of whether the transfer succeeds.
+  The built-in `coldTransfer` tool also works with Twilio if you've [added your credentials](/telephony/telephony-platforms#providing-telephony-credentials), but be aware that invoking the tool will immediately end the Ultravox call regardless of whether the transfer succeeds.
 </Info>
 
 To implement call transfers:
