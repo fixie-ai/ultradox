@@ -53,7 +53,16 @@ For example:
 }
 ```
 
-Note: the `playDtmfSounds` tool uses an [automatic parameter](/tools/custom/parameters#automatic-parameters) that sends the proper sample rate of the source audio and should be treated as an implementation detail.
+<Note>
+<b>In-band vs out-of-band DTMF</b>
+
+The `playDtmfSounds` tool is so named because it defaults to playing DTMF tones as audio (in-band) for compatibility with all phone systems.
+
+However, out-of-band DTMF (where tones are sent as signals rather than audio) is generally preferable for its improved reliability and may be required by some telephony stacks.
+The same tool will use out-of-band DTMF when the call's medium supports it and Ultravox has the information available to support it. To use out-of-band
+DTMF with Twilio, Telnyx, or Plivo, [add your telephony credentials](/telephony/supported-providers#providing-telephony-credentials) so Ultravox can send
+out-of-band DTMF on your behalf. (Alternatively you can create your own tool of course.)
+</Note>
 
 ## Common Use Cases
 - Building interactive phone trees or IVR systems
