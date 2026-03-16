@@ -6,6 +6,10 @@ icon: 'phone-arrow-down-left'
 
 Ultravox can power AI agents that automatically answer incoming phone calls from your users. This is perfect for customer service, support lines, or any application where users initiate contact.
 
+<Note>
+This page describes incoming calls using Twilio, Telnyx, Plivo, etc. For SIP, see [here](/telephony/sip#incoming-sip-calls) instead.
+</Note>
+
 ## How Inbound Calls Work
 The simplest way to set up inbound calls is to [import your credentials](/telephony/supported-providers#providing-telephony-credentials) and point your telephony provider directly to Ultravox. Just set your telephony provider's webhook callback to `https://app.ultravox.ai/api/agents/{agent_id}/telephony_xml` to have incoming phone calls automatically create and connect to Ultravox calls.
 
