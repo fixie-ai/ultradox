@@ -21,7 +21,7 @@ Fires when a call is created.
 
 If you create calls directly using either the [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) API, you likely won't need this event as a 201 response to your call creation request is equivalent.
 
-The `call.started` event is most useful with telephony integrations where you've allowed calls to be created on your behalf either in response to qualified [SIP INVITEs](/telephony/sip#incoming-sip-calls) or verified requests from your [telephony](/telephony/inbound-calls) provider (Twilio, Telnyx, or Plivo).
+The `call.started` event is most useful with telephony integrations where you've allowed calls to be created on your behalf either in response to qualified [SIP INVITEs](/telephony/sip#incoming-sip-calls) or verified requests from your [telephony](/telephony/telephony-platforms) provider (Twilio, Telnyx, or Plivo).
 
 ### `call.joined`
 Fires when a client connects to your call.
@@ -71,7 +71,7 @@ All webhooks follow a consistent structure. The payload always includes:
 ### Event Name
 The `event` field contains the exact event name you subscribed to:
 - `"call.started"`
-- `"call.ended"`  
+- `"call.ended"`
 - `"call.joined"`
 - `"call.billed"`
 
@@ -119,29 +119,29 @@ Your webhook endpoint must meet these requirements:
 // Express.js webhook handler example
 app.post('/ultravox-webhook', (req, res) => {
   const event = req.body;
-  
+
   switch (event.event) {
     case 'call.started':
       console.log('Call started:', event.call.callId);
       // Initialize any required resources
       break;
-      
+
     case 'call.joined':
       console.log('User joined call:', event.call.callId);
       // Update UI, start monitoring, etc.
       break;
-      
+
     case 'call.ended':
       console.log('Call ended:', event.call.callId, 'Reason:', event.call.endReason);
       // Clean up resources, analyze results, etc.
       break;
-    
+
     case 'call.billed':
       console.log('Call billed:', event.call.callId);
       // Update customer invoice, etc.
       break;
   }
-  
+
   res.status(200).send('OK');
 });
 ```
@@ -154,7 +154,7 @@ If your endpoint returns a non-2xx status code (e.g. 4xx or 5xx), Ultravox will 
 
 During development, consider using tools like:
 - **ngrok**: Expose local development servers to receive webhooks
-- **webhook.site**: Test webhook payloads without writing code  
+- **webhook.site**: Test webhook payloads without writing code
 - **Postman**: Mock webhook endpoints for testing
 
 Remember that webhook events reflect real activity in your Ultravox account, so test carefully to avoid processing duplicate or test data in production systems.
