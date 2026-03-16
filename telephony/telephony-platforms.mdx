@@ -16,14 +16,14 @@ If you want to connect Ultravox to your existing phone system using SIP, see our
 </Note>
 
 ## Native Integrations
-Ultravox provides native integrations for the following. Each has their own unique call [`medium`](api-reference/schema/call-definition#schema-medium) that must be used when creating calls.
+Ultravox provides native integrations for the following. Each has their own unique call [`medium`](/api-reference/schema/call-definition#schema-medium) that must be used when creating calls.
 
-| Provider   | Call Medium    | Streaming API                                                                                  | Import Credentials? | HD audio |Out of Band DTMF? | Cold transfer?\* |
-|------------|--------------- |------------------------------------------------------------------------------------------------|---------------------|----------|------------------|------------------|
-| **Twilio** | `"twilio": {}` | [Media Streams](https://www.twilio.com/docs/voice/media-streams)                               | ✅                  | ❌       | ❌               | ✅               |
-| **Telnyx** | `"telnyx": {}` | [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming) | ✅                  | ✅       | ✅               | ❌               |
-| **Plivo**  | `"plivo": {}`  | [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)                        | ✅                  | ✅       | ✅               | ❌               |
-| **Exotel** | `"exotel": {}` | [Voice Streaming](https://developer.exotel.com/api/product-voice-version-3)                    | ❌                  | ❌       | ❌               | ❌               |
+| Provider   | Call Medium    | Streaming API                                                                                  | Import Credentials? | HD audio | Out of Band DTMF? | Cold transfer?\* |
+|------------|--------------- |------------------------------------------------------------------------------------------------|---------------------|----------|-------------------|------------------|
+| **Twilio** | `"twilio": {}` | [Media Streams](https://www.twilio.com/docs/voice/media-streams)                               | ✅                  | ❌       | ❌                | ✅               |
+| **Telnyx** | `"telnyx": {}` | [Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming) | ✅                  | ✅       | ✅                | ❌               |
+| **Plivo**  | `"plivo": {}`  | [AudioStream](https://www.plivo.com/docs/voice/xml/the-stream-element/)                        | ✅                  | ✅       | ✅                | ❌               |
+| **Exotel** | `"exotel": {}` | [Voice Streaming](https://developer.exotel.com/api/product-voice-version-3)                    | ❌                  | ❌       | ❌                | ❌               |
 
 \* Transfers are possible with any integration, but the built-in tool is limited to particular providers. See the [transfers page](/telephony/call-transfers) for details.
 
@@ -76,7 +76,7 @@ Alternatively, you can use these steps when routing calls through your own appli
 <Note>
 <b>firstSpeakerSettings</b>
 
-By default, Ultravox calls assume the agent begins conversations. This is typically what you want for inbound calls, but for outbound calls consider changing your `firstSpeakerSettings` so the agent waits for the user to answer.
+By default, Ultravox calls assume the agent begins conversations. This is typically what you want for inbound calls, but for outbound calls consider changing your [`firstSpeakerSettings`](/api-reference/schema/call-definition#schema-first-speaker-settings) so the agent waits for the user to answer.
 </Note>
 
 ### Simplified Outbound Calling
