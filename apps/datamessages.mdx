@@ -26,6 +26,7 @@ Details on each message type appear below in [Data Message Details](#data-messag
 | System         | [Ping](#ping)                                                                                   | Measures round-trip data latency.                                      |
 | Tools          | [ClientToolResult and DataConnectionToolResult](#clienttoolresult-and-dataconnectiontoolresult) | Contains the result of a tool invocation.                              |
 | User Input     | [UserTextMessage](#usertextmessage)                                                             | Used to send a user message to the agent.                              |
+| Threads        | [SpawnThread](#spawnthread)                                                                     | Spawns a new parallel thread. See [Threads](/agents/threads).          |
 
 ### Server-to-Client Messages
 | Type         | Message                                                                                                         | Description                                                  |
@@ -36,6 +37,11 @@ Details on each message type appear below in [Data Message Details](#data-messag
 | System       | [PlaybackClearBuffer](#playbackclearbuffer)                                                                     | Used to clear buffered output audio. WebSocket only.         |
 | System       | [Pong](#pong)                                                                                                   | Server reply to a ping message.                              |
 | System       | [State](#state)                                                                                                 | Indicates the server's current state.                        |
+| Threads      | [ThreadSpawned](#threadspawned)                                                                                 | Confirms a thread was successfully created.                  |
+| Threads      | [ThreadRejected](#threadrejected)                                                                               | Indicates a thread spawn request was rejected.               |
+| Threads      | [ThreadTerminated](#threadterminated)                                                                           | Indicates a thread has stopped running.                      |
+| Threads      | [SideGenerationDelta](#sidegenerationdelta)                                                                     | Streaming text delta from a thread's generation.             |
+| Threads      | [SideGenerationCompleted](#sidegenerationcompleted)                                                             | A thread's generation has completed.                         |
 | Tools        | [ClientToolInvocation and DataConnectionToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation) | Asks the client or data connection to invoke a tool.         |
 
 
@@ -153,6 +159,9 @@ A user message sent via text. The message appears to the agent as if it came fro
   * soon → Doesn't interrupt but starts a generation at the next opportunity.
   * later → Message is considered during the next natural generation without forcing a new generation.
 </ResponseField>
+<ResponseField name="threadId" type="string" default="UI">
+  Optional thread ID to send this message to. Defaults to "UI" (the main conversation).
+</ResponseField>
 
 
 ### SetOutputMedium
@@ -232,7 +241,7 @@ Contains the result of a tool invocation.
 </ResponseField>
 <ResponseField name="errorType" type="string">
   Error classification if the tool failed. Should be omitted when result is set.
-  
+
   Options:
   * undefined → Tool with the given name does not exist
   * implementation-error → Tool exists but execution failed
@@ -313,6 +322,14 @@ Forces the agent to say a specific message or invoke tools.
       }
     }
   ],
+  "knownToolResults": [  // Optional, skips execution of matching tool calls using these results instead
+    {
+      "invocationId": "unique-invocation-id",
+      "result": "Tool execution result",
+      "responseType": "tool-response",
+      "agentReaction": "speaks",
+    }
+  ],
   "uninterruptible": false,  // Optional (default: false)
   "urgency": "soon"  // Optional: "immediate" or "soon" (default: "soon")
 }
@@ -325,11 +342,17 @@ Forces the agent to say a specific message or invoke tools.
 <ResponseField name="toolCalls" type="array">
   Array of tool invocations to execute.
 </ResponseField>
+<ResponseField name="knownToolResults" type="array">
+  Array of known tool results. If specified, any toolCalls with matching invocationIds will use these results instead of executing the tool. See [ClientToolResult](#clienttoolresult-and-dataconnectiontoolresult) for the structure of each result object.
+</ResponseField>
 <ResponseField name="uninterruptible" type="boolean">
   If true, prevents interruption while the agent speaks this message. (Note that tools are always uninterruptible.)
 </ResponseField>
 <ResponseField name="urgency" type="string" default="soon">
   Controls when the message is processed. Must be either "immediate" (may interrupt the user or agent) or "soon" (process at next opportunity).
+</ResponseField>
+<ResponseField name="threadId" type="string" default="UI">
+  Optional thread ID to send this message to. Defaults to "UI" (the main conversation).
 </ResponseField>
 
 ### HangUp
@@ -348,6 +371,169 @@ Instructs the agent to end the call with an optional farewell message.
   Final message to speak before ending the call.
 </ResponseField>
 
+
+## Thread Messages
+
+The following messages are used to manage [Threads](/agents/threads) — parallel conversations that run alongside the main call. For conceptual background and usage examples, see the [Threads guide](/agents/threads).
+
+### SpawnThread
+Spawns a new parallel thread that forks from the parent's conversation history. See [Threads](/agents/threads) for a full explanation.
+
+**Message Structure**
+```js
+{
+  "type": "spawn_thread",
+  "newThreadId": "my-thread-1",       // Optional, auto-generated if omitted
+  "parentThreadId": "UI",             // Optional, defaults to "UI" (main conversation)
+  "ifExists": "reject",              // Optional, defaults to "reject"
+  "additionalMessages": [             // Optional
+    {
+      "type": "user_text_message",
+      "text": "Perform this background task."
+    }
+  ],
+  "toolFilter": {                     // Optional
+    "allowedTools": ["searchDatabase"]
+  },
+  "limits": {                         // Optional
+    "generationLimit": 5,
+    "threadOutputTokenLimit": 2000
+  }
+}
+```
+
+**Fields**
+<ResponseField name="newThreadId" type="string">
+  Unique identifier for the new thread. If omitted, an id will be auto-generated.
+</ResponseField>
+<ResponseField name="parentThreadId" type="string" default="UI">
+  The thread to fork from. Defaults to "UI" (the main conversation). If the referenced thread has failed or doesn't exist, this spawn attempt will be rejected.
+</ResponseField>
+<ResponseField name="ifExists" type="string" default="reject">
+  Controls behavior when `newThreadId` matches an existing thread. Options:
+
+  * `reject` (default) → The spawn request is rejected and a [ThreadRejected](#threadrejected) message is sent.
+  * `replace` → The existing thread is terminated and a new thread is spawned with the same ID. Useful for re-syncing a thread with the current conversation state.
+</ResponseField>
+<ResponseField name="additionalMessages" type="array">
+  Messages to append to the forked history before the thread starts generating. Each element must be either a [UserTextMessage](#usertextmessage) or [ForcedAgentMessage](#forcedagentmessage). Every ForcedAgentMessage except the last must have known results for each tool call. The last may have unmatched calls, in which case the thread will begin by executing those.
+</ResponseField>
+<ResponseField name="toolFilter" type="object">
+  Restricts which tools the thread can use. Specify either `allowedTools` (allowlist) or `disallowedTools` (blocklist), or both. If both are provided, the allowlist is applied first and then the blocklist is applied to the remaining tools. If neither is specified (or this field is omitted), the thread will be allowed to use all tools.
+</ResponseField>
+<ResponseField name="limits" type="object">
+  Resource constraints for the thread. Available fields:
+
+  * `threadOutputTokenLimit` (integer) → Max total output tokens for the thread.
+  * `threadFuzzyInputTokenLimit` (integer) → Approximate total (uncached) input token limit.
+  * `generationLimit` (integer) → Max LLM generation rounds.
+  * `generationOutputTokenLimit` (integer) → Max output tokens per generation.
+  * `generationFuzzyInputTokenLimit` (integer) → Approximate (uncached) input token limit per generation.
+
+  Limits are a useful way to constrain model usage (and thus costs) for a thread, but leaving threads unconstrained
+  is also totally reasonable, especially when the context provided to them keeps them focused on a specific task.
+
+</ResponseField>
+
+### ThreadSpawned
+Sent by the server to confirm a thread was successfully created.
+
+**Message Structure**
+```js
+{
+  "type": "thread_spawned",
+  "threadId": "my-thread-1"
+}
+```
+
+**Fields**
+<ResponseField name="threadId" type="string" required>
+  The ID of the newly created thread.
+</ResponseField>
+
+### ThreadRejected
+Sent by the server when a thread spawn request cannot be fulfilled.
+
+**Message Structure**
+```js
+{
+  "type": "thread_rejected",
+  "threadId": "my-thread-1",
+  "reason": "Thread with this ID already exists"
+}
+```
+
+**Fields**
+<ResponseField name="threadId" type="string" required>
+  The thread ID from the spawn request.
+</ResponseField>
+<ResponseField name="reason" type="string" required>
+  Why the thread could not be created.
+</ResponseField>
+
+### ThreadTerminated
+Sent by the server when a thread stops running.
+
+**Message Structure**
+```js
+{
+  "type": "thread_terminated",
+  "threadId": "my-thread-1",
+  "reason": "limit reached"
+}
+```
+
+**Fields**
+<ResponseField name="threadId" type="string" required>
+  The ID of the terminated thread.
+</ResponseField>
+<ResponseField name="reason" type="string" required>
+  Why the thread was terminated. Common reasons include: limit reached or cancellation.
+</ResponseField>
+
+### SideGenerationDelta
+Streaming text delta from a (non-UI) thread's LLM generation, similar to a transcript delta.
+
+**Message Structure**
+```js
+{
+  "type": "side_generation_delta",
+  "threadId": "my-thread-1",
+  "delta": "Here is the next chunk of text..."
+}
+```
+
+**Fields**
+<ResponseField name="threadId" type="string" required>
+  The ID of the thread producing this generation.
+</ResponseField>
+<ResponseField name="delta" type="string" required>
+  The incremental text produced since the last delta message.
+</ResponseField>
+
+### SideGenerationCompleted
+Sent when a (non-UI) thread's generation round finishes successfully.
+
+**Message Structure**
+```js
+{
+  "type": "side_generation_completed",
+  "threadId": "my-thread-1",
+  "text": "Full generated response text",
+  "toolCalls": []
+}
+```
+
+**Fields**
+<ResponseField name="threadId" type="string" required>
+  The ID of the thread that completed generation.
+</ResponseField>
+<ResponseField name="text" type="string" required>
+  The complete generated text for this generation round.
+</ResponseField>
+<ResponseField name="toolCalls" type="array">
+  Any tool calls the LLM requested during this generation. The thread will execute these automatically.
+</ResponseField>
 
 ## Sending Messages to Live Calls via REST API
 The [Send Data Message to Call](/api-reference/calls/calls-send-data-message-post) endpoint allows you to inject messages into active calls (calls that are joined and not yet ended).

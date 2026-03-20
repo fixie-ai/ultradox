@@ -5,7 +5,7 @@ icon: 'right-left'
 ---
 
 ## Special Tool Response Types
-For most tools, the response will include data you want the model to use (e.g. the results of a lookup). However, Ultravox has support for special tool actions that can end the call or change the call stage.
+For most tools, the response will include data you want the model to use (e.g. the results of a lookup). However, Ultravox has support for special tool actions that can end the call, change the call stage, or communicate with another thread.
 
 These tool actions require setting a special response type.
 
@@ -13,6 +13,7 @@ These tool actions require setting a special response type.
 |------|------|
 | hang-up | Terminates the call. In addition to having Ultravox end the call after [periods of user inactivity](/api-reference/calls/overview#inactivitymessages), your custom tool can end the call. |
 | new-stage | Creates a new call stage. See [here](/agents/call-stages) for more. |
+| send-to-thread | Sends a message to another thread. See [here](/agents/threads) for more. |
 
 How you set the response type depends on your tool implementation.
 HTTP tools set the response type via the `X-Ultravox-Response-Type` header.
