@@ -5,11 +5,29 @@ icon: 'shield-check'
 ---
 import dcSecuring from '/snippets/code/data-connection-security.mdx'
 
-When you use a [data connection](/tools/custom/http-vs-client-tools#data-connection-tools), Ultravox connects to your WebSocket endpoint. Shared secrets let your server verify that incoming connections are genuinely from Ultravox and haven't been tampered with.
+When you use a [data connection](/tools/custom/http-vs-client-tools#data-connection-tools), Ultravox connects to your WebSocket endpoint. To ensure your server only accepts connections from Ultravox, you can use custom headers for simple token-based authentication or shared secrets for HMAC-SHA256 signature verification.
 
-## How It Works
+## Custom Headers
 
-Ultravox uses HMAC-SHA256 signatures to prove authenticity. When shared secrets are configured, every outbound data connection WebSocket request includes three headers:
+The simplest way to authenticate data connections is to pass headers that your server can check. Use the `headers` field in the data connection config to send literal key-value pairs on the outbound WebSocket connection.
+
+```js Data connection with custom headers
+{
+  "dataConnection": {
+    "websocketUrl": "wss://your-server.com/data",
+    "headers": {
+      "Authorization": "Bearer your-token",
+      "X-Custom-Header": "custom-value"
+    }
+  }
+}
+```
+
+Your server can then verify the header values before accepting the connection.
+
+## Shared Secrets
+
+For stronger verification, shared secrets let your server cryptographically verify that a connection is from Ultravox and hasn't been tampered with. Ultravox uses HMAC-SHA256 signatures — when shared secrets are configured, every outbound data connection WebSocket request includes three headers:
 
 | Header | Description |
 |--------|-------------|
@@ -23,7 +41,7 @@ The signature is computed as:
 HMAC-SHA256(secret, call_id + timestamp)
 ```
 
-## Setting Shared Secrets
+### Setting Shared Secrets
 
 Shared secrets can be set at the call level or on an agent's call template. Secrets must be between 16 and 127 characters. They are write-only and never returned in API responses.
 
@@ -64,7 +82,7 @@ const response = await fetch('https://api.ultravox.ai/api/agents', {
 
 Secrets set at call creation override those from the agent template.
 
-## Verifying Signatures
+### Verifying Signatures
 
 When your data connection server receives an incoming WebSocket connection from Ultravox, verify it with these steps:
 
@@ -91,20 +109,3 @@ When your data connection server receives an incoming WebSocket connection from 
   </Step>
 </Steps>
 
-## Custom Headers
-
-You can also pass additional headers on data connection WebSocket requests using the `headers` field in the data connection config. These are sent as literal key-value pairs.
-
-```js Data connection with custom headers
-{
-  "dataConnection": {
-    "websocketUrl": "wss://your-server.com/data",
-    "headers": {
-      "Authorization": "Bearer your-token",
-      "X-Custom-Header": "custom-value"
-    }
-  }
-}
-```
-
-Custom headers and shared secret signatures can be used together. When both are configured, all headers are included in the outbound WebSocket connection.

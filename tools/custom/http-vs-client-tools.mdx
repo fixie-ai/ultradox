@@ -233,6 +233,6 @@ Data connection tools are ideal for:
 
 **HTTP Tools**: Full authentication support including API keys, tokens, and custom headers. See [Tools Authentication →](./authentication)
 
-**Client Tools**: No built-in authentication - handle security in your client application.
+**Client Tools**: The client that joins the call is implicitly trusted — it connected using the call's join URL, which serves as proof of authorization.
 
-**Data Connection Tools**: Use [shared secrets](/apps/securing-data-connections) for HMAC-SHA256 signature verification, and/or pass [custom headers](/apps/securing-data-connections#custom-headers) on the WebSocket connection.
+**Data Connection Tools**: Ultravox trusts data connections specified during call creation. There's no additional per-tool authentication. To ensure your server only handles WebSocket connections from Ultravox, see [Securing Data Connections →](/apps/securing-data-connections).
