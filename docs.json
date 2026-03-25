@@ -91,7 +91,7 @@
           {
             "group": "Web, Apps, Websockets",
             "icon": "window",
-            "pages": ["apps/overview", "/apps/sdks", "apps/websockets", "apps/datamessages"]
+            "pages": ["apps/overview", "/apps/sdks", "apps/websockets", "apps/datamessages", "apps/securing-data-connections"]
           },
           {
             "group": "Tools",

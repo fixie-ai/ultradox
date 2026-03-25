@@ -1,0 +1,15 @@
+```python Verifying Data Connection Signature
+import datetime
+import hmac
+
+call_id = request.headers["X-Ultravox-Call-ID"]
+timestamp = request.headers["X-Ultravox-Signature-Timestamp"]
+if datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(timestamp) > datetime.timedelta(minutes=1):
+  raise RuntimeError("Expired message")
+expected_signature = hmac.new(SHARED_SECRET.encode(), (call_id + timestamp).encode(), "sha256").hexdigest()
+for signature in request.headers["X-Ultravox-Signature"].split(","):
+  if hmac.compare_digest(signature.strip(), expected_signature):
+    break  # Valid signature
+else:
+  raise RuntimeError("Invalid signature")
+```
