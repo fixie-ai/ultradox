@@ -245,6 +245,17 @@
             ]
           },
           {
+            "group": "Call Throttles",
+            "pages": [
+              "api-reference/call-throttles/call-throttles-list",
+              "api-reference/call-throttles/call-throttles-get",
+              "api-reference/call-throttles/call-throttles-post",
+              "api-reference/call-throttles/call-throttles-put",
+              "api-reference/call-throttles/call-throttles-patch",
+              "api-reference/call-throttles/call-throttles-delete"
+            ]
+          },
+          {
             "group": "Tools",
             "pages": [
               "api-reference/tools/tools-list",
