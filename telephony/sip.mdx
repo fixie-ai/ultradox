@@ -4,41 +4,81 @@ description: 'Create incoming & outgoing SIP calls with Ultravox agents.'
 icon: 'network-wired'
 ---
 
-Session Initiation Protocol (SIP) enables Ultravox agents to connect with your existing phone systems and SIP clients. This guide explains how to set up both incoming and outgoing SIP calls with Ultravox agents.
+Session Initiation Protocol (SIP) enables Ultravox agents to connect with your existing phone systems and SIP clients.
+This guide explains how to set up both incoming and outgoing SIP calls with Ultravox agents.
 
 ## Incoming SIP Calls
-<Info>
-  <b>Agents Required</b>
-  <br />
-  For incoming SIP, Ultravox will automatically create calls on your behalf in response to SIP INVITE requests. To facilitate this, you'll need to create an agent to receive calls before you set up incoming SIP.
-</Info>
+In the default, easy setup for incoming SIP, Ultravox will automatically create calls on your behalf in response to SIP INVITE requests.
+To facilitate this, you'll need to create an agent to receive calls before you set up incoming SIP.
 
-For incoming calls, you can configure Ultravox to accept calls from your SIP system then send a SIP invite directly to your agent. The SIP invite will create an Ultravox call and connect to it, no other requests required.
+### Authentication
+Ultravox supports two setups for authenticating incoming SIP calls: IP allowlisting and SIP registration.
+IP allowlisting works well with dedicated PBX systems, while SIP registration is recommended for cloud PBX setups.
 
-Ultravox supports two setups for incoming SIP calls: IP allowlisting and SIP registration. IP allowlisting works well with dedicated PBX systems, while SIP registration is recommended for cloud PBX setups.
+#### IP Allowlisting
+To set up IP Allowlisting, use the [sip configuration API](/api-reference/sip/sip-partial-update) to add your SIP system's public IP addresses to the `allowedCidrRanges` list.
+Entries in this list must be IPv4 [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) ranges, e.g. `0.0.0.0/0` for any IP address (not recommended) or `91.200.160.14/32` for the single `91.200.160.14` IP address.
 
-In either setup, you can choose to allow incoming calls to all of your agents or to specific agents only. Calls will be created automatically from your agent's call template when a SIP invite is received.
+Once your SIP system's IP address(es) are allowed, you can have them send SIP invites to your agents using the pattern `agent_{agent_id}@{your_account_sip_domain}` by default.
+See [Routing Calls](#routing-calls) for how to customize this.
 
-By default, calls must be directed to the SIP user `agent_{agent_id}` to reach your agent, but you can override this with your own regex matching. The regex for your agents will be checked in order with the first matching agent used for the call. If none match, the global `agent_{agent_id}` will be used if allowAllAgents is enabled. Otherwise (or if that doesn't match either), the call will be rejected.
-
-### IP Allowlisting
-To set up IP Allowlisting, use the [sip configuration API](/api-reference/sip/sip-partial-update) to add your SIP system's public IP addresses to the `allowedCidrRanges` list. Entries in this list must be IPv4 [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) ranges, e.g. `0.0.0.0/0` for any IP address (not recommended) or `91.200.160.14/32` for the single `91.200.160.14` IP address.
-
-Once your SIP system's IP address(es) are allowed, you can have them send SIP invites to your agents using the pattern `agent_{agent_id}@{your_account_sip_domain}` by default. The value for `{your_account_sip_domain}` is available when you [view your SIP configuration](/api-reference/sip/sip-get). The user portion of the SIP address may be overridden by setting your own per-agent regex.
-
-### SIP Registration
-In the registration model, Ultravox acts as a SIP client (similar to a softphone) and registers with your SIP server as the user you specify. To set this up, you'll need to create a user in your PBX, configure your PBX to send relevant calls to that user, and then [create a registration](/api-reference/sip/sip-registrations-create) for that user in Ultravox.
+#### SIP Registration
+In the registration model, Ultravox acts as a SIP client (similar to a softphone) and registers with your SIP server as the user you specify.
+To set this up, you'll need to create a user in your PBX, configure your PBX to send relevant calls to that user, and then [create a registration](/api-reference/sip/sip-registrations-create) for that user in Ultravox.
 
 When creating a registration, you'll need to provide the following information:
 * `username`: The username of the user you created in your PBX.
 * `password`: The password for that user.
 * `proxy`: The domain or IP address of your SIP server.
 
-In this case, you'll most likely want to alter the regex for your agents (see [above](#incoming-sip-calls)) since the to address on invites is unlikely to be `agent_{agent_id}`.
-For example, if your PBX sends calls to `sip:sales@your_sip_domain`, you could set the regex for your sales agent to `^sales$`. Similarly, if your SIP server interacts with PSTN, you could have your agent answer calls to +1-555-123-4567 and +1-555-765-4321 by setting the regex to `^15551234567$|^15557654321$`.
+Registrations are not associated with a particular agent, so you'll also need to configure routing rules as described [below](#routing-calls).
+
+### Routing Calls
+You can configure how calls get routed between your agents using regex matching on the to address of incoming SIP invites.
+
+By default, all calls to `agent_{agent_id}@{your_account_sip_domain}` will be routed to the specified agent as long as that agent is allowed to receive calls (including via `allowAllAgents`).
+
+If you'd like one of your agents to receive calls using some other address, add an entry to `allowedAgents` with an appropriate regex (or update the existing entry for your agent).
+
+For example:
+* `^sales$` matches calls sent to `sales@your_sip_domain`. (This is especially useful when using registration-based authentication.)
+* `^15551234567$|^15557654321$` matches calls sent to the phone numbers `+1-555-123-4567` and `+1-555-765-4321`.
+* `.*` matches calls sent to any address, allowing for a simple catch-all agent. Such an agent could be used with [transfers](/telephony/call-transfers) for in-call routing.
+
+The `allowedAgents` list of regexes is applied in order, with an implicit entry for `allowAllAgents` applied at the end if set.
+The call will use whichever agent is specified by the first matching regex and will be created automatically on your behalf.
+If no regexes match, the call will be sent to your [fallback hanlder](#fallback-handler) if configured and rejected otherwise.
+
+#### Fallback Handler
+For fully customized call routing, you can configure a fallback handler webhook on your [SIP configuration](/api-reference/sip/sip-partial-update) to make dynamic per-call routing decisions.
+This is an advanced feature and requires more configuration and maintenance than the default routing behavior, but gives you maximum control over how incoming SIP calls are handled.
+When Ultravox receives an incoming SIP invite that does not match any of your agent allowances (including `allowAllAgents` if it is set), it will POST to your fallback handler URL with the following body:
+
+```json
+{
+  "callerId": "<caller_id>",
+  "fromDisplayName": "<from_display_name or null>",
+  "fromUri": "<from_uri>",
+  "toUri": "<to_uri>",
+  "sipHeaders": { "<header_name>": "<header_value>", ... }
+}
+```
+
+The request is signed using the same HMAC-SHA256 scheme as outbound webhooks; see [Securing Webhooks](/webhooks/securing-webhooks) for how to verify it.
+The shared secrets for your fallback handler are configured alongside its URL (a strong secret is generated for you if you don't supply one).
+
+Your handler must respond within 5 seconds with HTTP 200 and a JSON body matching the [SIP Fallback Handler Response](/api-reference/schema/sip-fallback-handler-response) schema. Exactly one of the following fields must be set:
+* `startAgentCall`: Creates the call using one of your agents. The body has the same shape as the [Create Agent Call](/api-reference/agents/agents-calls-post) request, with an additional required `agentId` field identifying which agent to use. Any `templateContext` you provide is merged with the SIP-derived context (see [below](#personalizing-the-call)). The `ultravox` key in `templateContext` is reserved for Ultravox-provided context (such as `ultravox.sip.caller_id`) and will be overwritten if you set it.
+* `startCall`: Creates the call inline without an agent. The body has the same shape as the [Create Call](/api-reference/calls/calls-post) request.
+* `reject`: Rejects the call. `sipRejectCode` defaults to `603` (Decline) if omitted; `message` is optional and used only for logging.
+
+In either call creation case, any `medium` set will be replaced with incoming SIP.
+
+If your handler times out, returns a non-2XX status, or returns a malformed/invalid response, Ultravox will reject the SIP call (with code `504` for timeouts and `502` otherwise).
 
 ### Personalizing the Call
-Many parts of an agent can use context to personalize a call. (See [Call Template Configuration](/agents/building-and-editing-agents#call-template-configuration).) You can use SIP headers to populate template context for incoming SIP calls. Each header value is interpretted as JSON to allow for complex values.
+Many parts of an agent can use context to personalize a call. (See [Call Template Configuration](/agents/building-and-editing-agents#call-template-configuration).)
+You can use SIP headers to populate template context for incoming SIP calls. Each header value is interpretted as JSON to allow for complex values.
 
 For example including the headers `X-Customer-Name: Bob` and `X-Complex-Value: {"subkey": "value"}` becomes `{"customer_name": "Bob", "complex_value": {"subkey": "value"}}`.
 
@@ -61,28 +101,6 @@ If your agent's context allows additional properties (or allows these properties
   }
 }
 ```
-
-### Fallback Handler
-If you need to make per-call decisions about how to handle an incoming SIP invite (e.g. picking the agent dynamically based on the caller, or rejecting calls outside of business hours), you can configure a fallback handler webhook on your [SIP configuration](/api-reference/sip/sip-partial-update). When Ultravox receives an incoming SIP invite that does not match any of your agent allowances (including `allowAllAgents` if it is set), it will POST to your fallback handler URL with the following body:
-
-```json
-{
-  "callerId": "<caller_id or null>",
-  "fromDisplayName": "<from_display_name or null>",
-  "fromUri": "<from_uri or null>",
-  "toUri": "<to_uri or null>",
-  "sipHeaders": { "<header_name>": "<header_value>", ... }
-}
-```
-
-The request is signed using the same HMAC-SHA256 scheme as outbound webhooks; see [Securing Webhooks](/webhooks/securing-webhooks) for how to verify it. The shared secrets for your fallback handler are configured alongside its URL (a strong secret is generated for you if you don't supply one).
-
-Your handler must respond within 5 seconds with HTTP 200 and a JSON body matching the [SIP Fallback Handler Response](/api-reference/schema/sip-fallback-handler-response) schema. Exactly one of the following fields must be set:
-* `startAgentCall`: Creates the call using one of your agents. The body has the same shape as the [Create Agent Call](/api-reference/agents/agents-calls-post) request, with an additional required `agentId` field identifying which agent to use. The agent must belong to your account. Any `templateContext` you provide is merged with the SIP-derived context — Ultravox's SIP values take precedence. The `ultravox` key in `templateContext` is reserved for Ultravox-provided context (such as `ultravox.sip.caller_id`) and will be overwritten if you set it.
-* `startCall`: Creates the call inline without an agent. The body has the same shape as the [Create Call](/api-reference/calls/calls-post) request. The medium is forced to incoming SIP regardless of what you specify.
-* `reject`: Rejects the call. `sipRejectCode` defaults to `603` (Decline) if omitted; `message` is optional and is included in your SIP logs.
-
-If your handler times out, returns a non-2XX status, returns a malformed response, or returns an `agentId` you don't own, Ultravox will reject the SIP call (with code `504` for timeouts and `502` otherwise). These rejections are user-facing only — they don't trigger any internal alerts on the Ultravox side, so a temporary outage of your handler won't page anyone except your own caller.
 
 ## Outgoing SIP Calls
 For outgoing calls, you can create a SIP call with Ultravox Realtime [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) endpoints using the `sip` medium with `outgoing` property.
