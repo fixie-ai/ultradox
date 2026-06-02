@@ -62,6 +62,28 @@ If your agent's context allows additional properties (or allows these properties
 }
 ```
 
+### Fallback Handler
+If you need to make per-call decisions about how to handle an incoming SIP invite (e.g. picking the agent dynamically based on the caller, or rejecting calls outside of business hours), you can configure a fallback handler webhook on your [SIP configuration](/api-reference/sip/sip-partial-update). When Ultravox receives an incoming SIP invite that does not match any of your agent allowances (including `allowAllAgents` if it is set), it will POST to your fallback handler URL with the following body:
+
+```json
+{
+  "callerId": "<caller_id or null>",
+  "fromDisplayName": "<from_display_name or null>",
+  "fromUri": "<from_uri or null>",
+  "toUri": "<to_uri or null>",
+  "sipHeaders": { "<header_name>": "<header_value>", ... }
+}
+```
+
+The request is signed using the same HMAC-SHA256 scheme as outbound webhooks; see [Securing Webhooks](/webhooks/securing-webhooks) for how to verify it. The shared secrets for your fallback handler are configured alongside its URL (a strong secret is generated for you if you don't supply one).
+
+Your handler must respond within 5 seconds with HTTP 200 and a JSON body matching the [SIP Fallback Handler Response](/api-reference/schema/sip-fallback-handler-response) schema. Exactly one of the following fields must be set:
+* `startAgentCall`: Creates the call using one of your agents. The body has the same shape as the [Create Agent Call](/api-reference/agents/agents-calls-post) request, with an additional required `agentId` field identifying which agent to use. The agent must belong to your account. Any `templateContext` you provide is merged with the SIP-derived context — Ultravox's SIP values take precedence.
+* `startCall`: Creates the call inline without an agent. The body has the same shape as the [Create Call](/api-reference/calls/calls-post) request. The medium is forced to incoming SIP regardless of what you specify.
+* `reject`: Rejects the call. `sipRejectCode` defaults to `603` (Decline) if omitted; `message` is optional and is included in your SIP logs.
+
+If your handler times out, returns a non-2XX status, returns a malformed response, or returns an `agentId` you don't own, Ultravox will reject the SIP call (with code `504` for timeouts and `502` otherwise). These rejections are user-facing only — they don't trigger any internal alerts on the Ultravox side, so a temporary outage of your handler won't page anyone except your own caller.
+
 ## Outgoing SIP Calls
 For outgoing calls, you can create a SIP call with Ultravox Realtime [Create Agent Call](/api-reference/agents/agents-calls-post) or [Create Call](/api-reference/calls/calls-post) endpoints using the `sip` medium with `outgoing` property.
 
