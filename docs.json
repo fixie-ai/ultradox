@@ -322,6 +322,7 @@
             "pages": [
               "api-reference/schema/call-definition",
               "api-reference/schema/base-tool-definition",
+              "api-reference/schema/sip-fallback-handler-response",
               "api-reference/schema/datamessages"
             ]
           },
