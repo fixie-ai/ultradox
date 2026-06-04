@@ -47,7 +47,7 @@ For example:
 
 The `allowedAgents` list of regexes is applied in order, with an implicit entry for `allowAllAgents` applied at the end if set.
 The call will use whichever agent is specified by the first matching regex and will be created automatically on your behalf.
-If no regexes match, the call will be sent to your [fallback hanlder](#fallback-handler) if configured and rejected otherwise.
+If no regexes match, the call will be sent to your [fallback handler](#fallback-handler) if configured and rejected otherwise.
 
 #### Fallback Handler
 For fully customized call routing, you can configure a fallback handler webhook on your [SIP configuration](/api-reference/sip/sip-partial-update) to make dynamic per-call routing decisions.
@@ -67,18 +67,20 @@ When Ultravox receives an incoming SIP invite that does not match any of your ag
 The request is signed using the same HMAC-SHA256 scheme as outbound webhooks; see [Securing Webhooks](/webhooks/securing-webhooks) for how to verify it.
 The shared secrets for your fallback handler are configured alongside its URL (a strong secret is generated for you if you don't supply one).
 
-Your handler must respond within 5 seconds with HTTP 200 and a JSON body matching the [SIP Fallback Handler Response](/api-reference/schema/sip-fallback-handler-response) schema. Exactly one of the following fields must be set:
-* `startAgentCall`: Creates the call using one of your agents. The body has the same shape as the [Create Agent Call](/api-reference/agents/agents-calls-post) request, with an additional required `agentId` field identifying which agent to use. Any `templateContext` you provide is merged with the SIP-derived context (see [below](#personalizing-the-call)). The `ultravox` key in `templateContext` is reserved for Ultravox-provided context (such as `ultravox.sip.caller_id`) and will be overwritten if you set it.
+Your handler must respond promptly with HTTP 200 and a JSON body matching the [SIP Fallback Handler Response](/api-reference/schema/sip-fallback-handler-response) schema. Exactly one of the following fields must be set:
+* `startAgentCall`: Creates the call using one of your agents. The body has the same shape as the [Create Agent Call](/api-reference/agents/agents-calls-post) request, with an additional required `agentId` field identifying which agent to use. Any `templateContext` you provide is merged with the SIP-derived context (see [below](#personalizing-the-call)), with your values taking precedence over the header-derived context. The `ultravox` key in `templateContext` is reserved for Ultravox-provided context (such as `ultravox.sip.caller_id`) and will be overwritten if you set it.
 * `startCall`: Creates the call inline without an agent. The body has the same shape as the [Create Call](/api-reference/calls/calls-post) request.
 * `reject`: Rejects the call. `sipRejectCode` defaults to `603` (Decline) if omitted; `message` is optional and used only for logging.
 
 In either call creation case, any `medium` set will be replaced with incoming SIP.
 
-If your handler times out, returns a non-2XX status, or returns a malformed/invalid response, Ultravox will reject the SIP call (with code `504` for timeouts and `502` otherwise).
+If your handler times out, is unreachable, returns a non-2XX status, or returns a malformed/invalid response, Ultravox will reject the SIP call (with code `504` for timeouts and `502` otherwise).
+
+Even when your handler returns a valid response, the call may still be rejected if Ultravox is unable to create it. For example, an invalid call configuration is rejected with `488` and a temporary lack of capacity or rate limit is rejected with `503`.
 
 ### Personalizing the Call
 Many parts of an agent can use context to personalize a call. (See [Call Template Configuration](/agents/building-and-editing-agents#call-template-configuration).)
-You can use SIP headers to populate template context for incoming SIP calls. Each header value is interpretted as JSON to allow for complex values.
+You can use SIP headers to populate template context for incoming SIP calls. Each header value is interpreted as JSON to allow for complex values.
 
 For example including the headers `X-Customer-Name: Bob` and `X-Complex-Value: {"subkey": "value"}` becomes `{"customer_name": "Bob", "complex_value": {"subkey": "value"}}`.
 
