@@ -170,15 +170,16 @@ When you create the call, Ultravox will automatically send a SIP invite using th
 
 Serving SIP calls requires additional infrastructure (provided by our SIP partner, Voximplant). Consequently, SIP
 calls incur costs for SIP minutes in addition to the regular cost of call minutes. Like call minutes, SIP minutes are billed
-per-deciminute (i.e. six second increments), rounded up to the nearest deciminute. Unlike call minutes, **SIP minutes are
-billed when SIP infrastructure is active**, not just while your agent is connected to a user. In particular, **outgoing calls
-are billed from the start of the call, not the point at which your user answers**. This means that an outgoing SIP call may
-be billed for 0 minutes and non-zero SIP minutes if the call is not answered.
+per-deciminute (i.e. six second increments), rounded up to the nearest deciminute. Unlike call minutes, **SIP minutes can be
+billed even when your agent is not connected to a user** — for example, transfer legs that keep running after your agent leaves
+the call. **Ringing time is not billed**, though: an outgoing call only begins accruing SIP minutes once it is answered, so a
+call that is never answered incurs no SIP minutes.
 
 See https://ultravox.ai/pricing for current rates for SIP minutes.
 
 The examples below illustrate how different call scenarios affect SIP billing. Red blocks correspond to segments of the call
-that count toward the SIP duration while the blue block shows when your agent is connected (i.e. regular call minutes).
+that count toward the SIP duration, grey blocks (ringing) are not billed, and the blue block shows when your agent is connected
+(i.e. regular call minutes).
 
 ```mermaid
 gantt
@@ -187,7 +188,7 @@ gantt
     axisFormat %M:%S.%L
 
     section SIP Call
-    Ringing                    :crit, 0, 20000ms
+    Ringing                    :done, 0, 20000ms
     Talking to Agent           :crit, 120000ms
 
     section Agent
@@ -221,7 +222,7 @@ gantt
     axisFormat %M:%S.%L
 
     section SIP Call
-    Ringing                    :crit, 0, 20000ms
+    Ringing                    :done, 0, 20000ms
     Talking to Agent           :crit, 60000ms
     Refer ringing              :crit, 10000ms
     Talking to Transfer Target -> :crit, 0ms
@@ -239,13 +240,13 @@ gantt
     axisFormat %M:%S.%L
 
     section Initial Call
-    Ringing                    :crit, 0, 20000ms
+    Ringing                    :done, 0, 20000ms
     Talking to Agent           :crit, 30000ms
     On Hold                    :crit, 10000ms
     Talking to Transfer Target :crit, 300000ms
 
     section Transfer Call
-    Ringing                    :crit, 50000, 10000ms
+    Ringing                    :done, 50000, 10000ms
     Talking to Initial User    :crit, 300000ms
 
     section Agent
@@ -261,13 +262,13 @@ gantt
     axisFormat %M:%S.%L
 
     section Initial Call
-    Ringing                       :crit, 0, 20000ms
+    Ringing                       :done, 0, 20000ms
     Talking to Agent              :crit, 30000ms
     On Hold                       :crit, 50000ms
     Talking to Transfer Target -> :crit, 0ms
 
     section Transfer Call
-    Ringing                    :crit, 50000, 10000ms
+    Ringing                    :done, 50000, 10000ms
     Talking to Agent           :crit, 40000ms
     Talking to Initial User -> :crit, 0ms
 
@@ -282,13 +283,13 @@ gantt
     axisFormat %M:%S.%L
 
     section Initial Call
-    Ringing                    :crit, 0, 20000ms
+    Ringing                    :done, 0, 20000ms
     Talking to Agent           :crit, 30000ms
     On Hold                    :crit, 50000ms
     Talking to Agent           :crit, 30000ms
 
     section Transfer Call
-    Ringing                    :crit, 50000, 10000ms
+    Ringing                    :done, 50000, 10000ms
     Talking to Agent           :crit, 40000ms
 
     section Agent
@@ -304,13 +305,13 @@ gantt
     axisFormat %M:%S.%L
 
     section Initial Call
-    Ringing                    :crit, 0, 20000ms
+    Ringing                    :done, 0, 20000ms
     Talking to Agent           :crit, 30000ms
     On Hold                    :crit, 50000ms
     Talking to Transfer Target :crit, 300000ms
 
     section Transfer Call
-    Ringing                    :crit, 50000, 10000ms
+    Ringing                    :done, 50000, 10000ms
     Talking to Agent           :crit, 40000ms
     Talking to Initial User    :crit, 300000ms
 
@@ -321,9 +322,9 @@ gantt
 * **Warm transfer with TRY_REFER**: This will attempt to behave as in the REFER case, but will fallback to the bridged case (and thus cause additional SIP costs) if the REFER fails.
 
 <Note>
-  <b>Uncounted SIP time</b>
+  <b>Ringing is never billed</b>
   <br />
-  Due to some technical limitations, outgoing SIP calls with transfers may not be billed for the full ring time. This will only ever decrease the billed SIP duration.
+  The SIP clock for a given call leg only starts once that leg is answered, so ringing time (shown in grey above) is never counted toward your SIP minutes. This applies to both the initial call and any transfer legs.
 </Note>
 
 
