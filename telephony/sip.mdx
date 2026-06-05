@@ -172,7 +172,7 @@ Serving SIP calls requires additional infrastructure (provided by our SIP partne
 calls incur costs for SIP minutes in addition to the regular cost of call minutes. Like call minutes, SIP minutes are billed
 per-deciminute (i.e. six second increments), rounded up to the nearest deciminute. Unlike call minutes, **SIP minutes can be
 billed even when your agent is not connected to a user** — for example, transfer legs that keep running after your agent leaves
-the call. **Ringing time is not billed**, though: an outgoing call only begins accruing SIP minutes once it is answered, so a
+the call. **Ringing time is not billed** though: an outgoing call only begins accruing SIP minutes once it is answered, so a
 call that is never answered incurs no SIP minutes.
 
 See https://ultravox.ai/pricing for current rates for SIP minutes.
@@ -322,9 +322,10 @@ gantt
 * **Warm transfer with TRY_REFER**: This will attempt to behave as in the REFER case, but will fallback to the bridged case (and thus cause additional SIP costs) if the REFER fails.
 
 <Note>
-  <b>Ringing is never billed</b>
+  <b>Ringing is no longer billed</b>
   <br />
   The SIP clock for a given call leg only starts once that leg is answered, so ringing time (shown in grey above) is never counted toward your SIP minutes. This applies to both the initial call and any transfer legs.
+  However call time for the initial call leg used to be billed, so you may see that on invoices through July 2026. Unfortunately we cannot apply this cost reduction retroactively.
 </Note>
 
 
