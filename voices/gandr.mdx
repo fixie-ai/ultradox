@@ -1,0 +1,57 @@
+---
+title: 'Gandr'
+description: 'How to use Gandr as your text-to-speech provider'
+icon: 'microphone'
+---
+
+Gandr is a closed-source TTS API. You can use it with Ultravox Realtime through the generic
+[ExternalVoice](/api-reference/calls/calls-post#body-external-voice) integration.
+
+## API contract
+
+Gandr exposes one endpoint:
+
+- Endpoint: `POST https://tts.gandr.ai/v1/audio/speech`
+- Auth: `Authorization: Bearer YOUR_GANDR_API_KEY`
+- Body: JSON with `model`, `input`, `voice`, and `response_format`
+- `response_format`: `mp3` (default), `wav`, or `pcm`
+- `pcm` is raw headerless s16le mono audio at 24000 Hz
+- `input` is capped at 2000 characters
+
+The default model is `gandr-1`.
+
+## Configuration
+
+Set this generic ExternalVoice on your agent or call:
+
+```json
+{
+  "url": "https://tts.gandr.ai/v1/audio/speech",
+  "headers": {
+    "Authorization": "Bearer YOUR_GANDR_API_KEY",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "model": "gandr-1",
+    "input": "{text}",
+    "voice": "gandr-ava",
+    "response_format": "pcm"
+  },
+  "responseSampleRate": 24000
+}
+```
+
+The `pcm` format above is raw headerless s16le mono audio at 24000 Hz, so it needs no other response settings.
+
+## Voices
+
+Gandr offers six voices:
+
+- `gandr-ava`
+- `gandr-dane`
+- `gandr-jenny`
+- `gandr-leo`
+- `gandr-lewis`
+- `gandr-mia`
+
+If a call starts but you hear nothing from the agent, check the [Debugging](/voices/bring-your-own#debugging) section on the bring-your-own page.
