@@ -33,6 +33,9 @@ Details on each message type appear below in [Data Message Details](#data-messag
 | ------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | Conversation | [CallStarted](#callstarted)                                                                                     | Provides some basic information about the call at its start. |
 | Conversation | [Transcript](#transcript)                                                                                       | Contains text for an utterance made during the call.         |
+| Conversation | [UserStartedSpeaking](#userstartedspeaking-and-userstoppedspeaking)                                             | The user started speaking. Excluded by default.              |
+| Conversation | [UserStoppedSpeaking](#userstartedspeaking-and-userstoppedspeaking)                                             | The user stopped speaking. Excluded by default.              |
+| System       | [CallEvent](#callevent)                                                                                         | A call event was recorded. Excluded by default.              |
 | System       | [Debug](#debug)                                                                                                 | Useful for application debugging. Excluded by default.       |
 | System       | [PlaybackClearBuffer](#playbackclearbuffer)                                                                     | Used to clear buffered output audio. WebSocket only.         |
 | System       | [Pong](#pong)                                                                                                   | Server reply to a ping message.                              |
@@ -43,7 +46,39 @@ Details on each message type appear below in [Data Message Details](#data-messag
 | Threads      | [SideGenerationDelta](#sidegenerationdelta)                                                                     | Streaming text delta from a thread's generation.             |
 | Threads      | [SideGenerationCompleted](#sidegenerationcompleted)                                                             | A thread's generation has completed.                         |
 | Tools        | [ClientToolInvocation and DataConnectionToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation) | Asks the client or data connection to invoke a tool.         |
+| Tools        | [InvokingTool](#invokingtool)                                                                                   | A tool invocation has started. Excluded by default.          |
+| Tools        | [ToolUsed](#toolused)                                                                                           | A tool finished running. Excluded by default.                |
 
+### Enabling Server Messages
+Some server-to-client messages are excluded by default. You control which server messages you receive with the `dataMessages` field (an `EnabledDataMessages` object) on your call's [medium](/api-reference/calls/calls-post#body-medium) (`webRtc` or `serverWebSocket`) or on its [data connection](/api-reference/calls/calls-post#body-data-connection). Set a flag to `true` to enable a message type or `false` to disable it. Flags you don't set keep their defaults.
+
+```js Example: Enabling Tool Messages on a Data Connection
+{
+  "dataConnection": {
+    "websocketUrl": "wss://example.com/ultravox",
+    "dataMessages": {
+      "invokingTool": true,
+      "toolUsed": true
+    }
+  }
+}
+```
+
+| Flag                           | Message(s)                                                                                                      | Default                                                     |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `pong`                         | [Pong](#pong)                                                                                                   | Enabled                                                     |
+| `state`                        | [State](#state)                                                                                                 | Enabled                                                     |
+| `transcript`                   | [Transcript](#transcript)                                                                                       | Enabled                                                     |
+| `clientToolInvocation`         | [ClientToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation)                                  | Enabled                                                     |
+| `dataConnectionToolInvocation` | [DataConnectionToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation)                          | Enabled for data connections, disabled otherwise            |
+| `playbackClearBuffer`          | [PlaybackClearBuffer](#playbackclearbuffer)                                                                     | Enabled for WebSocket connections, disabled otherwise       |
+| `callStarted`                  | [CallStarted](#callstarted)                                                                                     | Enabled                                                     |
+| `debug`                        | [Debug](#debug)                                                                                                 | Disabled                                                    |
+| `callEvent`                    | [CallEvent](#callevent)                                                                                         | Disabled                                                    |
+| `toolUsed`                     | [ToolUsed](#toolused)                                                                                           | Disabled                                                    |
+| `invokingTool`                 | [InvokingTool](#invokingtool)                                                                                   | Disabled                                                    |
+| `userStartedSpeaking`          | [UserStartedSpeaking](#userstartedspeaking-and-userstoppedspeaking)                                             | Disabled                                                    |
+| `userStoppedSpeaking`          | [UserStoppedSpeaking](#userstartedspeaking-and-userstoppedspeaking)                                             | Disabled                                                    |
 
 ## Data Message Details
 All messages are JSON objects with camelCase keys containing:
@@ -135,6 +170,18 @@ A message containing text transcripts of user and agent utterances.
 <ResponseField name="ordinal" type="integer" required>
   The ordinal of the message within the current call, used for ordering transcripts.
 </ResponseField>
+
+### UserStartedSpeaking and UserStoppedSpeaking
+Sent by the server when the user starts or stops speaking, according to simple voice activity detection (VAD). Disabled by default. Enable with the `userStartedSpeaking` and `userStoppedSpeaking` flags (see [Enabling Server Messages](#enabling-server-messages)).
+
+**Message Structure**
+```js
+{
+  "type": "user_started_speaking" // Or "user_stopped_speaking"
+}
+```
+
+These messages have no fields other than `type`.
 
 ### UserTextMessage
 A user message sent via text. The message appears to the agent as if it came from the user.
@@ -254,6 +301,99 @@ Contains the result of a tool invocation.
 </ResponseField>
 
 
+### InvokingTool
+Sent by the server when a tool invocation begins. Disabled by default. Enable with the `invokingTool` flag (see [Enabling Server Messages](#enabling-server-messages)).
+
+**Message Structure**
+```js
+{
+  "type": "invoking_tool",
+  "invocationId": "unique-invocation-id",
+  "toolName": "get_weather",
+  "toolId": "959ba8d4-0a5c-4a4e-9a9e-6f2f3b1c2d3e",
+  "parameters": {
+    "location": "Seattle"
+  },
+  "isPrecomputation": false,
+  "threadId": "UI"
+}
+```
+
+**Fields**
+<ResponseField name="invocationId" type="string" required>
+  Unique identifier for this invocation.
+</ResponseField>
+<ResponseField name="toolName" type="string" required>
+  Name of the tool being invoked.
+</ResponseField>
+<ResponseField name="toolId" type="string">
+  The ID of the tool, if it has one. `null` otherwise.
+</ResponseField>
+<ResponseField name="parameters" type="object" required>
+  Tool-specific parameters as a JSON object.
+</ResponseField>
+<ResponseField name="isPrecomputation" type="boolean" required>
+  Whether this is a speculative invocation of a [precomputable](/api-reference/tools/tools-post#body-definition-precomputable) tool. The result of a precomputation may end up unused.
+</ResponseField>
+<ResponseField name="threadId" type="string" required>
+  The [thread](/agents/threads) that invoked the tool. "UI" is the main conversation.
+</ResponseField>
+
+### ToolUsed
+Sent by the server after a tool has run. Disabled by default. Enable with the `toolUsed` flag (see [Enabling Server Messages](#enabling-server-messages)).
+
+**Message Structure**
+```js
+{
+  "type": "tool_used",
+  "toolName": "get_weather",
+  "toolId": "959ba8d4-0a5c-4a4e-9a9e-6f2f3b1c2d3e",
+  "invocationId": "unique-invocation-id",
+  "parameters": {
+    "location": "Seattle"
+  },
+  "result": "It is 65 degrees and sunny in Seattle.",
+  "errorMessage": null,
+  "executionTime": "0.126s",
+  "ordinal": 6
+}
+```
+
+**Fields**
+<ResponseField name="toolName" type="string" required>
+  Name of the tool that was used.
+</ResponseField>
+<ResponseField name="toolId" type="string">
+  The ID of the tool, if it has one. `null` otherwise.
+</ResponseField>
+<ResponseField name="invocationId" type="string" required>
+  Unique identifier for this invocation. Matches the `invocationId` of the corresponding [InvokingTool](#invokingtool) message.
+</ResponseField>
+<ResponseField name="parameters" type="object" required>
+  The parameters the tool was invoked with.
+</ResponseField>
+<ResponseField name="result" type="string" required>
+  The tool result as seen by the agent.
+</ResponseField>
+<ResponseField name="errorMessage" type="string">
+  Error details if the tool failed. `null` otherwise.
+</ResponseField>
+<ResponseField name="executionTime" type="string" required>
+  How long the tool took to run, as a duration string in seconds (for example, `"0.126s"`).
+</ResponseField>
+<ResponseField name="ordinal" type="integer" required>
+  The ordinal of the tool call within the call's messages.
+</ResponseField>
+<ResponseField name="callState" type="object">
+  **Coming soon.** The call's new [tool state](/agents/guiding-agents#tool-state) if the tool updated it, `null` otherwise. Because call state updates replace the previous state rather than merging into it, this is the complete call state.
+</ResponseField>
+<ResponseField name="threadId" type="string">
+  **Coming soon.** The [thread](/agents/threads) that used the tool. "UI" is the main conversation. For other threads, `ordinal` is relative to that thread's own history.
+</ResponseField>
+<Note>
+  The `callState` and `threadId` fields are coming soon and may not be present yet.
+</Note>
+
 ### Debug
 A message sent by the server to communicate debug information. Disabled by default.
 
@@ -270,8 +410,55 @@ A message sent by the server to communicate debug information. Disabled by defau
   Debug information or diagnostic details.
 </ResponseField>
 <Note>
-  Debug messages are disabled by default and must be explicitly enabled for debugging purposes.
+  Debug messages are disabled by default and must be explicitly enabled (with the `debug` flag) for debugging purposes. See [Enabling Server Messages](#enabling-server-messages).
 </Note>
+
+### CallEvent
+Sent by the server when a call event is recorded. Disabled by default. Enable with the `callEvent` flag (see [Enabling Server Messages](#enabling-server-messages)). The `event` object has the same shape as events returned by [List Call Events](/api-reference/calls/calls-events-list).
+
+**Message Structure**
+```js
+{
+  "type": "call_event",
+  "event": {
+    "callId": "550e8400-e29b-41d4-a716-446655440000",
+    "callStageId": "6f1a2b3c-4d5e-6f70-8192-a3b4c5d6e7f8",
+    "severity": "info",
+    "callTimestamp": "2025-01-01T12:00:05.123Z",
+    "type": "event_type",
+    "text": "Human-readable event description",
+    "extras": null
+  }
+}
+```
+
+**Fields**
+<ResponseField name="event" type="object" required>
+  The recorded call event.
+  <Expandable title="properties">
+    <ResponseField name="callId" type="string" required>
+      The ID of the call.
+    </ResponseField>
+    <ResponseField name="callStageId" type="string" required>
+      The ID of the call stage in which the event occurred.
+    </ResponseField>
+    <ResponseField name="severity" type="string" required>
+      One of: `debug`, `info`, `warning`, or `error`.
+    </ResponseField>
+    <ResponseField name="callTimestamp" type="string" required>
+      When the event occurred, as an RFC 3339 timestamp.
+    </ResponseField>
+    <ResponseField name="type" type="string" required>
+      The type of event.
+    </ResponseField>
+    <ResponseField name="text" type="string" required>
+      A description of the event.
+    </ResponseField>
+    <ResponseField name="extras" type="object">
+      Additional event-specific data, if any. `null` otherwise.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
 
 ### CallStarted
 Basic call metadata shared by the server when a call begins.
