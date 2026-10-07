@@ -114,6 +114,8 @@ Tools can then set the tool state as follows:
 * **Client Tools** → Use the `updateCallState` value on a client tool results (works with WebSockets or Ultravox Client SDK).
 * **Server Tools** → Set the `X-Ultravox-Update-Call-State` header which will be parsed as a JSON dict.
 
+A tool's call state update replaces the entire call state. It is not merged with the existing state, so tools should always return the complete state, including any values they did not change.
+
 The tool state can be read via:
 
 * **Automatic Parameter** → Use the [`KNOWN_PARAM_CALL_STATE`](/api-reference/tools/tools-post#response-definition-automatic-parameters-known-value) known value.
