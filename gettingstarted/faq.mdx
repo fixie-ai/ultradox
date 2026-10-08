@@ -59,18 +59,24 @@ Large duration mismatches typically indicate Ultravox didn't receive continuous 
 
 ## Data Retention
 
+### <Icon icon="circle-question" size={24} /> Can I use Ultravox for HIPAA workloads? Do you sign a BAA?
+
+Yes. We can sign a Business Associate Agreement (BAA) with customers on an Enterprise plan. Combined with deleting call data after each call (see below), this supports voice agents that handle protected health information. Contact [support@inworld.ai](mailto:support@inworld.ai) to discuss an Enterprise plan and your requirements.
+
 ### <Icon icon="circle-question" size={24} /> How long does Ultravox retain my call data?
 
 Call data is retained until you delete it.
 
 ### <Icon icon="circle-question" size={24} /> How can I delete call data from Ultravox?
 
-Use the [call deletion API](/api-reference/calls/calls-delete) to remove call data from Ultravox. This deletes all associated messages, recordings, call stages, and summaries.
+Use the [call deletion API](/api-reference/calls/calls-delete) to remove call data from Ultravox. This deletes all associated messages, recordings, call stages, and summaries. Any account can do this.
+
+Customers on an Enterprise plan can also set a `retentionPolicy` on calls (for example, in [Create Call](/api-reference/calls/calls-post)) so that call data (summaries, transcripts and recordings) is deleted automatically after the call, with no deletion calls needed. Contact [support@inworld.ai](mailto:support@inworld.ai) to enable it.
 
 Many customers choose to archive call data prior to deletion. To do this:
 
 1. Set up a [call.ended](/webhooks/available-webhooks#call-ended) webhook.
-2. When your server receives the webhook, use our APIs to retrieve [call messages](/api-reference/calls/calls-messages-list) and [recordings](/api-reference//calls/calls-recording-get).
+2. When your server receives the webhook, use our APIs to retrieve [call messages](/api-reference/calls/calls-messages-list) and [recordings](/api-reference/calls/calls-recording-get).
 3. Save all data to your own storage location.
 4. Delete the call from Ultravox using the [call deletion API](/api-reference/calls/calls-delete).
 
