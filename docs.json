@@ -120,7 +120,8 @@
                 "pages": [
                   "tools/rag/overview",
                   "tools/rag/crawling-websites",
-                  "tools/rag/using-static-documents"
+                  "tools/rag/using-static-documents",
+                  "tools/rag/advanced-sources"
                 ]
               }
             ]
