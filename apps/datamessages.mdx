@@ -139,6 +139,10 @@ A message containing text transcripts of user and agent utterances.
 ### UserTextMessage
 A user message sent via text. The message appears to the agent as if it came from the user.
 
+<Note>
+  On a call whose `mediumRestriction` doesn't allow text, user text messages from the client are ignored, except those sent to a side thread. Messages sent through a data connection or the REST API are still delivered.
+</Note>
+
 **Message Structure**
 ```js
 {
@@ -179,6 +183,10 @@ Message sent by the client to set the server's output medium.
 <ResponseField name="medium" type="string" required>
   Output medium to use. Must be either "voice" or "text".
 </ResponseField>
+
+<Note>
+  On a call whose `mediumRestriction` doesn't allow the requested medium, this message is ignored.
+</Note>
 
 ### ClientToolInvocation and DataConnectionToolInvocation
 Sent by the server to ask the client or data connection to invoke a tool with the given parameters. The client or data connection is expected to send back a ClientToolResultMessage or DataConnectionToolResultMessage with a matching invocationId.
@@ -281,13 +289,17 @@ Basic call metadata shared by the server when a call begins.
 ```js
 {
   "type": "call_started",
-  "callId": "550e8400-e29b-41d4-a716-446655440000"
+  "callId": "550e8400-e29b-41d4-a716-446655440000",
+  "mediumRestriction": ["voice", "text"]
 }
 ```
 
 **Fields**
 <ResponseField name="callId" type="string" required>
   The UUID of the call that has started.
+</ResponseField>
+<ResponseField name="mediumRestriction" type="string[]" required>
+  The mediums the call allows for user input and agent output: "voice", "text", or both. See [Text-Only and Voice-Only Calls](/agents/making-calls#text-only-and-voice-only-calls).
 </ResponseField>
 
 ### PlaybackClearBuffer

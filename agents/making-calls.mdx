@@ -61,6 +61,7 @@ When starting a call with an agent, you can override specific settings from the 
 | `maxDuration`          | Maximum call length                 | String  | `"1800s"`                    |
 | `recordingEnabled`.    | Whether to record audio             | Boolean | `true` / `false`             |
 | `initialOutputMedium`  | Start with voice or text            | String  | `"voice"` / `"text"`         |
+| `mediumRestriction`    | Limit the call to voice or text     | Object  | `{ allowedMediums: ["MESSAGE_MEDIUM_TEXT"] }` |
 | `firstSpeakerSettings` | Initial conversation behavior       | Object  | `{ agent: { text: "..." } }` |
 | `experimentalSettings` | Experimental settings for the call  | Object  | Varies                       |
 
@@ -86,6 +87,36 @@ const response = await fetch(`https://api.ultravox.ai/api/agents/${agentId}/call
   })
 });
 ```
+
+## Text-Only and Voice-Only Calls
+
+By default, users can speak or type and the agent can reply with voice or text. Set `mediumRestriction` on an agent's call template or on an individual call to limit a call to one medium:
+
+```js Example: A Text-Only Call
+body: JSON.stringify({
+  mediumRestriction: {
+    allowedMediums: ["MESSAGE_MEDIUM_TEXT"]
+  }
+})
+```
+
+The restriction applies to both user input and agent output:
+* **Text Only** → The agent replies in text, and the call ignores any audio the client sends.
+* **Voice Only** → The agent replies with voice, and the call ignores [UserTextMessage](/apps/datamessages#usertextmessage)s from the client. Text sent through a [data connection](/api-reference/calls/calls-post#body-data-connection) or the [REST API](/apps/datamessages#sending-messages-to-live-calls-via-rest-api) still reaches the agent.
+
+A [SetOutputMedium](/apps/datamessages#setoutputmedium) message for a medium the call doesn't allow is ignored. Ignored messages are recorded as warning [call events](/api-reference/calls/calls-events-list). The [CallStarted](/apps/datamessages#callstarted) message tells the client which mediums the call allows.
+
+If you don't set `initialOutputMedium`, the call starts with voice when it's allowed and text otherwise.
+
+### Settings That Require Voice
+Creating an agent or a call returns a 400 error when the restriction conflicts with other settings:
+* `initialOutputMedium` must be one of the allowed mediums.
+* Telephony calls (Twilio, Telnyx, Plivo, Exotel, and SIP) must allow voice.
+* Calls that don't allow voice can't enable recording, play background audio, or send audio to a data connection.
+
+`allowedMediums` must not be empty. Leave `mediumRestriction` unset to allow every medium.
+
+When you override an agent's restriction for a single call, the call's value replaces the agent's.
 
 ## Direct Call Alternative
 
@@ -157,7 +188,7 @@ const continueFromPriorCall = async (priorCallId) => {
 ```
 
 <Note>
-  When using `priorCallId`, the new call inherits all properties from the prior call unless explicitly overridden. The prior call's message history becomes the new call's `initialMessages`.
+  When using `priorCallId`, the new call inherits all properties from the prior call unless explicitly overridden. The prior call's message history becomes the new call's `initialMessages`. If the new call sets a `mediumRestriction`, inherited settings that conflict with it (such as recording) are dropped instead of causing an error, and an inherited telephony medium becomes WebRTC.
 </Note>
 
 ## Next Steps
