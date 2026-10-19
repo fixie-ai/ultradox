@@ -1,8 +1,187 @@
 ---
 title: 'Crawling Websites'
-description: 'Build a corpus source by crawling your website.'
+description: 'Use pages from your website in your corpus.'
 icon: 'spider'
-tag: "COMING SOON"
 ---
 
-[Under Construction]
+You can use websites as sources for any of your corpora.
+
+Websites can be crawled via the [Web App](https://app.ultravox.ai/corpora) or via the [Create Corpus Source API](/api-reference/corpora/corpora-sources-post). Each crawl starts from one or more **start URLs** and follows links up to the **crawl depth** you choose.
+
+## Crawl Websites via Web App
+
+<Steps>
+  <Step title="Create New Source">
+    * Go to [Corpora](https://app.ultravox.ai/corpora) in the Ultravox web application.
+    * Select the corpus that will hold the new source. If you don't have one, create a new corpus.
+    * Click `Add Source` in the top right corner.
+  </Step>
+  <Step title="Add Details and URLs">
+    * Add a `Name` and (optionally) a `Description` for the new source.
+    * Select `Web`.
+    * Set the `Crawl Depth`. See [Crawl Depth](#crawl-depth) to choose the right value.
+    * Click `Add URL` for each start URL.
+
+    <img className="block dark:hidden" src="/images/screenshots/corpus/add-new-source-web-light.png" />
+    <img className="hidden dark:block" src="/images/screenshots/corpus/add-new-source-web-dark.png" />
+  </Step>
+  <Step title="Save">
+    * Click `Save` and wait for your pages to be crawled and ingested. Larger crawls take longer.
+  </Step>
+</Steps>
+
+## Crawl Websites via API
+To crawl a website using the API, follow these steps:
+
+<Steps>
+  <Step title="Step 1: Create New Source with Start URLs">
+    * Use the [Create Corpus Source API](/api-reference/corpora/corpora-sources-post)
+    * Use `crawl` to provide the `startUrls` and `maxDepth`
+    * This returns the unique ID for the source
+
+    For example, to crawl a help center that spans two hosts with a crawl depth of 2:
+
+    ```bash
+    CORPUS_ID="your-corpus-id"
+
+    curl -X POST \
+      -H "X-API-Key: your-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Example Help Center",
+        "crawl": {
+          "startUrls": [
+            "https://www.example.com/help",
+            "https://support.example.com"
+          ],
+          "maxDepth": 2
+        }
+      }' \
+      "https://api.ultravox.ai/api/corpora/$CORPUS_ID/sources"
+    ```
+
+    <Note>If you leave out `maxDepth`, the API uses a crawl depth of 3. Set it explicitly so you know what you're getting.</Note>
+  </Step>
+  <Step title="Step 2: Wait for the Crawl to Finish">
+    * Use the [Get Corpus Source API](/api-reference/corpora/corpora-sources-get)
+    * `stats.status` is `SOURCE_STATUS_INITIALIZING` while the crawl runs
+    * `stats.status` changes to `SOURCE_STATUS_READY` when the content can be queried
+  </Step>
+  <Step title="Step 3: Review Crawled Documents">
+    * Use the [List Corpus Source Documents API](/api-reference/corpora/corpora-sources-documents-list)
+    * Each document's `metadata.publicUrl` shows the page or file it came from
+    * If pages are missing, see [Websites Are Not Always Built Like They Look](#websites-are-not-always-built-like-they-look)
+  </Step>
+</Steps>
+
+## Crawl Depth
+Crawl depth controls how many levels of links are followed from each start URL. Each level is one more click away from a start URL.
+
+| Crawl Depth | What Gets Crawled |
+| ----------- | ----------------- |
+| 1 | Only your start URLs. No links are followed. |
+| 2 | Your start URLs, plus every page they link to. |
+| 3 | Everything in depth 2, plus every page linked from *those* pages. |
+| 4+ | Each extra level adds the pages linked from the previous level. |
+
+For example, say your start URL is `https://www.example.com/help`. That page links to two help articles, and the site's header links to `/pricing` and `/about`:
+
+```mermaid
+flowchart LR
+    A["/help<br/>depth 1"] --> B["/help/billing<br/>depth 2"]
+    A --> C["/help/returns<br/>depth 2"]
+    A --> D["/pricing<br/>depth 2"]
+    A --> E["/about<br/>depth 2"]
+    B --> F["/help/refunds<br/>depth 3"]
+    D --> G["/enterprise<br/>depth 3"]
+```
+
+* **Depth 1** crawls `/help` only.
+* **Depth 2** crawls `/help`, `/help/billing`, `/help/returns`, `/pricing`, and `/about`.
+* **Depth 3** also crawls `/help/refunds`, `/enterprise`, and every other page linked from the depth 2 pages.
+
+Keep these in mind when choosing a depth:
+
+* **Depth 1 doesn't follow any links.** To include the pages your start URL links to, use depth 2.
+* **Depth isn't the number of folders in a URL.** `https://www.example.com/docs/guides/setup` isn't automatically "depth 3". If your start page links straight to it, it's depth 2.
+* **Menus, headers, and footers count as links.** Any page in the site's main menu is at depth 2 from a page that shows the menu. Starting at `/help` doesn't keep the crawl inside `/help`.
+* **Every start URL is depth 1.** Adding a page as a start URL is often a better way to reach it than raising the depth.
+* **The number of pages grows fast.** If each page has 30 links, depth 3 can reach almost 1,000 pages. A crawl stops at `maxDocuments` (200 at most per source). The crawler finishes one level before starting the next, so the deepest level is the one that gets cut short.
+
+<Tip>Start with a low depth, review which pages were crawled, then raise the depth or add start URLs. Several start URLs at a low depth give more predictable results than one start URL at a high depth.</Tip>
+
+## Which Pages Get Crawled
+The crawler only follows links to the same **host** as one of your start URLs. The host is the scheme and the full hostname, like `https://www.example.com`. Paths don't matter, so any page on an allowed host can be crawled.
+
+| Start URL | Followed | Not Followed |
+| --------- | -------- | ------------ |
+| `https://www.example.com/help` | `https://www.example.com/pricing`<br/>`https://www.example.com/blog/launch` | `https://example.com/pricing`<br/>`https://support.example.com/articles`<br/>`https://cdn.example.com/guide.pdf` |
+
+* Each page is loaded in a headless browser, so JavaScript-heavy sites and single-page apps work.
+* Linked documents such as PDFs, Word files, and PowerPoint decks are downloaded and ingested too, if they're on an allowed host. They count toward `maxDocuments`.
+* Every start URL's host is allowed for the whole source, so the crawler follows links between all of them.
+
+## Websites Are Not Always Built Like They Look
+To a visitor, a website looks like one place, with one logo and one menu. Behind the scenes, its sections often live on different hosts:
+
+* A help center on `support.example.com` or `example.zendesk.com`
+* Developer docs on `docs.example.com`
+* A blog on `blog.example.com`
+* A store on `shop.example.com` or `example.myshopify.com`
+* PDFs and downloads on a CDN or storage bucket, like `cdn.example.com` or `example.s3.amazonaws.com`
+* Both `example.com` and `www.example.com`, which are two different hosts
+
+The crawler treats each host as a separate site. If your start URL is `https://www.example.com` and the menu's **Help** link goes to `https://support.example.com`, the crawl won't follow it, at any depth. Add a start URL for each host you want crawled.
+
+Other things can hide pages from the crawler:
+
+* **Redirects to another host.** If `https://example.com` redirects to `https://www.example.com`, the links on the page you land on point to `www.example.com`, which isn't an allowed host. Use the URL your browser ends up on as the start URL.
+* **Links that aren't real links.** The crawler follows `<a href>` links. It doesn't hover or click, so menus that load their items only on hover or click, or buttons that navigate with JavaScript, aren't followed.
+* **Pages nothing links to.** The crawler doesn't read sitemaps or use site search. Add pages like these as start URLs.
+* **Pages behind a login.** The crawler can't fill in login forms or use SSO. Sites protected by HTTP basic auth can be crawled (see [Crawling Sites with Basic Auth](#crawling-sites-with-basic-auth)). For other logins, download the content and add it as [static documents](/tools/rag/using-static-documents) instead.
+
+To find out how a site is really built, click through its menu, footer, and sidebar links and watch the address bar for a change of hostname. Right-click download links and choose **Copy Link Address** to see where files live.
+
+<Note>Each source can hold up to 200 documents. For larger sites, create one source per host or section. A corpus can have up to 20 sources.</Note>
+
+## Crawling Sites with Basic Auth
+If a site is protected by HTTP basic auth, put the username and password in the start URL:
+
+```
+https://username:password@docs.example.com
+```
+
+* Add the credentials to every start URL on the protected host
+* Percent-encode special characters in the username or password, such as `@` (`%40`), `:` (`%3A`), `/` (`%2F`), and `#` (`%23`). For example, `p@ss` becomes `p%40ss`
+* This works in both the web app and the API
+
+<Warning>Credentials in a start URL are saved with the source. Anyone who can view your sources in the web app or API can see them, and they can also show up in the `publicUrl` of crawled documents. Use a dedicated, read-only account.</Warning>
+
+## Crawl Settings
+The `crawl` object accepts the following fields:
+
+| Field | Required | Description |
+| ----- | -------- | ----------- |
+| `startUrls` | Yes | The pages to start from. Use full URLs, including `https://`. For sites protected by basic auth, include the credentials in the URL. |
+| `maxDepth` | No | How many link levels to follow. `1` crawls only `startUrls`. Defaults to `3`. |
+| `maxDocuments` | No | The maximum number of documents to ingest. Defaults to `200`, which is also the maximum. |
+| `maxDocumentBytes` | No | Pages and files larger than this are skipped. Can't exceed 10 MB (`10485760`). |
+| `relevantDocumentTypes` | No | Which MIME types to keep, as `include` and `exclude` lists. If not set, Ultravox keeps the types known to be useful. |
+
+For example, to skip PDFs, set `relevantDocumentTypes` to:
+
+```json
+{
+  "exclude": { "mimeTypes": ["application/pdf"] }
+}
+```
+
+Each entry in `mimeTypes` can be a full MIME type, like `text/html`, or a type without a subtype, like `text`, which matches every `text/*` type.
+
+## Recrawling
+A crawl captures your site as it was when the crawl ran. To pick up changes, or to change the start URLs or depth, use the [Update Corpus Source API](/api-reference/corpora/corpora-sources-patch). Updating `crawl` starts a new crawl and keeps the same source ID.
+
+Your corpus stays queryable during a recrawl, but it may return outdated content until the recrawl finishes. `stats.status` is `SOURCE_STATUS_UPDATING` while it runs.
+
+## Limits
+See the [Overall Limits](/api-reference/corpora/overview#overall-limits) section for details on limits for the number of sources, documents per source, and more.
