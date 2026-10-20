@@ -7,16 +7,16 @@ There are various examples in the [ultravox-examples](https://github.com/fixie-a
 
 ### Development
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+Install the [Mintlify CLI](https://www.npmjs.com/package/min) to preview the documentation changes locally. To install, use the following command
 
 ```
-npm i -g mintlify
+npm i -g mint
 ```
 
 Run the following command at the root of your documentation (where mint.json is)
 
 ```
-mintlify dev
+mint dev
 ```
 
 ### Publishing Changes
@@ -25,5 +25,5 @@ Install our Github App to auto propagate changes from your repo to your deployme
 
 #### Troubleshooting
 
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
+- Mintlify dev isn't running - Run `mint install` it'll re-install dependencies.
 - Page loads as a 404 - Make sure you are running in a folder with `mint.json`

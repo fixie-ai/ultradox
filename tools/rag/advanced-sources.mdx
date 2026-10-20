@@ -1,0 +1,118 @@
+---
+title: 'Advanced Sources'
+description: 'Control exactly which document is returned for which queries.'
+icon: 'sliders'
+---
+
+An advanced source is a corpus source type that gives you full control over chunking and representative query selection. Crawl and upload sources chunk and embed your content automatically. With an advanced source, you decide which whole document comes back for which kinds of queries.
+
+## How It Works
+
+You provide:
+1. **Your documents**, uploaded with the [corpus file upload endpoint](/api-reference/corpora/corpora-uploads-post).
+2. **Example queries** for each document: up to 10 per document, each up to 400 characters.
+
+Only the example queries are embedded. When your agent queries the corpus, Ultravox compares the query with your example queries using vector similarity. On a match, **the entire document is returned**, exactly as you uploaded it.
+
+| | Crawl and upload sources | Advanced source |
+|---|---|---|
+| **Chunking** | Automatic | You do it (each document is one chunk) |
+| **Embedding** | Document content | Your example queries only |
+| **What's returned** | Relevant chunks | The full matching document |
+| **Setup** | Low | Higher |
+
+## When to Use an Advanced Source
+
+Advanced sources work best when:
+- **Your content is FAQ-style**: each document is one answer, and the example queries are the questions.
+- **You've already optimized your chunking**, for example with LlamaIndex or LangChain.
+- **You need precise control** over what gets returned for specific queries, such as returning one product's record when the caller asks about that product.
+- **Your documents are focused** and self-contained, not large multi-topic files.
+
+<Warning>
+Avoid advanced sources for large documents such as multi-page PDFs or long articles. The whole document is returned on every match, and an 8,000-token document can slow your agent down. For general knowledge bases, or if you're just getting started, use [crawl](/tools/rag/crawling-websites) or [upload](/tools/rag/using-static-documents) sources first.
+</Warning>
+
+## Creating an Advanced Source
+
+<Steps>
+  <Step title="Request an upload URL">
+    ```bash
+    POST /api/corpora/{corpus_id}/uploads
+    Content-Type: application/json
+
+    {
+      "fileName": "faq.txt",
+      "mimeType": "text/plain"
+    }
+    ```
+
+    The response contains a `documentId` and a `presignedUrl`:
+
+    ```json
+    {
+      "documentId": "doc_abc123",
+      "presignedUrl": "https://..."
+    }
+    ```
+  </Step>
+  <Step title="Upload the file content">
+    ```bash
+    PUT <presignedUrl>
+    Content-Type: text/plain
+
+    [Your file content here]
+    ```
+
+    Text (and `application/json`) documents are returned exactly as uploaded. PDFs are converted to text.
+  </Step>
+  <Step title="Create the advanced source">
+    Call [Create Corpus Source](/api-reference/corpora/corpora-sources-post) with the document IDs and the example queries for each:
+
+    ```json
+    {
+      "name": "FAQ Knowledge Base",
+      "advanced": {
+        "documents": [
+          {
+            "documentId": "doc_abc123",
+            "exampleQueries": [
+              "How do I reset my password?",
+              "What are the password requirements?",
+              "I forgot my login credentials"
+            ]
+          },
+          {
+            "documentId": "doc_def456",
+            "exampleQueries": [
+              "What payment methods do you accept?",
+              "Can I pay with PayPal?",
+              "How do I update my billing information?"
+            ]
+          }
+        ]
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Example Query Requirements
+
+Each example query must:
+- be 1–400 characters long;
+- contain actual content (no empty or whitespace-only queries);
+- contain no null bytes;
+- be distinct from the other queries for the same document.
+
+<Tip>
+Generic or overly similar example queries can give unpredictable results. Make each query specific, so the right document is returned.
+</Tip>
+
+## Limits
+
+- **10 example queries** per document
+- **400 characters** per query
+- **200 documents** per source (the same as other source types)
+- **10 MB** per document (the same as file uploads)
+- No null bytes in uploaded documents
