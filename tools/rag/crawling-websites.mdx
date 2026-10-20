@@ -158,7 +158,7 @@ https://username:password@docs.example.com
 <Warning>Credentials in a start URL are saved with the source. Anyone who can view your sources in the web app or API can see them, and they can also show up in the `publicUrl` of crawled documents. Use a dedicated, read-only account.</Warning>
 
 ## Crawl Settings
-The `crawl` object accepts the following fields:
+The primary fields the `crawl` object accepts are as follows:
 
 | Field | Required | Description |
 | ----- | -------- | ----------- |
@@ -166,17 +166,6 @@ The `crawl` object accepts the following fields:
 | `maxDepth` | No | How many link levels to follow. `1` crawls only `startUrls`. Defaults to `3`. |
 | `maxDocuments` | No | The maximum number of documents to ingest. Defaults to `200`, which is also the maximum. |
 | `maxDocumentBytes` | No | Pages and files larger than this are skipped. Can't exceed 10 MB (`10485760`). |
-| `relevantDocumentTypes` | No | Which MIME types to keep, as `include` and `exclude` lists. If not set, Ultravox keeps the types known to be useful. |
-
-For example, to skip PDFs, set `relevantDocumentTypes` to:
-
-```json
-{
-  "exclude": { "mimeTypes": ["application/pdf"] }
-}
-```
-
-Each entry in `mimeTypes` can be a full MIME type, like `text/html`, or a type without a subtype, like `text`, which matches every `text/*` type.
 
 ## Recrawling
 A crawl captures your site as it was when the crawl ran. To pick up changes, or to change the start URLs or depth, use the [Update Corpus Source API](/api-reference/corpora/corpora-sources-patch). Updating `crawl` starts a new crawl and keeps the same source ID.
