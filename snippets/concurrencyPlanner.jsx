@@ -359,9 +359,10 @@ export const ConcurrencyPlanner = () => {
     return { samples, seen };
   }
 
-  const DATA = {"payg_cap": 5, "pro_typical": [15, 25], "contact_sales": "https://inworld.ai/contact-sales?utm_source=ultravox&utm_medium=docs"};
+  const DATA = {"payg_cap": 5, "pro_typical": [15, 25], "standard_tokens": 8192, "contact_sales": "https://inworld.ai/contact-sales?utm_source=ultravox&utm_medium=docs"};
   const CAP = DATA.payg_cap;
   const PRO = DATA.pro_typical; // what Pro typically gets at once; not guaranteed
+  const TOKENS = DATA.standard_tokens; // prompt tokens in a standard call, the size one priority slot covers
   const SALES = DATA.contact_sales;
   const OCS_URL = "/telephony/outbound-call-scheduler";
 
@@ -525,7 +526,7 @@ export const ConcurrencyPlanner = () => {
       {STATUS[kind].label}
     </span>
   );
-  const proNote = `No hard cap, but Pro concurrency isn't guaranteed: it depends on system load, and Pro accounts typically get ${PRO[0]}–${PRO[1]} calls at once.`;
+  const proNote = `No hard cap, but Pro concurrency isn't guaranteed: it depends on system load, and Pro accounts with typical prompts get ${PRO[0]}–${PRO[1]} calls at once; bigger prompts get fewer.`;
   const proText = pro === "fits" ? `${proNote} Your ${plural(plan, "concurrency slot")} fit within that.`
     : pro === "tight" ? `${proNote} Your ${plural(plan, "concurrency slot")} are near the top of that, so you may run short at busy times. For guaranteed capacity, look at Enterprise.`
       : `${proNote} You need ${plural(plan, "concurrency slot")}, more than that. For guaranteed capacity, look at Enterprise.`;
@@ -579,6 +580,8 @@ export const ConcurrencyPlanner = () => {
               <span className="text-xl font-semibold">concurrency slots</span>
             </div>
             <div className={muted}>99% service level: room for 99 in 100 calls in your busy hour. One slot is room for one call at a time.</div>
+            <div className={`${muted} mt-1`}>Sized for standard calls, with prompts up to {fmt(TOKENS)} tokens (your system prompt, tools and the
+              conversation so far). Bigger prompts and long conversations need more.</div>
             <div className={`${muted} mt-1`}>On average, {expectedPhrase} would find all {fmt(plan)} in use.</div>
             <div className={`${muted} mt-1`}>If your busy hour is {RANGE * 100}% quieter or busier: {fmt(lo)}–{fmt(hi)} slots.</div>
           </div>
@@ -718,7 +721,8 @@ export const ConcurrencyPlanner = () => {
           <div className="grid gap-1 py-3 sm:grid-cols-[150px_1fr] sm:gap-4">
             <div><div className="font-semibold">Enterprise</div><div className={muted}>Priority capacity</div></div>
             <div>
-              <div className="text-sm">Reserve your {plural(plan, "concurrency slot")} as guaranteed priority capacity, sized with our team.</div>
+              <div className="text-sm">Reserve your {plural(plan, "concurrency slot")} as guaranteed priority capacity, sized with our team. Each Priority Call Slot
+                covers one standard call. Calls with bigger prompts use more than one slot.</div>
               <a href={SALES} target="_blank" rel="noopener"
                 className="mt-2 inline-block whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white no-underline">Talk to sales</a>
             </div>

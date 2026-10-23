@@ -34,13 +34,17 @@ For customers that have high, sustained load, our enterprise agreements offer [p
 All accounts on a paid subscription enjoy no hard caps on call concurrency. This means not having to worry about paying for concurrency slots that are only needed occasionally for spikes in traffic. If the system is under load and we are unable to fulfill a request to create a call, you may receive a 429 "Too Many Requests" response. See [below](#keeping-the-pipe-full) for more on how to properly handle this.
 
 ### Priority Concurrency
-Enterprise customers can get priority in the system for an agreed number of concurrent calls ([contact us](https://inworld.ai/contact-sales?utm_source=ultravox&utm_medium=docs) to discuss). This provides peace of mind for high impact inbound calls by ensuring that your most critical voice interactions are always available, even during peak system demand. If we are unable to create a call when an account is below its allotted priority call count, we will return a 503 "Service Unavailable" error. 429s are used if we are unable to fulfill new call requests above an account's priority call limit. See [below](#keeping-the-pipe-full) for more on how to properly handle 429s and 503s in your code.
+Enterprise customers can get priority in the system for an agreed number of concurrent calls ([contact us](https://inworld.ai/contact-sales?utm_source=ultravox&utm_medium=docs) to discuss). This provides peace of mind for high impact inbound calls by ensuring that your most critical voice interactions are always available, even during peak system demand. Each Priority Call Slot covers one standard call, with a prompt of up to 8,192 tokens (your system prompt, tools and the conversation so far). Calls with bigger prompts use more than one slot, so the same slots cover fewer calls. If we are unable to create a call when an account is below its allotted priority call count, we will return a 503 "Service Unavailable" error. 429s are used if we are unable to fulfill new call requests above an account's priority call limit. See [below](#keeping-the-pipe-full) for more on how to properly handle 429s and 503s in your code.
 
 ### Hard Concurrency Caps
 Ultravox Realtime accounts default to a hard cap on call concurrency. Any account not on a monthly or annual subscription has one: five concurrent calls on pay as you go, and two on a free account that hasn't chosen a plan. Any attempt to create additional calls above the hard cap will result in an immediate HTTP 429 "Too Many Requests" response, allowing you to implement proper retry logic and queue management in your application. See [below](#keeping-the-pipe-full) for more on how to properly handle this.
 
 ## Plan Your Concurrency
 Ultravox scales with you, whether you need ten calls at once or tens of thousands. Enter how many calls start in your busy hour and how long they last on average to get a feel for how many concurrency slots to plan for. When you're planning a launch or a campaign, or want capacity reserved for you, [talk to our team](https://inworld.ai/contact-sales?utm_source=ultravox&utm_medium=docs).
+
+<Tip>
+  Prompt size matters on every plan: the bigger your prompts, the fewer calls you can run at once.
+</Tip>
 
 <ConcurrencyPlanner />
 
