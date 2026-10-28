@@ -142,15 +142,16 @@ its generation request will be enqueued and will run once another thread finishe
 to the number of calls that can occur at the same time - it only affects side thread generations within a single call.)
 </Note>
 
-### Filtering Available Tools
+### Changing a Thread's Tools
 
-Use `toolFilter` to restrict which tools a thread can access:
+A thread starts with its parent's tools. Use `toolOverrides` to give it a different set:
 
 ```js
 {
   type: "spawn_thread",
-  toolFilter: {
-    allowedTools: ["searchDatabase", "formatResponse"]  // Only these tools
+  toolOverrides: {
+    remove: ["transferCall"],            // Tools only the UI thread should use
+    add: [{ toolName: "searchDatabase" }] // Tools only this thread should use
   },
   additionalMessages: [
     { type: "user_text_message", text: "Search for recent orders." }
@@ -158,9 +159,20 @@ Use `toolFilter` to restrict which tools a thread can access:
 }
 ```
 
-See the [data message](/apps/datamessages#spawnthread) for filtering details. Note that since threads inherit their parent's
-conversation history, they are also often aware of tools they aren't allowed to use. If the model attempts to call a filtered tool,
-it will immediately get a response indicating the tool is unavailable so it can start a new generation while adjusting accordingly.
+`toolOverrides` works like the body of an [`update-tools`](/tools/custom/changing-call-state#updating-tools) tool response: removals are
+applied first, and added tools use the same format as `selectedTools` when creating a call. Ultravox tells the thread's model about the
+change before the thread handles its `additionalMessages`. Once running, a thread can change its own tools with `update-tools` responses.
+
+If a removal names a tool the parent doesn't have, the spawn is rejected. Added tools are resolved once the thread starts, so if one
+can't be added (for example, a tool that doesn't exist), the thread terminates with the `invalid_input` cause.
+
+<Note>
+<b>`toolFilter` is deprecated</b>
+
+Earlier versions used `toolFilter` (with `allowedTools` or `disallowedTools`) to restrict a thread's tools, and it still works. Use
+`toolOverrides` instead. A thread may not set both. A filtered thread's model still sees its parent's tool definitions, so if it calls a
+filtered tool, it gets the same error as for a tool that doesn't exist.
+</Note>
 
 ## Thread Communication
 
