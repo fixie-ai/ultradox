@@ -59,10 +59,10 @@ How you send it depends on the tool type:
 
 Things to know about updated tools:
 * **They apply only to the invoking thread.** Other threads keep their own tools. Threads spawned afterward start from their parent's current tools.
-* **They last until the stage ends.** A new [call stage](/agents/call-stages) starts with that stage's tools.
+* **They last until the stage ends.** A new [call stage](/agents/call-stages) starts with that stage's original tools.
 * **The model is told about the change.** Depending on the model, Ultravox either changes the tools in the model's later requests or appends the added tools' definitions and the removed tools' names to the tool result.
 * **Invalid updates change nothing.** If the update can't be applied (for example, an unknown tool, a name collision, or a tool that fails validation), the model gets an error tool result, and the tool message's `errorDetails` explains why.
-* **They're listed with the stage's tools.** [List Call Stage Tools](/api-reference/calls/calls-stages-tools-list) includes tools added this way when you pass `includeRevealed=true`, with `revealedForThreadId` identifying the thread they were added to.
+* **They're listed with the stage's tools.** [List Call Stage Tools](/api-reference/calls/calls-stages-tools-list) includes tools added this way when you pass `includeRevealed=true`, with `revealedForThreadId` identifying the thread they were added to. A tool's `revealedForThreadId` will be `UI` if the tool was added to the main thread.
 
 <Note>
   If a call stage starts with no tools at all, the model may not reliably call tools added later, because it hasn't been shown how to call tools. Give the stage at least one tool, such as the tool that adds the others.
