@@ -404,8 +404,8 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
       "text": "Perform this background task."
     }
   ],
-  "toolFilter": {                     // Optional
-    "allowedTools": ["searchDatabase"]
+  "toolOverrides": {                  // Optional
+    "add": [{ "toolName": "searchDatabase" }]
   },
   "limits": {                         // Optional
     "generationLimit": 5,
@@ -416,7 +416,7 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
 
 **Fields**
 <ResponseField name="newThreadId" type="string">
-  Unique identifier for the new thread. If omitted, an id will be auto-generated.
+  Unique identifier for the new thread. If omitted, an id will be auto-generated. Leading and trailing whitespace is trimmed, and the result may be at most 64 characters. `UI` and `_PARENT` are reserved.
 </ResponseField>
 <ResponseField name="parentThreadId" type="string" default="UI">
   The thread to fork from. Defaults to "UI" (the main conversation). If the referenced thread has failed or doesn't exist, this spawn attempt will be rejected.
@@ -430,8 +430,17 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
 <ResponseField name="additionalMessages" type="array">
   Messages to append to the forked history before the thread starts generating. Each element must be either a [UserTextMessage](#usertextmessage) or [ForcedAgentMessage](#forcedagentmessage). Every ForcedAgentMessage except the last must have known results for each tool call. The last may have unmatched calls, in which case the thread will begin by executing those.
 </ResponseField>
-<ResponseField name="toolFilter" type="object">
-  Restricts which tools the thread can use. Specify either `allowedTools` (allowlist) or `disallowedTools` (blocklist), or both. If both are provided, the allowlist is applied first and then the blocklist is applied to the remaining tools. If neither is specified (or this field is omitted), the thread will be allowed to use all tools.
+<ResponseField name="toolOverrides" type="object">
+  Changes to the parent thread's tools for the new thread. Same format as the `toolOverrides` in an [`update-tools`](/tools/custom/changing-call-state#updating-tools) tool response:
+
+  * `remove` (string[]) → Names of the parent's tools to remove. May not be set together with `removeAll`.
+  * `removeAll` (boolean) → Removes all of the parent's tools.
+  * `add` (object[]) → Tools to add, in the same format as `selectedTools` when creating a call. Removals are applied first.
+
+  Invalid removals reject the spawn. If an added tool can't be resolved, the thread terminates with the `invalid_input` cause. May not be set together with `toolFilter`. See [Changing a Thread's Tools](/agents/threads#changing-a-threads-tools).
+</ResponseField>
+<ResponseField name="toolFilter" type="object" deprecated>
+  Deprecated: use `toolOverrides` instead. Restricts which tools the thread can use. Specify either `allowedTools` (allowlist) or `disallowedTools` (blocklist), or both. If both are provided, the allowlist is applied first and then the blocklist is applied to the remaining tools. If neither is specified (or this field is omitted), the thread will be allowed to use all tools. The thread's model still sees the parent's tool definitions, and calling a filtered tool gets the same error as calling a tool that doesn't exist.
 </ResponseField>
 <ResponseField name="limits" type="object">
   Resource constraints for the thread. Available fields:
@@ -491,6 +500,7 @@ Sent by the server when a thread stops running.
 {
   "type": "thread_terminated",
   "threadId": "my-thread-1",
+  "cause": "limit",
   "reason": "limit reached"
 }
 ```
@@ -499,8 +509,17 @@ Sent by the server when a thread stops running.
 <ResponseField name="threadId" type="string" required>
   The ID of the terminated thread.
 </ResponseField>
+<ResponseField name="cause" type="string" required>
+  The kind of failure that terminated the thread:
+
+  * `limit` → The thread would have exceeded one of its [limits](#spawnthread).
+  * `inference` → The thread's generation failed.
+  * `canceled` → The thread's generation was canceled.
+  * `invalid_input` → Input the thread was spawned with, such as an added tool in `toolOverrides`, turned out to be invalid once the thread resolved it.
+  * `internal` → Something unexpected went wrong.
+</ResponseField>
 <ResponseField name="reason" type="string" required>
-  Why the thread was terminated. Common reasons include: limit reached or cancellation.
+  A human-readable description of why the thread was terminated.
 </ResponseField>
 
 ### SideGenerationDelta
