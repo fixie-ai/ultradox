@@ -46,6 +46,16 @@ Ultravox scales with you, whether you need ten calls at once or tens of thousand
   Prompt size matters on every plan: the bigger your prompts, the fewer calls you can run at once.
 </Tip>
 
+{/*
+  TODO before merging #161: the planner's busy-hour hint says Outbound Call Scheduler campaigns
+  "save room for incoming calls, so you don't need to count them here". That's wrong: scheduler
+  calls use priority slots when available (Ben Lower, 2026-10-29; Alexandria
+  card_uv_concurrency_priority_slots in support-ops). Fix that hint, and check the Assumptions note
+  about scheduling campaigns, in support-ops call-concurrency/web/docs.template.jsx (and the
+  customer and internal pages, plan.py outbound and the README; see that README's Next list),
+  regenerate snippets/concurrencyPlanner.jsx with
+  `python call-concurrency/web/build.py --docs <ultradox>`, then delete this comment.
+*/}
 <ConcurrencyPlanner />
 
 ## Managing Concurrency
