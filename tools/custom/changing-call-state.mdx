@@ -22,7 +22,15 @@ Client and data connection tools should set the responseType field in their tool
 
 ## Updating Tools
 
-An `update-tools` response changes the tools available to the thread that invoked the tool. This lets you start a call with a small set of tools and add more once the conversation needs them, so the model isn't distracted by tools that don't matter yet. It also lets a [background thread](/agents/threads) use tools the main conversation never sees.
+An `update-tools` response changes the tools available to the thread that invoked the tool. Some ways to use it:
+
+* **Large toolsets** → Start with a few broad tools and add the specific tools for whatever the caller needs, so the model isn't distracted by dozens of tools that don't matter yet.
+* **Gated actions** → Add account tools only once a `verifyIdentity` tool succeeds, so the model can't use them before the caller is verified.
+* **Thread-only tools** → Give a [background thread](/agents/threads) tools the main conversation never sees. See [Giving a background thread its own tools](/agents/threads#giving-a-background-thread-its-own-tools).
+
+<Note>
+  If a call stage starts with no tools at all, the model may not reliably call tools added later, because it hasn't been shown how to call tools. Give the stage at least one tool, such as the tool that adds the others.
+</Note>
 
 The response body sets the tools to remove and add:
 
@@ -60,12 +68,7 @@ How you send it depends on the tool type:
 Things to know about updated tools:
 * **They apply only to the invoking thread.** Other threads keep their own tools. Threads spawned afterward start from their parent's current tools.
 * **They last until the stage ends.** A new [call stage](/agents/call-stages) starts with that stage's original tools.
-* **The model is told about the change.** Depending on the model, Ultravox either changes the tools in the model's later requests or appends the added tools' definitions and the removed tools' names to the tool result.
 * **Invalid updates change nothing.** If the update can't be applied (for example, an unknown tool, a name collision, or a tool that fails validation), the model gets an error tool result, and the tool message's `errorDetails` explains why.
 * **They're listed with the stage's tools.** [List Call Stage Tools](/api-reference/calls/calls-stages-tools-list) includes tools added this way when you pass `includeRevealed=true`, with `revealedForThreadId` identifying the thread they were added to. A tool's `revealedForThreadId` will be `UI` if the tool was added to the main thread.
-
-<Note>
-  If a call stage starts with no tools at all, the model may not reliably call tools added later, because it hasn't been shown how to call tools. Give the stage at least one tool, such as the tool that adds the others.
-</Note>
 
 To give a new thread different tools from its parent, use `toolOverrides` when [spawning the thread](/agents/threads#changing-a-threads-tools).
