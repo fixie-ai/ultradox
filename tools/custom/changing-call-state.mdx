@@ -1,11 +1,11 @@
 ---
 title: 'Changing Call State'
-description: 'Learn how to programmatically end calls or transition between call stages using special tool response types.'
+description: 'Learn how to programmatically end calls, transition between call stages, or change the available tools using special tool response types.'
 icon: 'right-left'
 ---
 
 ## Special Tool Response Types
-For most tools, the response will include data you want the model to use (e.g. the results of a lookup). However, Ultravox has support for special tool actions that can end the call, change the call stage, or communicate with another thread.
+For most tools, the response will include data you want the model to use (e.g. the results of a lookup). However, Ultravox has support for special tool actions that can end the call, change the call stage, change which tools are available, or communicate with another thread.
 
 These tool actions require setting a special response type.
 
@@ -13,8 +13,62 @@ These tool actions require setting a special response type.
 |------|------|
 | hang-up | Terminates the call. In addition to having Ultravox end the call after [periods of user inactivity](/api-reference/calls/overview#inactivitymessages), your custom tool can end the call. |
 | new-stage | Creates a new call stage. See [here](/agents/call-stages) for more. |
+| update-tools | Adds or removes tools for the rest of the current call stage. See [Updating Tools](#updating-tools). |
 | send-to-thread | Sends a message to another thread. See [here](/agents/threads) for more. |
 
 How you set the response type depends on your tool implementation.
 HTTP tools set the response type via the `X-Ultravox-Response-Type` header.
 Client and data connection tools should set the responseType field in their tool result message.
+
+## Updating Tools
+
+An `update-tools` response changes the tools available to the thread that invoked the tool. Some ways to use it:
+
+* **Large toolsets** → Start with a few broad tools and add the specific tools for whatever the caller needs, so the model isn't distracted by dozens of tools that don't matter yet.
+* **Gated actions** → Add account tools only once a `verifyIdentity` tool succeeds, so the model can't use them before the caller is verified.
+* **Thread-only tools** → Give a [background thread](/agents/threads) tools the main conversation never sees. See [Giving a background thread its own tools](/agents/threads#giving-a-background-thread-its-own-tools).
+
+<Note>
+  If a call stage starts with no tools at all, the model may not reliably call tools added later, because it hasn't been shown how to call tools. Give the stage at least one tool, such as the tool that adds the others.
+</Note>
+
+The response body sets the tools to remove and add:
+
+```js
+{
+  "toolOverrides": {
+    "remove": ["findOrder"],
+    "add": [
+      { "toolName": "cancelOrder" },
+      { "toolName": "refundOrder" }
+    ]
+  },
+  // Optional. The tool result the model sees. Defaults to "OK".
+  "toolResultText": "Found order 1234. You can now cancel or refund it."
+}
+```
+
+<ResponseField name="toolOverrides.remove" type="string[]">
+  Names of tools to remove, as the model sees them (`nameOverride` if set, otherwise `modelToolName`). Each must be a tool the thread can currently use. May not be set together with `removeAll`.
+</ResponseField>
+<ResponseField name="toolOverrides.removeAll" type="boolean">
+  If true, removes all of the thread's current tools. May not be set together with `remove`.
+</ResponseField>
+<ResponseField name="toolOverrides.add" type="object[]">
+  Tools to add, in the same format as `selectedTools` when creating a call. Removals are applied first. An added tool may not reuse the name of a tool the thread keeps, so to replace a tool, remove it and add the new one in the same response.
+</ResponseField>
+<ResponseField name="toolResultText" type="string" default="OK">
+  The text the model sees as this tool call's result.
+</ResponseField>
+
+How you send it depends on the tool type:
+* For HTTP tools, return the body as JSON and set the `X-Ultravox-Response-Type` header to `update-tools`.
+* For client and data connection tools, set `responseType` to `update-tools` and send the body as the JSON-encoded `result`.
+
+Things to know about updated tools:
+* **They apply only to the invoking thread.** Other threads keep their own tools. Threads spawned afterward start from their parent's current tools.
+* **They last until the stage ends.** A new [call stage](/agents/call-stages) starts with that stage's original tools.
+* **Invalid updates change nothing.** If the update can't be applied (for example, an unknown tool, a name collision, or a tool that fails validation), the model gets an error tool result, and the tool message's `errorDetails` explains why.
+* **They're listed with the stage's tools.** [List Call Stage Tools](/api-reference/calls/calls-stages-tools-list) includes tools added this way when you pass `includeRevealed=true`, with `revealedForThreadId` identifying the thread they were added to. A tool's `revealedForThreadId` will be `UI` if the tool was added to the main thread.
+
+To give a new thread different tools from its parent, use `toolOverrides` when [spawning the thread](/agents/threads#changing-a-threads-tools).

@@ -142,15 +142,16 @@ its generation request will be enqueued and will run once another thread finishe
 to the number of calls that can occur at the same time - it only affects side thread generations within a single call.)
 </Note>
 
-### Filtering Available Tools
+### Changing a Thread's Tools
 
-Use `toolFilter` to restrict which tools a thread can access:
+A thread starts with its parent's tools. Use `toolOverrides` to give it a different set:
 
 ```js
 {
   type: "spawn_thread",
-  toolFilter: {
-    allowedTools: ["searchDatabase", "formatResponse"]  // Only these tools
+  toolOverrides: {
+    remove: ["transferCall"],            // Tools only the UI thread should use
+    add: [{ toolName: "searchDatabase" }] // Tools only this thread should use
   },
   additionalMessages: [
     { type: "user_text_message", text: "Search for recent orders." }
@@ -158,9 +159,23 @@ Use `toolFilter` to restrict which tools a thread can access:
 }
 ```
 
-See the [data message](/apps/datamessages#spawnthread) for filtering details. Note that since threads inherit their parent's
-conversation history, they are also often aware of tools they aren't allowed to use. If the model attempts to call a filtered tool,
-it will immediately get a response indicating the tool is unavailable so it can start a new generation while adjusting accordingly.
+`toolOverrides` works like the body of an [`update-tools`](/tools/custom/changing-call-state#updating-tools) tool response: removals are
+applied first, and added tools use the same format as `selectedTools` when creating a call. Ultravox tells the thread's model about the
+change before the thread handles its `additionalMessages`. Once running, a thread can change its own tools with `update-tools` responses.
+
+A thread never runs without the tools you asked for, so you aren't billed for generations that can't do what you spawned it for. If a
+removal names a tool the parent doesn't have, the spawn is rejected. Added tools are resolved once the thread starts, so if one can't be
+added (for example, a tool that doesn't exist), the thread terminates with the `invalid_input` cause before it generates anything.
+
+See [Giving a background thread its own tools](#giving-a-background-thread-its-own-tools) for an example.
+
+<Note>
+<b>`toolFilter` is deprecated</b>
+
+Earlier versions used `toolFilter` (with `allowedTools` or `disallowedTools`) to restrict a thread's tools, and it still works. Use
+`toolOverrides` instead. A thread may not set both. A filtered thread's model still sees its parent's tool definitions, so if it calls a
+filtered tool, it gets the same error as for a tool that doesn't exist.
+</Note>
 
 ## Thread Communication
 
@@ -421,6 +436,48 @@ respond with `send-to-thread` and a `ForcedAgentMessage` with the relevant tool 
 
 The same pattern may be used to force the agent to speak a particular message or perform other actions that need to be synchronized
 on the UI thread, such as transfering the call or starting a stage change.
+
+### Giving a background thread its own tools
+
+Suppose your agent can issue refunds, which takes a few slow back-office calls. You want the work to happen in the background, and you
+don't want the main conversation to be able to issue a refund directly. Give the UI thread a `startRefund` tool that spawns a thread with
+the refund tools instead of the conversation tools:
+
+```js
+{
+  "type": "client_tool_result",
+  "invocationId": "matching-invocation-id",
+  "result": JSON.stringify({
+    "callingThreadResultText": "Refund started. The result will be added once it's ready.",
+    "dataMessage": {
+      "type": "spawn_thread",
+      "toolOverrides": {
+        "removeAll": true, // The thread doesn't need the conversation's tools.
+        "add": [
+          { "toolName": "lookupOrder" },
+          { "toolName": "issueRefund" },
+          { "toolName": "reportRefundResult" }
+        ]
+      },
+      "additionalMessages": [
+        {
+          "type": "user_text_message",
+          "text": "Check that the order the user described is eligible for a refund and issue the refund if it is. Then call reportRefundResult with the outcome."
+        }
+      ]
+    }
+  }),
+  "responseType": "send-to-thread",
+  "agentReaction": "speaks"
+}
+```
+
+The UI thread's model never sees `issueRefund`, so it can't skip the eligibility check by calling it directly. The refund thread only has
+the refund tools, so it stays on task. `reportRefundResult` responds with `send-to-thread` to tell the UI thread
+the outcome, as in [Moving a tool to a background thread](#moving-a-tool-to-a-background-thread).
+
+Tools can also change after a thread starts. For example, `lookupOrder` could respond with [`update-tools`](/tools/custom/changing-call-state#updating-tools)
+to add `issueRefund` only once it finds an eligible order.
 
 ### Having a thread re-sync conversation state following a tool call
 
