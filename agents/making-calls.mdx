@@ -161,9 +161,9 @@ const startDirectCall = async () => {
 };
 ```
 
-### Prior Call Inheritance
+### Continuing a Prior Call
 
-You can reuse the same properties (including message history) from a prior call by passing in a query param:
+To continue a conversation from an earlier call, pass the earlier call's ID in the `priorCallId` query param. The prior call's message history becomes the new call's `initialMessages`, so you can't also set `initialMessages`. Everything else about the new call comes from the request body, just as if you were creating the call from scratch.
 
 ```js Example: Using Prior Call ID
 const continueFromPriorCall = async (priorCallId) => {
@@ -174,8 +174,9 @@ const continueFromPriorCall = async (priorCallId) => {
       'X-API-Key': 'your-api-key'
     },
     body: JSON.stringify({
-      // Only override what you need to change
+      // priorCallId only carries over message history, so configure the call fully.
       systemPrompt: "Continue the previous conversation with updated context...",
+      voice: "Mark",
       metadata: {
         continuation: "true",
         originalCall: priorCallId
@@ -187,9 +188,9 @@ const continueFromPriorCall = async (priorCallId) => {
 };
 ```
 
-<Note>
-  When using `priorCallId`, the new call inherits all properties from the prior call unless explicitly overridden. The prior call's message history becomes the new call's `initialMessages`. If the new call sets a `mediumRestriction`, inherited settings that conflict with it (such as recording) are dropped instead of causing an error, and an inherited telephony medium becomes WebRTC.
-</Note>
+<Warning>
+  Until December 7, 2026, the new call also inherits some fields from the prior call when the request doesn't set them: `model`, `systemPrompt`, `temperature`, `voice`, `languageHint`, `timeExceededMessage`, `inactivityMessages`, `selectedTools`, `firstSpeakerSettings`, `joinTimeout`, `maxDuration`, `medium`, `recordingEnabled`, `transcriptOptional`, `initialOutputMedium`, `vadSettings`, `experimentalSettings`, and `sharedSecrets`. A call that inherits any of them gets a warning-level `call_creation.prior_call_inheritance` [call event](/api-reference/calls/calls-events-list) listing the inherited fields. Set those fields explicitly in your request to keep their current values after December 7.
+</Warning>
 
 ## Next Steps
 
