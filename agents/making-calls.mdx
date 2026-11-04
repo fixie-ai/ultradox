@@ -189,7 +189,7 @@ const continueFromPriorCall = async (priorCallId) => {
 ```
 
 <Warning>
-  Until December 7, 2026, the new call also inherits some fields from the prior call when the request doesn't set them: `model`, `systemPrompt`, `temperature`, `voice`, `languageHint`, `timeExceededMessage`, `inactivityMessages`, `selectedTools`, `firstSpeakerSettings`, `joinTimeout`, `maxDuration`, `medium`, `recordingEnabled`, `transcriptOptional`, `initialOutputMedium`, `vadSettings`, `experimentalSettings`, and `sharedSecrets`. A call that inherits any of them gets a warning-level `call_creation.prior_call_inheritance` [call event](/api-reference/calls/calls-events-list) listing the inherited fields. Set those fields explicitly in your request to keep their current values after December 7.
+  Until December 7, 2026, the new call also inherits some fields from the prior call when the request doesn't set them: `model`, `systemPrompt`, `temperature`, `voice`, `languageHint`, `timeExceededMessage`, `inactivityMessages`, `selectedTools`, `firstSpeakerSettings`, `joinTimeout`, `maxDuration`, `medium`, `recordingEnabled`, `initialOutputMedium`, `vadSettings`, `experimentalSettings`, and `sharedSecrets`. A call that inherits any of them gets a warning-level `call_creation.prior_call_inheritance` [call event](/api-reference/calls/calls-events-list) listing the inherited fields. Set those fields explicitly in your request to keep their current values after December 7.
 </Warning>
 
 ## Next Steps
