@@ -100,7 +100,7 @@ Let's look at how we could add inactivity messages to a call.
 
 
 ### initialMessages
-When creating a new call or a new call stage, you can provide messages to the agent via `initialMessages`. By default, new calls don't have initial messages and call stages inherit the prior stage's messages. New calls will inherit messages if `priorCallId` is set.
+When creating a new call or a new call stage, you can provide messages to the agent via `initialMessages`. By default, new calls don't have initial messages and call stages inherit the prior stage's messages. New calls created with `priorCallId` start with the prior call's messages and can't also set `initialMessages`.
 
 These messages can serve the purpose of giving the agent call history or to give examples for few-shotting (e.g. if you want the agent to learn how to respond in a specific way to user input).
 
