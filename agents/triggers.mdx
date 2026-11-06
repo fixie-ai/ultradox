@@ -81,6 +81,10 @@ Each trigger has:
 Triggers run shortly after their events, in the order the events occur. Their actions may interleave with other activity in the
 call, so don't rely on a trigger's message arriving before or after any other particular message.
 
+When several triggers run for the same event, they run one after another in the order the call lists them, as shown by
+[List Call Triggers](/api-reference/calls/calls-triggers-list). In an agent's call, that's the agent's triggers followed by any
+added with [`triggerOverrides`](#overriding-an-agents-triggers).
+
 A trigger's local variables and the call's timers last for the rest of the call. Triggers stop running when the call ends.
 
 ## Events
