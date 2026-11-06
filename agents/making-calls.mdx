@@ -64,6 +64,7 @@ When starting a call with an agent, you can override specific settings from the 
 | `mediumRestriction`    | Limit the call to voice or text     | Object  | `{ allowedMediums: ["MESSAGE_MEDIUM_TEXT"] }` |
 | `firstSpeakerSettings` | Initial conversation behavior       | Object  | `{ agent: { text: "..." } }` |
 | `experimentalSettings` | Experimental settings for the call  | Object  | Varies                       |
+| `triggerOverrides`     | Changes to the agent's [triggers](/agents/triggers#overriding-an-agents-triggers) | Object | `{ remove: ["nudge"] }` |
 
 Example of overriding agent settings when creating a call:
 

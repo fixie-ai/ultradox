@@ -1,0 +1,9 @@
+---
+openapi: put /api/triggers/{trigger_id}
+title: "Update Trigger"
+description: "Replaces an existing trigger"
+---
+
+Updating a single field in a trigger is not supported. The entire trigger definition must be provided.
+
+Agents that use the trigger are updated too. If the change would make any agent's triggers invalid, the update fails with a 409 and nothing changes. Calls that have already been created keep the version they started with.

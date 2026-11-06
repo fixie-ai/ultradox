@@ -1,0 +1,396 @@
+---
+title: 'Triggers'
+description: 'Send data messages into a call automatically when something happens in it.'
+icon: 'bolt'
+---
+
+Triggers are rules that run inside a call. When an event occurs, such as a [data message](/apps/datamessages) from the server or a
+timer firing, each trigger listening for it checks its condition and, if the condition is met, runs its actions. Actions can send
+data messages into the call, update the trigger's own variables, and start or cancel timers.
+
+Because triggers run on Ultravox's servers, they react to the call without a client or data connection having to watch for
+events and respond.
+
+<Note>
+  <b>Advanced Feature</b>
+
+  Triggers send the same data messages a client can. **Make sure you're comfortable with [Data Messages](/apps/datamessages)
+  before diving in**, and with [Threads](/agents/threads) if your triggers work with them.
+</Note>
+
+## When to Use Triggers
+
+**Nudging a Quiet User** → Start a timer when the agent finishes speaking and have the agent check in if the user hasn't said
+anything when it fires.
+
+**Returning Thread Results** → When a background thread finishes its work, send its result to the thread that spawned it.
+
+**Reacting to What's Said** → Watch transcripts and spawn a thread or send a message when a condition is met.
+
+## Defining a Trigger
+
+These two triggers check in with the user if they've been quiet for 30 seconds, at most twice per call. The first starts and
+cancels a timer as the call's state changes, and the second speaks when the timer fires.
+
+```js
+{
+  "triggers": [
+    {
+      "temporaryTrigger": {
+        "name": "watch_silence",
+        "event": { "dataMessage": "state" },
+        "actions": [
+          {
+            "ternary": {
+              "condition": { "property": "event.state", "operator": "OPERATOR_EQ", "value": "listening" },
+              "whenTrue": [{ "startTimer": { "name": "silence", "delay": "30s" } }],
+              "whenFalse": [{ "cancelTimer": { "name": "silence" } }]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "temporaryTrigger": {
+        "name": "nudge",
+        "event": { "timer": "silence" },
+        "localVariables": { "nudges": 0 },
+        "condition": { "property": "local.nudges", "operator": "OPERATOR_LT", "value": 2 },
+        "actions": [
+          { "incrementLocalVariable": { "name": "nudges" } },
+          { "dataMessage": { "type": "forced_agent_message", "content": "Are you still there?" } }
+        ]
+      }
+    }
+  ]
+}
+```
+
+Each trigger has:
+
+* **`name`** → Identifies the trigger in call events and in [`triggerOverrides`](#overriding-an-agents-triggers). Names are 1-64
+  letters, digits, or underscores, unique among the call's triggers.
+* **`event`** → What causes the trigger to run. See [Events](#events).
+* **`condition`** → Optional. Filters events, so the actions only run when it's met. See [Conditions](#conditions).
+* **`actions`** → What the trigger does, in order. See [Actions](#actions).
+* **`localVariables`** → Optional. Variables only this trigger can read and write, with their initial values. See
+  [Local Variables](#local-variables).
+
+## How Triggers Run
+
+Triggers run shortly after their events, in the order the events occur. Their actions may interleave with other activity in the
+call, so don't rely on a trigger's message arriving before or after any other particular message.
+
+A trigger's local variables and the call's timers last for the rest of the call. Triggers stop running when the call ends.
+
+## Events
+
+A trigger's `event` sets either `dataMessage` or `timer`.
+
+### Data Messages
+
+`dataMessage` is the type of a server data message, as in the message's `type` field (for example `user_started_speaking`,
+not `userStartedSpeaking`). The trigger runs each time the server produces a message of that type, whether or not any client
+receives it, so there's no need to enable a message for your triggers. These types may be used:
+
+`call_started`, `call_event`, `client_tool_invocation`, `data_connection_tool_invocation`, `debug`, `invoking_tool`,
+`playback_clear_buffer`, `pong`, `side_generation_completed`, `side_generation_delta`, `state`, `thread_rejected`,
+`thread_spawned`, `thread_state`, `thread_terminated`, `tool_used`, `transcript`, `user_started_speaking`, and
+`user_stopped_speaking`.
+
+The event's properties are the message's fields, such as `event.role` and `event.final` for a [`transcript`](/apps/datamessages#transcript)
+or `event.state` for a [`state`](/apps/datamessages#state) message.
+
+### Timers
+
+`timer` is the name of a timer, which runs the trigger each time it fires. Timer names are 1-64 letters, digits, or underscores.
+Only one trigger may listen for each timer, but any trigger can [start or cancel it](#starting-and-canceling-timers).
+
+A timer event's only property is `forwardedEvent`: the event of the trigger run that started the timer. If that run was itself for a
+timer, it's that timer's `forwardedEvent` instead, so a timer that restarts itself keeps forwarding the event that started the chain.
+
+## Conditions
+
+A condition is either simple or complex.
+
+A **simple condition** compares a `property` to a `value`:
+
+```js
+{ "property": "event.role", "operator": "OPERATOR_EQ", "value": "user" }
+```
+
+A **complex condition** combines child `conditions`:
+
+```js
+{
+  "operator": "OPERATOR_AND",
+  "conditions": [
+    { "property": "event.role", "operator": "OPERATOR_EQ", "value": "user" },
+    { "property": "event.final", "operator": "OPERATOR_EQ", "value": true }
+  ]
+}
+```
+
+### Operators
+
+| Operator | Kind | Met when |
+| -------- | ---- | -------- |
+| `OPERATOR_EQ` | Simple | The property equals the value. Values of different types are never equal (for example `true` and `1`). A `null` value matches a null or missing property. |
+| `OPERATOR_NEQ` | Simple | The property doesn't equal the value. |
+| `OPERATOR_LT`, `OPERATOR_LTE`, `OPERATOR_GT`, `OPERATOR_GTE` | Simple | The property is less than, at most, greater than, or at least the value. The value must be a number. |
+| `OPERATOR_AND` | Complex | Every child is met. Children are evaluated in order, stopping at the first that isn't met, so earlier children can guard later ones (for example by checking a property isn't null before comparing it to a number). |
+| `OPERATOR_OR` | Complex | At least one child is met. Children are evaluated in order, stopping at the first that is met. |
+| `OPERATOR_XOR` | Complex | Exactly one child is met. Every child is evaluated. |
+
+If a comparison like `OPERATOR_LT` finds a property that isn't a number, that run of the trigger stops. See
+[Errors](#errors).
+
+### Properties
+
+A property is a dotted path in one of three scopes:
+
+* **`event`** → The event's properties, such as `event.text` or `event.metadata.role`.
+* **`local`** → The trigger's [local variables](#local-variables), such as `local.nudges`.
+* **`global`** → State the call has reported so far:
+  * `global.callState` → The `state` of the call's latest [`state`](/apps/datamessages#state) message, or null before the first.
+  * `global.threadState` → The `state` of a thread's latest [`thread_state`](/apps/datamessages#threadstate) message, or null if the
+    thread hasn't reported one or has terminated. Takes a `threadId` argument in `propertyArguments`.
+
+Arguments in `propertyArguments` are [templates](#templates), so they can refer to the event or local variables:
+
+```js
+{
+  "property": "global.threadState",
+  "propertyArguments": { "threadId": "{{event.threadId}}" },
+  "operator": "OPERATOR_NEQ",
+  "value": "idle"
+}
+```
+
+## Actions
+
+A trigger has at least one action. Its actions run in order.
+
+### Sending Data Messages
+
+`dataMessage` sends a data message into the call. Triggers can send these message types:
+
+* [`user_text_message`](/apps/datamessages#usertextmessage)
+* [`forced_agent_message`](/apps/datamessages#forcedagentmessage)
+* [`spawn_thread`](/apps/datamessages#spawnthread)
+
+The message is handled as if your server had sent it to the call, so it can target a thread with `threadId` (or
+`parentThreadId` for `spawn_thread`). String values in the message are [templates](#templates); its `type` can't be templated.
+
+```js
+{
+  "dataMessage": {
+    "type": "user_text_message",
+    "text": "The user said: {{event.text}}",
+    "urgency": "later"
+  }
+}
+```
+
+### Ternaries
+
+`ternary` runs one list of actions or the other depending on a [condition](#conditions). At least one of `whenTrue` and `whenFalse`
+must have actions.
+
+```js
+{
+  "ternary": {
+    "condition": { "property": "local.nudges", "operator": "OPERATOR_LT", "value": 2 },
+    "whenTrue": [{ "dataMessage": { "type": "forced_agent_message", "content": "Are you still there?" } }],
+    "whenFalse": [{ "dataMessage": { "type": "forced_agent_message", "content": "I'll be here when you're ready." } }]
+  }
+}
+```
+
+### Local Variables
+
+A trigger declares its local variables in `localVariables`, by name, with their initial values. Names are letters, digits, or
+underscores, and may not start with a digit. Each variable keeps the type of its initial value, which must be a string, number, or
+boolean. Values persist across the trigger's runs for the rest of the call. Only the trigger that declares a variable can read or
+change it.
+
+* `setLocalVariable` → Sets a variable to a value of its type. String values are [templates](#templates).
+* `incrementLocalVariable` → Adds `value` (1 by default, and possibly negative) to a number variable.
+
+```js
+{ "setLocalVariable": { "name": "lastTopic", "value": "{{event.text}}" } }
+```
+
+String values are limited to 32,768 characters. If `setLocalVariable` renders a longer string, it's truncated, and a
+`trigger.truncated` call event is recorded.
+
+### Starting and Canceling Timers
+
+* `startTimer` → Starts the timer called `name`, firing after `delay` (at least `"10s"`). Starting a timer that's already running
+  restarts it. Starting a timer that no trigger listens for does nothing.
+* `cancelTimer` → Stops the timer called `name` from firing. Does nothing if it isn't running.
+
+Timers last until they fire, are canceled, or the call ends. To fire repeatedly, a timer's trigger can restart it.
+
+### Templates
+
+Templated strings use [Mustache](https://mustache.github.io/mustache.5.html) syntax and are rendered against the event and the
+trigger's local variables, for example `{{event.text}}` or `{{local.nudges}}`. They aren't HTML-escaped. Sections such as
+`{{#event.metadata}}...{{/event.metadata}}` work as usual, but partials aren't supported, and a template can only refer to local
+variables the trigger declares.
+
+## Using Triggers
+
+### In Calls
+
+Set `triggers` when [creating a call](/api-reference/calls/calls-post). Each entry selects one trigger, as one of:
+
+* `temporaryTrigger` → A trigger defined only for this call.
+* `triggerId` → The ID of a [global trigger](#global-triggers).
+* `triggerName` → The name of a global trigger.
+
+```js
+{
+  "systemPrompt": "You are a helpful assistant...",
+  "triggers": [
+    { "triggerName": "nudge_on_silence" },
+    { "temporaryTrigger": { /* trigger definition */ } }
+  ]
+}
+```
+
+### In Agents
+
+Set `triggers` in an agent's `callTemplate` to give every call to the agent the same triggers. Updating the agent's `callTemplate`
+replaces its triggers.
+
+### Overriding an Agent's Triggers
+
+When [creating a call with an agent](/api-reference/agents/agents-calls-post), `triggerOverrides` changes the agent's triggers for
+that call:
+
+* `remove` → Names of the agent's triggers to remove.
+* `removeAll` → If true, removes all of the agent's triggers. May not be set together with `remove`.
+* `add` → Triggers to add, selected as in `triggers`.
+
+The call's triggers are the agent's, in their order and without those removed, followed by those added. An added trigger may not
+have the same name as one of the agent's that remains, so to replace one of the agent's triggers, remove it and add the new one.
+
+```js
+{
+  "triggerOverrides": {
+    "remove": ["nudge"],
+    "add": [{ "temporaryTrigger": { "name": "nudge", /* a gentler nudge */ } }]
+  }
+}
+```
+
+### Listing a Call's Triggers
+
+[List Call Triggers](/api-reference/calls/calls-triggers-list) returns a call's triggers, in order, as they were when the call was
+created. Each one's `triggerId` is the ID of the global trigger it was selected from, or null if it was defined in the call or
+agent itself.
+
+## Global Triggers
+
+Global triggers are defined once and selected by many calls and agents. Create one with the
+[Triggers API](/api-reference/triggers/triggers-post):
+
+```bash
+curl -X POST "https://api.ultravox.ai/api/triggers" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
+  -d '{
+    "trigger": {
+      "name": "nudge_on_silence",
+      "event": { "timer": "silence" },
+      "actions": [
+        { "dataMessage": { "type": "forced_agent_message", "content": "Are you still there?" } }
+      ]
+    }
+  }'
+```
+
+Then select it by `triggerId` or `triggerName`. A trigger's name is unique among your account's triggers.
+
+* **Calls** use the trigger as it is when the call is created. Later changes to it don't affect the call.
+* **Agents** use its latest version. Updating a global trigger updates the agents that use it. If the change would make any
+  agent's triggers invalid, for example by giving it the name of another of that agent's triggers, the update fails with a 409
+  and nothing changes.
+* **Deleting** a global trigger fails with a 409 while any agent uses it.
+
+[Updating a trigger](/api-reference/triggers/triggers-put) replaces its whole definition.
+
+### Public Triggers
+
+Your account can also see and select public triggers, whose `ownership` is `public`. They can't be updated or deleted. When
+selecting by name, your account's own trigger takes precedence over a public one with the same name.
+
+## Limits
+
+| Limit | Value |
+| ----- | ----- |
+| Triggers per call, counting an agent's and those added | 10 |
+| Actions per trigger, counting those within ternaries | 10 |
+| Conditions per trigger, counting every child and those of ternaries | 20 |
+| Local variables per trigger | 10 |
+| Characters in a local variable's string value | 32,768 |
+| Timer delay | At least 10 seconds |
+
+## Errors
+
+Ultravox checks triggers when you create a call, an agent, or a global trigger, and responds with a 400 describing each problem,
+labeled with the trigger's name (for example `Trigger 'nudge': A trigger must have at least one action.`).
+
+Some problems only show up while the call runs. These are recorded as [call events](/api-reference/calls/calls-events-list):
+
+* `trigger.failed` → A condition couldn't be evaluated, for example because `OPERATOR_GT` found a property that wasn't a number.
+  That run of the trigger stops. A trigger that fails three runs in a row is dropped for the rest of the call.
+* `trigger.action_failed` → An action failed, for example because its data message was invalid once rendered. The trigger's other
+  actions still run.
+* `trigger.truncated` → A local variable's string was truncated to 32,768 characters.
+
+Each event's `trigger_name` extra names the trigger.
+
+## Examples
+
+### Returning a thread's result to its parent
+
+A [thread](/agents/threads) spawned with `"metadata": { "role": "delegate" }` reports its result back to the thread that spawned
+it the first time it finishes its work:
+
+```js
+{
+  "name": "return_to_parent",
+  "event": { "dataMessage": "thread_state" },
+  "condition": {
+    "operator": "OPERATOR_AND",
+    "conditions": [
+      { "property": "event.state", "operator": "OPERATOR_EQ", "value": "idle" },
+      { "property": "event.metadata.role", "operator": "OPERATOR_EQ", "value": "delegate" },
+      { "property": "event.idleCount", "operator": "OPERATOR_EQ", "value": 1 }
+    ]
+  },
+  "actions": [
+    {
+      "dataMessage": {
+        "type": "user_text_message",
+        "threadId": "{{event.parentThreadId}}",
+        "text": "<delegate_result>{{event.lastResponse}}</delegate_result>",
+        "urgency": "immediate"
+      }
+    }
+  ]
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Data Messages Reference" icon="network-wired" href="/apps/datamessages">
+    The messages triggers can listen for and send.
+  </Card>
+  <Card title="Threads" icon="code-branch" href="/agents/threads">
+    Run parallel conversations that triggers can start and follow.
+  </Card>
+</CardGroup>

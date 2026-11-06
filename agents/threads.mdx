@@ -182,6 +182,11 @@ filtered tool, it gets the same error as for a tool that doesn't exist.
 Threads communicate with each other (including the UI thread) through tools. Other participants may communicate
 with threads using data messages.
 
+<Tip>
+  To send a thread's result to its parent automatically when the thread finishes its work, use a
+  [trigger](/agents/triggers#returning-a-threads-result-to-its-parent).
+</Tip>
+
 ### Pushing Messages from one Thread to Another
 
 Tools may return a `send-to-thread` response type, which routes a message to the specified thread. This allows threads to:
