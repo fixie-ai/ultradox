@@ -183,8 +183,9 @@ Threads communicate with each other (including the UI thread) through tools. Oth
 with threads using data messages.
 
 <Tip>
-  To send a thread's result to its parent automatically when the thread finishes its work, use a
-  [trigger](/agents/triggers#returning-a-threads-result-to-its-parent).
+  To send each thread's result to its parent automatically when the thread finishes its work, select the public
+  `nudgeParentOnIdle` [trigger](/agents/triggers#returning-a-threads-result-to-its-parent) for your call or agent:
+  `{ "triggerName": "nudgeParentOnIdle" }`.
 </Tip>
 
 ### Pushing Messages from one Thread to Another

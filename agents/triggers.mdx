@@ -20,8 +20,7 @@ events and respond.
 
 ## When to Use Triggers
 
-**Nudging a Quiet User** → Start a timer when the agent finishes speaking and have the agent check in if the user hasn't said
-anything when it fires.
+**Keeping Track of Time** → Tell the agent how long the call has lasted, so it can pace the conversation and wrap up in time.
 
 **Returning Thread Results** → When a background thread finishes its work, send its result to the thread that spawned it.
 
@@ -29,36 +28,51 @@ anything when it fires.
 
 ## Defining a Trigger
 
-These two triggers check in with the user if they've been quiet for 30 seconds, at most twice per call. The first starts and
-cancels a timer as the call's state changes, and the second speaks when the timer fires.
+These two triggers tell the agent how long the call has lasted every 5 minutes, and ask it to start wrapping up after 15. The
+first starts a timer when the call starts. The second runs each time the timer fires: it counts the minutes in a local variable,
+restarts the timer, and sends the agent a [deferred instruction](/agents/guiding-agents#deferred-messages).
 
 ```js
 {
   "triggers": [
     {
       "temporaryTrigger": {
-        "name": "watch_silence",
-        "event": { "dataMessage": "state" },
-        "actions": [
-          {
-            "ternary": {
-              "condition": { "property": "event.state", "operator": "OPERATOR_EQ", "value": "listening" },
-              "whenTrue": [{ "startTimer": { "name": "silence", "delay": "30s" } }],
-              "whenFalse": [{ "cancelTimer": { "name": "silence" } }]
-            }
-          }
-        ]
+        "name": "start_clock",
+        "event": { "dataMessage": "call_started" },
+        "actions": [{ "startTimer": { "name": "clock", "delay": "300s" } }]
       }
     },
     {
       "temporaryTrigger": {
-        "name": "nudge",
-        "event": { "timer": "silence" },
-        "localVariables": { "nudges": 0 },
-        "condition": { "property": "local.nudges", "operator": "OPERATOR_LT", "value": 2 },
+        "name": "clock",
+        "event": { "timer": "clock" },
+        "localVariables": { "minutes": 0 },
         "actions": [
-          { "incrementLocalVariable": { "name": "nudges" } },
-          { "dataMessage": { "type": "forced_agent_message", "content": "Are you still there?" } }
+          { "incrementLocalVariable": { "name": "minutes", "value": 5 } },
+          { "startTimer": { "name": "clock", "delay": "300s" } },
+          {
+            "ternary": {
+              "condition": { "property": "local.minutes", "operator": "OPERATOR_GTE", "value": 15 },
+              "whenTrue": [
+                {
+                  "dataMessage": {
+                    "type": "user_text_message",
+                    "text": "<instruction>The call has lasted {{local.minutes}} minutes. Start wrapping up.</instruction>",
+                    "urgency": "later"
+                  }
+                }
+              ],
+              "whenFalse": [
+                {
+                  "dataMessage": {
+                    "type": "user_text_message",
+                    "text": "<instruction>The call has lasted {{local.minutes}} minutes.</instruction>",
+                    "urgency": "later"
+                  }
+                }
+              ]
+            }
+          }
         ]
       }
     }
@@ -93,14 +107,9 @@ A trigger's `event` sets either `dataMessage` or `timer`.
 
 ### Data Messages
 
-`dataMessage` is the type of a server data message, as in the message's `type` field (for example `user_started_speaking`,
-not `userStartedSpeaking`). The trigger runs each time the server produces a message of that type, whether or not any client
-receives it, so there's no need to enable a message for your triggers. These types may be used:
-
-`call_started`, `call_event`, `client_tool_invocation`, `data_connection_tool_invocation`, `debug`, `invoking_tool`,
-`playback_clear_buffer`, `pong`, `side_generation_completed`, `side_generation_delta`, `state`, `thread_rejected`,
-`thread_spawned`, `thread_state`, `thread_terminated`, `tool_used`, `transcript`, `user_started_speaking`, and
-`user_stopped_speaking`.
+`dataMessage` is the type of a [server-to-client data message](/apps/datamessages#server-to-client-messages), as in the
+message's `type` field (for example `user_started_speaking`, not `userStartedSpeaking`). The trigger runs each time the server
+produces a message of that type, whether or not any client receives it, so there's no need to enable a message for your triggers.
 
 The event's properties are the message's fields, such as `event.role` and `event.final` for a [`transcript`](/apps/datamessages#transcript)
 or `event.state` for a [`state`](/apps/datamessages#state) message.
@@ -112,6 +121,9 @@ Only one trigger may listen for each timer, but any trigger can [start or cancel
 
 A timer event's only property is `forwardedEvent`: the event of the trigger run that started the timer. If that run was itself for a
 timer, it's that timer's `forwardedEvent` instead, so a timer that restarts itself keeps forwarding the event that started the chain.
+
+Timers don't start on their own. To start one when the call starts, use a separate trigger for the `call_started` message, as in
+the [example above](#defining-a-trigger).
 
 ## Conditions
 
@@ -154,7 +166,7 @@ If a comparison like `OPERATOR_LT` finds a property that isn't a number, that ru
 A property is a dotted path in one of three scopes:
 
 * **`event`** → The event's properties, such as `event.text` or `event.metadata.role`.
-* **`local`** → The trigger's [local variables](#local-variables), such as `local.nudges`.
+* **`local`** → The trigger's [local variables](#local-variables), such as `local.minutes`.
 * **`global`** → State the call has reported so far:
   * `global.callState` → The `state` of the call's latest [`state`](/apps/datamessages#state) message, or null before the first.
   * `global.threadState` → The `state` of a thread's latest [`thread_state`](/apps/datamessages#threadstate) message, or null if the
@@ -204,9 +216,9 @@ must have actions.
 ```js
 {
   "ternary": {
-    "condition": { "property": "local.nudges", "operator": "OPERATOR_LT", "value": 2 },
-    "whenTrue": [{ "dataMessage": { "type": "forced_agent_message", "content": "Are you still there?" } }],
-    "whenFalse": [{ "dataMessage": { "type": "forced_agent_message", "content": "I'll be here when you're ready." } }]
+    "condition": { "property": "event.role", "operator": "OPERATOR_EQ", "value": "user" },
+    "whenTrue": [{ "incrementLocalVariable": { "name": "userTurns" } }],
+    "whenFalse": [{ "incrementLocalVariable": { "name": "agentTurns" } }]
   }
 }
 ```
@@ -239,7 +251,7 @@ Timers last until they fire, are canceled, or the call ends. To fire repeatedly,
 ### Templates
 
 Templated strings use [Mustache](https://mustache.github.io/mustache.5.html) syntax and are rendered against the event and the
-trigger's local variables, for example `{{event.text}}` or `{{local.nudges}}`. They aren't HTML-escaped. Sections such as
+trigger's local variables, for example `{{event.text}}` or `{{local.minutes}}`. They aren't HTML-escaped. Sections such as
 `{{#event.metadata}}...{{/event.metadata}}` work as usual, but partials aren't supported, and a template can only refer to local
 variables the trigger declares.
 
@@ -257,8 +269,8 @@ Set `triggers` when [creating a call](/api-reference/calls/calls-post). Each ent
 {
   "systemPrompt": "You are a helpful assistant...",
   "triggers": [
-    { "triggerName": "nudge_on_silence" },
-    { "temporaryTrigger": { /* trigger definition */ } }
+    { "triggerName": "start_clock" },
+    { "temporaryTrigger": { "name": "clock", /* the rest of the trigger */ } }
   ]
 }
 ```
@@ -283,8 +295,8 @@ have the same name as one of the agent's that remains, so to replace one of the 
 ```js
 {
   "triggerOverrides": {
-    "remove": ["nudge"],
-    "add": [{ "temporaryTrigger": { "name": "nudge", /* a gentler nudge */ } }]
+    "remove": ["clock"],
+    "add": [{ "temporaryTrigger": { "name": "clock", /* a different schedule */ } }]
   }
 }
 ```
@@ -306,11 +318,9 @@ curl -X POST "https://api.ultravox.ai/api/triggers" \
   -H "X-API-Key: your-api-key" \
   -d '{
     "trigger": {
-      "name": "nudge_on_silence",
-      "event": { "timer": "silence" },
-      "actions": [
-        { "dataMessage": { "type": "forced_agent_message", "content": "Are you still there?" } }
-      ]
+      "name": "start_clock",
+      "event": { "dataMessage": "call_started" },
+      "actions": [{ "startTimer": { "name": "clock", "delay": "300s" } }]
     }
   }'
 ```
@@ -344,7 +354,7 @@ selecting by name, your account's own trigger takes precedence over a public one
 ## Errors
 
 Ultravox checks triggers when you create a call, an agent, or a global trigger, and responds with a 400 describing each problem,
-labeled with the trigger's name (for example `Trigger 'nudge': A trigger must have at least one action.`).
+labeled with the trigger's name (for example `Trigger 'clock': A trigger must have at least one action.`).
 
 Some problems only show up while the call runs. These are recorded as [call events](/api-reference/calls/calls-events-list):
 
@@ -360,8 +370,14 @@ Each event's `trigger_name` extra names the trigger.
 
 ### Returning a thread's result to its parent
 
-A [thread](/agents/threads) spawned with `"metadata": { "role": "delegate" }` reports its result back to the thread that spawned
-it the first time it finishes its work:
+To send every thread's result to its parent each time the thread finishes its work, select the public `nudgeParentOnIdle` trigger:
+
+```js
+{ "triggerName": "nudgeParentOnIdle" }
+```
+
+To control which threads report back, or what they send, define your own. Here, a [thread](/agents/threads) spawned with
+`"metadata": { "role": "delegate" }` reports its result back to the thread that spawned it the first time it finishes its work:
 
 ```js
 {

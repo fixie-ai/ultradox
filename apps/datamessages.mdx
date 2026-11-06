@@ -552,7 +552,7 @@ Sent by the server when a spawned thread starts and each time its state changes.
 <ResponseField name="state" type="string" required>
   The thread's state:
 
-  * `initializing` → The thread is applying the `toolOverrides` it was spawned with.
+  * `initializing` → The thread is setting up.
   * `generating` → The thread is running LLM inference.
   * `calling_tool` → The thread is executing tool calls.
   * `idle` → The thread has no work to do.
