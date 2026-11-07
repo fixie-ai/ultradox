@@ -370,13 +370,29 @@ Each event's `trigger_name` extra names the trigger.
 
 ### Returning a thread's result to its parent
 
-To send every thread's result to its parent each time the thread finishes its work, select the public `nudgeParentOnIdle` trigger:
+To have a thread send its result to its parent each time it finishes its work, select the public `nudgeParentOnIdle` trigger:
 
 ```js
 { "triggerName": "nudgeParentOnIdle" }
 ```
 
-To control which threads report back, or what they send, define your own. Here, a [thread](/agents/threads) spawned with
+Then spawn each thread that should report back with `reportToParent` in its [metadata](/apps/datamessages#spawnthread). Threads spawned
+without it don't report back:
+
+```js
+{
+  "type": "spawn_thread",
+  "metadata": { "reportToParent": "true" },
+  "additionalMessages": [
+    { "type": "user_text_message", "text": "Look up the latest pricing for the Enterprise plan and summarize it." }
+  ]
+}
+```
+
+The parent receives the thread's final response as a user message with `soon` urgency, wrapped as
+`<thread_result threadId="…">…</thread_result>`.
+
+To change when threads report back or what they send, define your own trigger. Here, a [thread](/agents/threads) spawned with
 `"metadata": { "role": "delegate" }` reports its result back to the thread that spawned it the first time it finishes its work:
 
 ```js
