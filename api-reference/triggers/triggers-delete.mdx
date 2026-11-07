@@ -1,0 +1,7 @@
+---
+openapi: delete /api/triggers/{trigger_id}
+title: "Delete Trigger"
+description: "Deletes the specified trigger"
+---
+
+Fails with a 409 while any agent uses the trigger. Calls that used it keep their copy.

@@ -71,6 +71,7 @@
               "agents/making-calls",
               "agents/call-management",
               "agents/threads",
+              "agents/triggers",
               "agents/guiding-agents",
               "agents/call-stages",
               "agents/testing-and-debugging"
@@ -212,6 +213,7 @@
               "api-reference/calls/calls-delete",
               "api-reference/calls/calls-messages-list",
               "api-reference/calls/calls-tools-list",
+              "api-reference/calls/calls-triggers-list",
               "api-reference/calls/calls-recording-get",
               "api-reference/calls/calls-stages-list",
               "api-reference/calls/calls-stages-get",
@@ -266,6 +268,16 @@
               "api-reference/tools/tools-delete",
               "api-reference/tools/tools-history-get",
               "api-reference/tools/tools-test-post"
+            ]
+          },
+          {
+            "group": "Triggers",
+            "pages": [
+              "api-reference/triggers/triggers-list",
+              "api-reference/triggers/triggers-get",
+              "api-reference/triggers/triggers-post",
+              "api-reference/triggers/triggers-put",
+              "api-reference/triggers/triggers-delete"
             ]
           },
           {
