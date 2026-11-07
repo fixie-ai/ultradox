@@ -184,8 +184,8 @@ with threads using data messages.
 
 <Tip>
   To send a thread's result to its parent automatically when the thread finishes its work, select the public
-  `reportToParentOnIdle` [trigger](/agents/triggers#returning-a-threads-result-to-its-parent) for your call or agent
-  (`{ "triggerName": "reportToParentOnIdle" }`) and spawn the thread with `"metadata": { "reportToParent": "true" }`.
+  `threadsReportToParentOnIdle` [trigger](/agents/triggers#returning-a-threads-result-to-its-parent) for your call or agent
+  (`{ "triggerName": "threadsReportToParentOnIdle" }`) and spawn the thread with `"metadata": { "reportToParent": "true" }`.
 </Tip>
 
 ### Pushing Messages from one Thread to Another

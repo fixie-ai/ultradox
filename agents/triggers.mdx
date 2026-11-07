@@ -370,10 +370,10 @@ Each event's `trigger_name` extra names the trigger.
 
 ### Returning a thread's result to its parent
 
-To have a thread send its result to its parent each time it finishes its work, select the public `reportToParentOnIdle` trigger:
+To have a thread send its result to its parent each time it finishes its work, select the public `threadsReportToParentOnIdle` trigger:
 
 ```js
-{ "triggerName": "reportToParentOnIdle" }
+{ "triggerName": "threadsReportToParentOnIdle" }
 ```
 
 Then spawn each thread that should report back with `reportToParent` in its [metadata](/apps/datamessages#spawnthread). Threads spawned
