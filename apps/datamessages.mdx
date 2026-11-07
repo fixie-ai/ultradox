@@ -50,7 +50,12 @@ Details on each message type appear below in [Data Message Details](#data-messag
 | Tools        | [InvokingTool](#invokingtool)                                                                                   | A tool invocation has started. Excluded by default.          |
 | Tools        | [ToolUsed](#toolused)                                                                                           | A tool invocation has finished. Excluded by default.         |
 
-A connection receives messages that are excluded by default only if it enables them in its `dataMessages`, set on the call's [medium](/api-reference/calls/calls-post#body-medium) or [data connection](/api-reference/calls/calls-post#body-data-connection). [Triggers](/agents/triggers) can listen for any of these messages either way.
+Messages excluded by default are sent only to connections that ask for them:
+
+* **Clients** list the message types they want in `additionalMessages` when joining the call (`experimentalMessages` in older SDKs). The `dataMessages` on the call's [medium](/api-reference/calls/calls-post#body-medium) is applied afterward, so you can limit what clients you don't fully trust receive: `true` always sends a message, `false` never does (even if the client asks for it), and leaving it unset lets the client choose, falling back to the default.
+* **Data connections** set `dataMessages` on the [data connection](/api-reference/calls/calls-post#body-data-connection).
+
+[Triggers](/agents/triggers) can listen for any of these messages either way.
 
 
 ## Data Message Details
@@ -670,7 +675,7 @@ Sent by the server when a thread stops running.
 </ResponseField>
 
 ### ThreadState
-Sent by the server when a spawned thread starts and each time its state changes. Clients don't receive it unless their connection enables `threadState` in its `dataMessages`, but [triggers](/agents/triggers) can listen for it either way.
+Sent by the server when a spawned thread starts and each time its state changes. Excluded by default, but [triggers](/agents/triggers) can listen for it either way.
 
 **Message Structure**
 ```js
