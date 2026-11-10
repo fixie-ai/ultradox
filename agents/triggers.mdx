@@ -363,6 +363,7 @@ Some problems only show up while the call runs. These are recorded as [call even
 * `trigger.action_failed` → An action failed, for example because its data message was invalid once rendered. The trigger's other
   actions still run.
 * `trigger.truncated` → A local variable's string was truncated to 32,768 characters.
+* `trigger.invalid` → A trigger was dropped when the call started, for example because a field in its data message was invalid.
 
 Each event's `trigger_name` extra names the trigger.
 
@@ -413,7 +414,7 @@ To change when threads report back or what they send, define your own trigger. H
         "type": "user_text_message",
         "threadId": "{{event.parentThreadId}}",
         "text": "<delegate_result>{{event.lastResponse}}</delegate_result>",
-        "urgency": "immediate"
+        "urgency": "later"
       }
     }
   ]
