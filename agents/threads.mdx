@@ -2,6 +2,7 @@
 title: 'Threads'
 description: 'Run parallel agent conversations alongside your main call.'
 icon: 'code-branch'
+tag: 'UPDATED'
 ---
 
 Threads allow you to spawn independent, parallel conversations that run alongside the main call. Each thread forks from the parent's conversation history and state
@@ -181,6 +182,12 @@ filtered tool, it gets the same error as for a tool that doesn't exist.
 
 Threads communicate with each other (including the UI thread) through tools. Other participants may communicate
 with threads using data messages.
+
+<Tip>
+  To send a thread's result to its parent automatically when the thread finishes its work, select the public
+  `threadsReportToParentOnIdle` [trigger](/agents/triggers#returning-a-threads-result-to-its-parent) for your call or agent
+  (`{ "triggerName": "threadsReportToParentOnIdle" }`) and spawn the thread with `"metadata": { "reportToParent": "true" }`.
+</Tip>
 
 ### Pushing Messages from one Thread to Another
 

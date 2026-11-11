@@ -33,6 +33,9 @@ Details on each message type appear below in [Data Message Details](#data-messag
 | ------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | Conversation | [CallStarted](#callstarted)                                                                                     | Provides some basic information about the call at its start. |
 | Conversation | [Transcript](#transcript)                                                                                       | Contains text for an utterance made during the call.         |
+| Conversation | [UserStartedSpeaking](#userstartedspeaking)                                                                     | The user has started speaking. Excluded by default.          |
+| Conversation | [UserStoppedSpeaking](#userstoppedspeaking)                                                                     | The user has stopped speaking. Excluded by default.          |
+| System       | [CallEvent](#callevent)                                                                                         | A call event was recorded. Excluded by default.              |
 | System       | [Debug](#debug)                                                                                                 | Useful for application debugging. Excluded by default.       |
 | System       | [PlaybackClearBuffer](#playbackclearbuffer)                                                                     | Used to clear buffered output audio. WebSocket only.         |
 | System       | [Pong](#pong)                                                                                                   | Server reply to a ping message.                              |
@@ -40,9 +43,19 @@ Details on each message type appear below in [Data Message Details](#data-messag
 | Threads      | [ThreadSpawned](#threadspawned)                                                                                 | Confirms a thread was successfully created.                  |
 | Threads      | [ThreadRejected](#threadrejected)                                                                               | Indicates a thread spawn request was rejected.               |
 | Threads      | [ThreadTerminated](#threadterminated)                                                                           | Indicates a thread has stopped running.                      |
+| Threads      | [ThreadState](#threadstate)                                                                                     | Reports a thread's state when it starts and as it changes. Excluded by default. |
 | Threads      | [SideGenerationDelta](#sidegenerationdelta)                                                                     | Streaming text delta from a thread's generation.             |
 | Threads      | [SideGenerationCompleted](#sidegenerationcompleted)                                                             | A thread's generation has completed.                         |
 | Tools        | [ClientToolInvocation and DataConnectionToolInvocation](#clienttoolinvocation-and-dataconnectiontoolinvocation) | Asks the client or data connection to invoke a tool.         |
+| Tools        | [InvokingTool](#invokingtool)                                                                                   | A tool invocation has started. Excluded by default.          |
+| Tools        | [ToolUsed](#toolused)                                                                                           | A tool invocation has finished. Excluded by default.         |
+
+Messages excluded by default are sent only to connections that ask for them:
+
+* **Clients** list the message types they want in `additionalMessages` when joining the call (`experimentalMessages` in older SDKs). The `dataMessages` on the call's [medium](/api-reference/calls/calls-post#body-medium) is applied afterward, so you can limit what clients you don't fully trust receive: `true` always sends a message, `false` never does (even if the client asks for it), and leaving it unset lets the client choose, falling back to the default.
+* **Data connections** set `dataMessages` on the [data connection](/api-reference/calls/calls-post#body-data-connection).
+
+[Triggers](/agents/triggers) can listen for any of these messages either way.
 
 
 ## Data Message Details
@@ -135,6 +148,26 @@ A message containing text transcripts of user and agent utterances.
 <ResponseField name="ordinal" type="integer" required>
   The ordinal of the message within the current call, used for ordering transcripts.
 </ResponseField>
+
+### UserStartedSpeaking
+Sent by the server when voice activity detection hears the user start speaking. Excluded by default.
+
+**Message Structure**
+```js
+{
+  "type": "user_started_speaking"
+}
+```
+
+### UserStoppedSpeaking
+Sent by the server when voice activity detection decides the user has finished speaking. Excluded by default.
+
+**Message Structure**
+```js
+{
+  "type": "user_stopped_speaking"
+}
+```
 
 ### UserTextMessage
 A user message sent via text. The message appears to the agent as if it came from the user.
@@ -262,6 +295,98 @@ Contains the result of a tool invocation.
 </ResponseField>
 
 
+### InvokingTool
+Sent by the server when a tool invocation starts. Excluded by default.
+
+**Message Structure**
+```js
+{
+  "type": "invoking_tool",
+  "invocationId": "unique-invocation-id",
+  "toolName": "get_weather",
+  "toolId": "4a2e1b7c-…",
+  "parameters": {
+    "location": "Seattle"
+  },
+  "isPrecomputation": false,
+  "threadId": "UI"
+}
+```
+
+**Fields**
+<ResponseField name="invocationId" type="string" required>
+  Unique identifier for this invocation.
+</ResponseField>
+<ResponseField name="toolName" type="string" required>
+  The name the agent used for the tool.
+</ResponseField>
+<ResponseField name="toolId" type="string">
+  The `callToolId` of the tool, as returned by [List Call Tools](/api-reference/calls/calls-tools-list).
+</ResponseField>
+<ResponseField name="parameters" type="object" required>
+  The parameters the agent passed to the tool.
+</ResponseField>
+<ResponseField name="isPrecomputation" type="boolean" required>
+  Whether this is a speculative invocation of a [precomputable](/tools/async-tools#precomputable-tools) tool, whose result may go unused.
+</ResponseField>
+<ResponseField name="threadId" type="string" required>
+  The ID of the [thread](/agents/threads) that invoked the tool.
+</ResponseField>
+
+### ToolUsed
+Sent by the server when a tool invocation finishes, with its result. Excluded by default.
+
+**Message Structure**
+```js
+{
+  "type": "tool_used",
+  "toolName": "get_weather",
+  "toolId": "4a2e1b7c-…",
+  "invocationId": "unique-invocation-id",
+  "parameters": {
+    "location": "Seattle"
+  },
+  "result": "{\"temperature\": 54}",
+  "errorMessage": null,
+  "executionTime": "0.412s",
+  "ordinal": 7,
+  "threadId": "UI",
+  "callState": null
+}
+```
+
+**Fields**
+<ResponseField name="toolName" type="string" required>
+  The name the agent used for the tool.
+</ResponseField>
+<ResponseField name="toolId" type="string">
+  The `callToolId` of the tool, as returned by [List Call Tools](/api-reference/calls/calls-tools-list).
+</ResponseField>
+<ResponseField name="invocationId" type="string" required>
+  Matches the invocationId of the [InvokingTool](#invokingtool) message.
+</ResponseField>
+<ResponseField name="parameters" type="object" required>
+  The parameters the agent passed to the tool.
+</ResponseField>
+<ResponseField name="result" type="string" required>
+  The tool's result, as the agent sees it.
+</ResponseField>
+<ResponseField name="errorMessage" type="string">
+  Details of the error, if the tool failed. The agent doesn't see these.
+</ResponseField>
+<ResponseField name="executionTime" type="string" required>
+  How long the tool took, in seconds with an `s` suffix.
+</ResponseField>
+<ResponseField name="ordinal" type="integer" required>
+  The tool call's position in the thread's messages. For threads other than `UI`, it counts the thread's own messages, which aren't saved with the call's.
+</ResponseField>
+<ResponseField name="threadId" type="string" required>
+  The ID of the [thread](/agents/threads) that invoked the tool.
+</ResponseField>
+<ResponseField name="callState" type="object">
+  The call's new state, if the tool [changed it](/agents/guiding-agents#tool-state).
+</ResponseField>
+
 ### Debug
 A message sent by the server to communicate debug information. Disabled by default.
 
@@ -280,6 +405,30 @@ A message sent by the server to communicate debug information. Disabled by defau
 <Note>
   Debug messages are disabled by default and must be explicitly enabled for debugging purposes.
 </Note>
+
+### CallEvent
+Sent by the server each time a [call event](/api-reference/calls/calls-events-list) is recorded. Excluded by default.
+
+**Message Structure**
+```js
+{
+  "type": "call_event",
+  "event": {
+    "callId": "550e8400-e29b-41d4-a716-446655440000",
+    "callStageId": "6f1c2d3e-…",
+    "severity": "warning",
+    "callTimestamp": "2026-11-06T18:04:12.123Z",
+    "type": "trigger.action_failed",
+    "text": "Trigger 'clock': …",
+    "extras": { "trigger_name": "clock" }
+  }
+}
+```
+
+**Fields**
+<ResponseField name="event" type="object" required>
+  The event, in the same form as [List Call Events](/api-reference/calls/calls-events-list) returns it.
+</ResponseField>
 
 ### CallStarted
 Basic call metadata shared by the server when a call begins.
@@ -455,6 +604,9 @@ Spawns a new parallel thread that forks from the parent's conversation history. 
   is also totally reasonable, especially when the context provided to them keeps them focused on a specific task.
 
 </ResponseField>
+<ResponseField name="metadata" type="object">
+  String values of your choosing, echoed back as `metadata` on the thread and side generation messages about this thread, such as [ThreadState](#threadstate). Useful for telling threads apart, for example in a [trigger](/agents/triggers)'s conditions.
+</ResponseField>
 
 ### ThreadSpawned
 Sent by the server to confirm a thread was successfully created.
@@ -520,6 +672,47 @@ Sent by the server when a thread stops running.
 </ResponseField>
 <ResponseField name="reason" type="string" required>
   A human-readable description of why the thread was terminated.
+</ResponseField>
+
+### ThreadState
+Sent by the server when a spawned thread starts and each time its state changes. Excluded by default, but [triggers](/agents/triggers) can listen for it either way.
+
+**Message Structure**
+```js
+{
+  "type": "thread_state",
+  "threadId": "my-thread-1",
+  "parentThreadId": "UI",
+  "state": "idle",
+  "idleCount": 1,
+  "lastResponse": "Our competitors each offer 30-day no-fault returns.",
+  "metadata": { "role": "delegate" }
+}
+```
+
+**Fields**
+<ResponseField name="threadId" type="string" required>
+  The thread's ID.
+</ResponseField>
+<ResponseField name="parentThreadId" type="string" required>
+  The ID of the thread it was spawned from.
+</ResponseField>
+<ResponseField name="state" type="string" required>
+  The thread's state:
+
+  * `initializing` → The thread is setting up.
+  * `generating` → The thread is running LLM inference.
+  * `calling_tool` → The thread is executing tool calls.
+  * `idle` → The thread has no work to do.
+</ResponseField>
+<ResponseField name="idleCount" type="integer" required>
+  How many times the thread has finished its work and gone idle, including this time. A thread that starts idle hasn't finished any work yet.
+</ResponseField>
+<ResponseField name="lastResponse" type="string">
+  When idle, the thread's final agent message, if its history ends with one.
+</ResponseField>
+<ResponseField name="metadata" type="object">
+  The `metadata` the thread was [spawned](#spawnthread) with.
 </ResponseField>
 
 ### SideGenerationDelta

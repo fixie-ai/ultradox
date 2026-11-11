@@ -2,6 +2,7 @@
 title: 'Making Calls'
 description: 'Start conversations using agents or direct call configuration.'
 icon: 'microphone'
+tag: 'UPDATED'
 ---
 
 ## Creating Calls with Agents (Recommended)
@@ -51,19 +52,30 @@ Provide dynamic data to your agent at call creation time:
 
 When starting a call with an agent, you can override specific settings from the agent's call template. Here are the parameters you can include in the request body:
 
-| Parameter              | Description                         | Type    | Example                      |
-|------------------------|-------------------------------------|---------|------------------------------|
-| `templateContext`      | Variables for template substitution | Object  | `{ customerName: "John" }`   |
-| `initialMessages`      | Conversation history to start from  | Array   | Previous chat context        |
-| `metadata`             | Key-value pairs for tracking        | Object  | `{ source: "website" }`      |
-| `medium`               | Communication protocol              | Object  | `{ twilio: {} }`.            |
-| `joinTimeout`          | Time limit for user to join         | String  | `"60s"`                      |
-| `maxDuration`          | Maximum call length                 | String  | `"1800s"`                    |
-| `recordingEnabled`.    | Whether to record audio             | Boolean | `true` / `false`             |
-| `initialOutputMedium`  | Start with voice or text            | String  | `"voice"` / `"text"`         |
-| `mediumRestriction`    | Limit the call to voice or text     | Object  | `{ allowedMediums: ["MESSAGE_MEDIUM_TEXT"] }` |
-| `firstSpeakerSettings` | Initial conversation behavior       | Object  | `{ agent: { text: "..." } }` |
-| `experimentalSettings` | Experimental settings for the call  | Object  | Varies                       |
+| Parameter | Description | Type | Example |
+|---|---|---|---|
+| `templateContext` | Variables for template substitution | Object | `{ customerName: "John" }` |
+| `initialMessages` | Conversation history to start from | Array | Previous chat context |
+| `metadata` | Key-value pairs for tracking | Object | `{ source: "website" }` |
+| `medium` | Communication protocol | Object | `{ twilio: {} }` |
+| `joinTimeout` | Time limit for user to join | String | `"60s"` |
+| `maxDuration` | Maximum call length | String | `"1800s"` |
+| `recordingEnabled` | Whether to record audio | Boolean | `true` / `false` |
+| `initialOutputMedium` | Start with voice or text | String | `"voice"` / `"text"` |
+| `firstSpeakerSettings` | Initial conversation behavior | Object | `{ agent: { text: "..." } }` |
+| `dataConnection` | A websocket that receives the call's data messages | Object | `{ websocketUrl: "wss://..." }` |
+| `experimentalSettings` | Experimental settings for the call | Object | Varies |
+| `callbacks` | URLs to call when the call is joined, ends, or is billed | Object | `{ ended: { url: "https://..." } }` |
+| `voice` | The name or ID of the voice to use | String | `"Mark"` |
+| `voiceOverrides` | Overrides for the voice's settings. Requires `voice` | Object | `{ elevenLabs: { speed: 1.1 } }` |
+| `toolOverrides` | Changes to the agent's [tools](/tools/custom/changing-call-state#updating-tools) | Object | `{ remove: ["lookup"] }` |
+| `retentionPolicy` | How long to keep the call's data after it ends | String | `"CALL_RETENTION_POLICY_AUTO_DELETE"` |
+| `sharedSecrets` | Secrets for [signing outbound requests](/apps/securing-data-connections) | Array | `["your-secret"]` |
+| `backgroundAudio` | Audio played behind the agent's voice | Object | `{ audioClip: "office", volume: 0.3 }` |
+| `admissionPreference` | Whether to prioritize the call or minimize its cost | String | `"CALL_ADMISSION_PREFERENCE_LOWEST_COST"` |
+| `mediumRestriction` | Limit the call to voice or text | Object | `{ allowedMediums: ["MESSAGE_MEDIUM_TEXT"] }` |
+| `additionalModels` | Models the call's [threads](/agents/threads) may use. Replaces the agent's list | Array | `["model-name"]` |
+| `triggerOverrides` | Changes to the agent's [triggers](/agents/triggers#overriding-an-agents-triggers) | Object | `{ remove: ["clock"] }` |
 
 Example of overriding agent settings when creating a call:
 
