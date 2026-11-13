@@ -49,18 +49,19 @@ perform other actions, but they cannot directly produce audio or end the call th
 
 When you spawn a thread, the system:
 
-1. **Forks the conversation history** — The thread gets a copy of the parent's full message history, including system prompt and tools, at the point of spawning. (It also gets a copy of the parent's [tool state](/agents/guiding-agents#tool-state) if any.)
+1. **Forks the conversation history** — The thread gets a copy of the parent's full message history, including system prompt and tools, at the point of spawning. (It also gets a copy of the parent's [tool state](/agents/guiding-agents#tool-state) if any.) A thread on a text model can [replace the system prompt](#choosing-a-threads-model) instead, in which case it starts without the parent's messages.
 1. **Starts running the thread independently** — The thread enters its own generate-and-act loop, processing messages and invoking tools on its own.
 
-As a thread runs, it progresses through a series of states:
+As a thread runs, it progresses through a series of states, which it reports in [`threadState`](/apps/datamessages#threadstate) messages:
 
+* **INITIALIZING** → The thread is setting up.
 * **IDLE** → The thread has no work to do, typically because its last response was text with no tool calls. The thread will remain idle until it receives a new message.
 * **GENERATING** → The thread is running LLM inference.
 * **CALLING_TOOL** → The thread is executing one or more tool calls.
 * **FAILED** → The thread encountered an error or exceeded its limits. This is a terminal state. A [`threadTerminated`](/apps/datamessages#threadterminated) data message with the failure reason is sent when a thread enters this state.
 
 Unless a thread fails, it will remain available until the call ends or a stage change occurs. **All side threads
-are canceled when the call ends or a stage change occurs.**
+are canceled when the call ends or a stage change occurs.** Threads canceled by a stage change send a `threadTerminated` message with the `canceled` cause.
 
 ## Spawning a Thread
 
@@ -129,8 +130,15 @@ You can constrain a thread's resource usage with the `limits` field:
 }
 ```
 
-See the [data message](/apps/datamessages#spawnthread) for all the limits that may be imposed. Note that the per-generation
-limits may be additionally capped by Ultravox.
+See the [data message](/apps/datamessages#spawnthread) for all the limits that may be imposed. Some limits have maximums:
+
+| Limit | Maximum |
+| ----- | ------- |
+| `threadFuzzyInputTokenLimit` | 100,000 |
+| `threadOutputTokenLimit` | 20,000 |
+| `generationOutputTokenLimit` | 4,000 (2,048 if unset) |
+
+A larger value is lowered to the maximum, and a `thread.limit_clamped` call event is recorded. The spawn isn't rejected.
 
 When any limit is exceeded, the thread is marked FAILED and a `threadTerminated` data message with the reason is sent.
 
@@ -177,6 +185,51 @@ Earlier versions used `toolFilter` (with `allowedTools` or `disallowedTools`) to
 `toolOverrides` instead. A thread may not set both. A filtered thread's model still sees its parent's tool definitions, so if it calls a
 filtered tool, it gets the same error as for a tool that doesn't exist.
 </Note>
+
+### Choosing a Thread's Model
+
+A thread runs on its parent's model unless you choose another. To let threads use other models, list them in `additionalModels` when
+[creating the call](/api-reference/calls/calls-post), or in an agent's `callTemplate`. An agent call can set `additionalModels` too, which
+replaces the agent's list for that call.
+
+```js
+{
+  "systemPrompt": "You are a helpful assistant...",
+  "additionalModels": ["my-text-model"]
+}
+```
+
+Then name one of them in the spawn's `model`:
+
+```js
+{
+  type: "spawn_thread",
+  model: "my-text-model",
+  systemPrompt: "You are a careful researcher. Answer in two sentences.",
+  temperature: 0.2,
+  additionalMessages: [
+    { type: "user_text_message", text: "What's the return window for the Pro plan?" }
+  ]
+}
+```
+
+To see which models a call's threads can use, call [List Models](/api-reference/other/models-get) with `purpose=thread`, and with
+`baseModelName` set to the call's model if it isn't your default. Listed models are text models, plus the call's own model if it
+accepts audio. Creating a call is rejected if `additionalModels` names a model that isn't available, the call's own model (threads
+can always use it), or a model that accepts audio.
+
+A thread's `model` must be one of the call's `additionalModels`. Without one, the thread uses its parent's model. That's the only way
+to use the call's own model, so a thread on another model can't spawn one back on the call's model.
+
+Threads on text models read the user's speech as transcripts. Speech that hasn't been transcribed yet when the thread spawns is left
+out. On a text model, a thread can also set:
+
+* `systemPrompt` → Replaces the parent's system prompt. The thread then starts without its parent's messages, so its
+  `additionalMessages` are its first.
+* `temperature` → Between 0 and 2.
+* `reasoningEffort` → `low`, `medium`, or `high`.
+
+When the call's own model accepts audio, a thread on that model is a plain fork of its parent, and setting any of these rejects the spawn.
 
 ## Thread Communication
 
@@ -286,12 +339,16 @@ See [Thread Messages](/apps/datamessages#thread-messages) for the full message r
 | `threadSpawned` | A thread was successfully spawned. |
 | `threadRejected` | A thread spawn was rejected (e.g., due to duplicate ID). |
 | `threadTerminated` | A thread was terminated due to failure or cancellation. |
+| `threadState` | A thread's state when it starts and each time it changes. Excluded by default. |
 
 #### Generation Messages
 | Message | Description |
 | ----- | ----------- |
-| `sideGenerationDelta` | Streaming text deltas as the thread generates (similar to transcript deltas). |
+| `sideGenerationDelta` | Streaming text deltas as the thread generates (similar to transcript deltas). Excluded by default. |
 | `sideGenerationCompleted` | The full response text and any tool calls once generation finishes. |
+
+Each of these messages carries the `metadata` the thread was spawned with. Your connection can turn any of these messages on or off;
+see [Messages at a Glance](/apps/datamessages#server-to-client-messages).
 
 ### After a call
 
@@ -302,6 +359,7 @@ Thread activity is recorded as [call events](/api-reference/calls/calls-events-l
 | ----- | ----------- |
 | `thread.canceled` | The thread was canceled (e.g., call ended or stage changed). |
 | `thread.limit_reached` | The thread exceeded one of its configured resource limits. |
+| `thread.limit_clamped` | A limit the thread was spawned with was above its [maximum](#setting-thread-limits) and was lowered. |
 | `thread.failed` | The thread failed for another reason. |
 
 These events include `total_input_tokens`, `total_output_tokens`, and `total_generations` in their extras.
@@ -315,6 +373,12 @@ These events include `total_input_tokens`, `total_output_tokens`, and `total_gen
 
 These events include token usage in their extras.
 
+### Model Key Events
+| Event | Description |
+| ----- | ----------- |
+| `inference.customer_api_key_refused` | The model provider refused your account's key, for example because of its quota. Check the key under Provider Keys in Settings. |
+| `billing.inworld_key_missing` | Threads ran on Inworld models without an Inworld key, so Ultravox billed them. See [Thread Billing](#thread-billing). |
+
 ### Thread Communication Events
 | Event | Description |
 | ----- | ----------- |
@@ -325,10 +389,16 @@ These events include token usage in their extras.
 ## Thread Billing
 
 Threads may increase the cost of a call based on their additional model usage. Invoking tools is free. Generations
-are charged using traditional token-based pricing, except that cached input tokens are free. Since threads are always
-forked from a parent, input tokens for existing messages will be cached, so only the additional messages added when
-spawning plus any messages created by the thread itself contribute to input token usage. See our
+are charged using traditional token-based pricing, except that cached input tokens are free. A thread that runs on its
+parent's model and keeps its parent's messages reuses the parent's cache, so only the additional messages added when
+spawning plus any messages created by the thread itself contribute to input token usage. A thread on
+[another model](#choosing-a-threads-model) builds its own cache. See our
 [pricing page](https://ultravox.ai/pricing) for the cost of uncached input tokens and output tokens.
+
+Threads on Inworld models run on your account's Inworld key, if you've added one under Provider Keys in the
+[Ultravox console](https://app.ultravox.ai/settings/), and Inworld bills them instead of Ultravox. Without a key, they run on
+Ultravox's key at the usual rates, and a `billing.inworld_key_missing` call event is recorded. Some models are available to threads only
+with your own Inworld key; [List Models](/api-reference/other/models-get) with `purpose=thread` shows the models your account can use.
 
 ## Examples
 
