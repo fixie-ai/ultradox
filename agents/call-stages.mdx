@@ -59,6 +59,7 @@ To implement Call Stages in your Ultravox application, follow these steps:
 
   * New stages inherit all properties from the previous stage unless explicitly overridden.
   * Refer to [Stages Call Properties](#stages-call-properties) to understand which call properties can be changed as part of a new stage.
+  * A stage change ends the call's [threads](/agents/threads). [Data messages](/apps/datamessages) that arrive while the stage is changing are held and handled in the new stage.
   * Test your stage transitions thoroughly to ensure the conversation flows naturally.
 </Warning>
 
