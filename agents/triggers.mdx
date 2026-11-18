@@ -7,7 +7,7 @@ tag: 'NEW'
 
 Triggers are rules that run inside a call. When an event occurs, such as a [data message](/apps/datamessages) from the server or a
 timer firing, each trigger listening for it checks its condition and, if the condition is met, runs its actions. Actions can send
-data messages into the call, update the trigger's own variables, and start or cancel timers.
+data messages into the call, update variables, and start or cancel timers.
 
 Because triggers run on Ultravox's servers, they react to the call without a client or data connection having to watch for
 events and respond.
@@ -90,6 +90,8 @@ Each trigger has:
 * **`actions`** → What the trigger does, in order. See [Actions](#actions).
 * **`localVariables`** → Optional. Variables only this trigger can read and write, with their initial values. See
   [Local Variables](#local-variables).
+* **`sharedVariables`** → Optional. Variables this trigger shares with the call's other triggers that declare them, with their
+  initial values. See [Shared Variables](#shared-variables).
 
 ## How Triggers Run
 
@@ -101,7 +103,7 @@ directly, that's the order of its `triggers`. For a call created with an agent, 
 added with [`triggerOverrides`](#overriding-an-agents-triggers). [List Call Triggers](/api-reference/calls/calls-triggers-list)
 shows a call's order.
 
-A trigger's local variables and the call's timers last for the rest of the call. Triggers stop running when the call ends.
+Variables and timers last for the rest of the call. Triggers stop running when the call ends.
 
 ## Events
 
@@ -165,16 +167,17 @@ If a comparison like `OPERATOR_LT` finds a property that isn't a number, that ru
 
 ### Properties
 
-A property is a dotted path in one of three scopes:
+A property is a dotted path in one of four scopes:
 
 * **`event`** → The event's properties, such as `event.text` or `event.metadata.role`.
 * **`local`** → The trigger's [local variables](#local-variables), such as `local.minutes`.
+* **`shared`** → The trigger's [shared variables](#shared-variables), such as `shared.checking`.
 * **`global`** → State the call has reported so far:
   * `global.callState` → The `state` of the call's latest [`state`](/apps/datamessages#state) message, or null before the first.
   * `global.threadState` → The `state` of a thread's latest [`thread_state`](/apps/datamessages#threadstate) message, or null if the
     thread hasn't reported one or has terminated. Takes a `threadId` argument in `propertyArguments`.
 
-Arguments in `propertyArguments` are [templates](#templates), so they can refer to the event or local variables:
+Arguments in `propertyArguments` are [templates](#templates), so they can refer to the event or the trigger's variables:
 
 ```js
 {
@@ -242,6 +245,84 @@ change it.
 String values are limited to 32,768 characters. If `setLocalVariable` renders a longer string, it's truncated, and a
 `trigger.truncated` call event is recorded.
 
+### Shared Variables
+
+Shared variables let triggers coordinate, for example when a trigger for one event needs to know what happened in another.
+A trigger declares the shared variables it uses in `sharedVariables`, by name, with their initial values. They follow the same
+rules as [local variables](#local-variables), but every trigger that declares a variable reads and changes the same value.
+
+* `setSharedVariable` → Sets a variable to a value of its type. String values are [templates](#templates).
+* `incrementSharedVariable` → Adds `value` (1 by default, and possibly negative) to a number variable.
+
+Every trigger that declares a shared variable must give it the same initial value, of the same type. A trigger can only read or
+change the shared variables it declares itself. Because triggers [run one at a time](#how-triggers-run), a change is seen by the
+next trigger that runs, including one running for the same event.
+
+These triggers start a background fact check when the user speaks, but only while no check is running. The first trigger runs for
+transcripts and the second for thread states, so they keep track of whether a check is running in a shared variable:
+
+```js
+{
+  "triggers": [
+    {
+      "temporaryTrigger": {
+        "name": "start_fact_check",
+        "event": { "dataMessage": "transcript" },
+        "sharedVariables": { "checking": false },
+        "condition": {
+          "operator": "OPERATOR_AND",
+          "conditions": [
+            { "property": "event.role", "operator": "OPERATOR_EQ", "value": "user" },
+            { "property": "event.final", "operator": "OPERATOR_EQ", "value": true },
+            { "property": "shared.checking", "operator": "OPERATOR_EQ", "value": false }
+          ]
+        },
+        "actions": [
+          { "setSharedVariable": { "name": "checking", "value": true } },
+          {
+            "dataMessage": {
+              "type": "spawn_thread",
+              "newThreadId": "fact_check",
+              "ifExists": "replace",
+              "additionalMessages": [
+                { "type": "user_text_message", "text": "Fact-check what the user just said: {{event.text}}" }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "temporaryTrigger": {
+        "name": "finish_fact_check",
+        "event": { "dataMessage": "thread_state" },
+        "sharedVariables": { "checking": false },
+        "condition": {
+          "operator": "OPERATOR_AND",
+          "conditions": [
+            { "property": "event.threadId", "operator": "OPERATOR_EQ", "value": "fact_check" },
+            { "property": "event.state", "operator": "OPERATOR_EQ", "value": "idle" }
+          ]
+        },
+        "actions": [
+          { "setSharedVariable": { "name": "checking", "value": false } },
+          {
+            "dataMessage": {
+              "type": "user_text_message",
+              "text": "<fact_check>{{event.lastResponse}}</fact_check>",
+              "urgency": "later"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+If a trigger's shared variable has a different initial value from an earlier trigger's, the later trigger is invalid. See
+[Errors](#errors).
+
 ### Starting and Canceling Timers
 
 * `startTimer` → Starts the timer called `name`, firing after `delay` (at least `"10s"`). Starting a timer that's already running
@@ -253,9 +334,9 @@ Timers last until they fire, are canceled, or the call ends. To fire repeatedly,
 ### Templates
 
 Templated strings use [Mustache](https://mustache.github.io/mustache.5.html) syntax and are rendered against the event and the
-trigger's local variables, for example `{{event.text}}` or `{{local.minutes}}`. They aren't HTML-escaped. Sections such as
-`{{#event.metadata}}...{{/event.metadata}}` work as usual, but partials aren't supported, and a template can only refer to local
-variables the trigger declares.
+trigger's variables, for example `{{event.text}}`, `{{local.minutes}}`, or `{{shared.checking}}`. They aren't HTML-escaped.
+Sections such as `{{#event.metadata}}...{{/event.metadata}}` work as usual, but partials aren't supported, and a template can only
+refer to variables the trigger declares.
 
 ## Using Triggers
 
@@ -350,13 +431,16 @@ selecting by name, your account's own trigger takes precedence over a public one
 | Actions per trigger, counting those within ternaries | 10 |
 | Conditions per trigger, counting every child and those of ternaries | 20 |
 | Local variables per trigger | 10 |
-| Characters in a local variable's string value | 32,768 |
+| Shared variables per trigger | 10 |
+| Characters in a variable's string value | 32,768 |
 | Timer delay | At least 10 seconds |
 
 ## Errors
 
 Ultravox checks triggers when you create a call, an agent, or a global trigger, and responds with a 400 describing each problem,
-labeled with the trigger's name (for example `Trigger 'clock': A trigger must have at least one action.`).
+labeled with the trigger's name (for example `Trigger 'clock': A trigger must have at least one action.`). This includes a shared
+variable whose initial value differs from an earlier trigger's in the same call or agent, counting triggers added with
+`triggerOverrides`.
 
 Some problems only show up while the call runs. These are recorded as [call events](/api-reference/calls/calls-events-list):
 
@@ -364,7 +448,7 @@ Some problems only show up while the call runs. These are recorded as [call even
   That run of the trigger stops. A trigger that fails three runs in a row is dropped for the rest of the call.
 * `trigger.action_failed` → An action failed, for example because its data message was invalid once rendered. The trigger's other
   actions still run.
-* `trigger.truncated` → A local variable's string was truncated to 32,768 characters.
+* `trigger.truncated` → A variable's string was truncated to 32,768 characters.
 * `trigger.invalid` → A trigger was dropped when the call started, for example because a field in its data message was invalid.
 
 Each event's `trigger_name` extra names the trigger.
