@@ -31,6 +31,12 @@ All webhooks follow a consistent structure and return the event and details abou
 See [Event Payload Reference](./available-webhooks#event-payload-reference).
 
 
+## Account-wide and Agent Webhooks
+
+A webhook created without an `agentId` is account-wide: it receives events for every call in your account. A webhook with an `agentId` receives events only for calls with that agent.
+
+<Note>An account can have up to 10 account-wide webhooks, and each agent up to 3 of its own. Every account-wide webhook gets a request for every call event in the account, so the cap keeps the number of deliveries per call bounded. Creating a webhook beyond either limit returns `409 Conflict`. To add more, delete webhooks you no longer use or set `agentId` to scope them to the agents they serve. If many systems need the same events, [relay them from an endpoint you own](/gettingstarted/faq#i-need-more-webhooks-than-the-limit-allows-what-should-i-do).</Note>
+
 ## Best Practices
 
 **Respond Quickly**: Return a 2xx status code (we recommend 204) as soon as you receive the webhook. Process the data asynchronously if needed.
