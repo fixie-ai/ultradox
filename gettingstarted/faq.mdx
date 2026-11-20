@@ -89,6 +89,11 @@ Many customers choose to archive call data prior to deletion. To do this:
 Call deletion on Ultravox is permanent. Only a record of the call ID and information required for billing purposes is retained after deletion.
 </Warning>
 
+## Webhooks
+
+### <Icon icon="circle-question" size={24} /> I need more webhooks than the limit allows. What should I do?
+Send events to one endpoint you own and forward them from there. A single [webhook](/webhooks/overview) pointing at your own relay can fan each event out to as many internal services or third parties as you need, add your own filtering and retries, and keeps you well inside the [webhook limits](/webhooks/overview#account-wide-and-agent-webhooks). Verify our [signature](/webhooks/securing-webhooks) at the relay before forwarding.
+
 ## Miscellaneous
 
 ### <Icon icon="circle-question" size={24} /> How do I get my agent to best handle voicemail when making outgoing calls?
