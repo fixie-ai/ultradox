@@ -1,0 +1,158 @@
+---
+title: 'Handoffs'
+description: 'Hand a call from one agent to another.'
+icon: 'people-arrows'
+tag: 'NEW'
+---
+
+A handoff lets an agent pass a call to another agent. A front desk agent can hand billing questions to a billing agent, which
+can hand the caller back when it's done. Each agent is built, tested and updated on its own, so different teams can own different
+parts of a conversation.
+
+When the model hands off, the call continues with the target agent's system prompt, voice, tools and other settings, starting
+from the conversation history you choose. You don't need to run a server to change stages, as you would with
+[call stages](/agents/call-stages).
+
+## When to Use Handoffs
+
+**Splitting Work Between Agents** → Give each part of a conversation its own agent with a focused prompt and only the tools it
+needs, such as triage, billing and scheduling.
+
+**Compacting Long Conversations** → An agent can hand off to itself, replacing a long conversation with a summary.
+
+## Defining a Handoff
+
+Handoffs are part of an agent's `callTemplate`. This front desk agent hands billing questions to a billing agent. The model fills
+in `{{issue}}` when it hands off, and `{{customerName}}` comes from the call's `templateContext`.
+
+```js
+{
+  "name": "Front Desk",
+  "callTemplate": {
+    "systemPrompt": "You are the front desk for Acme. Greet {{customerName}} and find out what they need.",
+    "handoffs": [
+      {
+        "name": "billing",
+        "description": "Hand off to the billing team when the customer asks about invoices, payments or refunds.",
+        "agentId": "8c1a3e9b-5d2f-4c7a-9e61-2b4f0d7c3a18",
+        "conversationHistory": {
+          "segments": {
+            "segments": [
+              {
+                "template": {
+                  "messages": [
+                    {
+                      "role": "MESSAGE_ROLE_USER",
+                      "text": "Hi, I'm {{customerName}}. I need help with {{issue}}."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `name` | The name of the tool the model uses to hand off. It must be unique among the agent's tools and handoffs. |
+| `description` | When the model should hand off. The model sees it as the tool's description. Required. |
+| `agentId` | The agent to hand off to. It must be published and belong to the same account. It may be the agent itself. An agent may define only one handoff per recipient agent. |
+| `conversationHistory` | The conversation history the target agent starts with. Required. See [Conversation History](#conversation-history). |
+| `toolResultText` | The text of the tool result message created when the model hands off. |
+
+The model sees each handoff as a tool. Handoffs aren't tools in the API, though, so a call's `toolOverrides` don't affect them.
+
+### Conversation History
+
+`conversationHistory` sets what the target agent starts with. It takes one of these:
+
+- **`{"retain": true}`** → Keep the whole conversation.
+- **`segments`** → Build the history from segments, in order. Each one is either a `slice` of the existing messages or a
+  `template` of new messages. A slice works like a Python slice: `{"start": -4}` keeps the last four messages. Templated messages
+  may use `{{variables}}`, and each one must set a `role`.
+
+A short summary is often better than the whole conversation, because the target agent then only has to follow what matters for
+its part. The existing messages end with the model's handoff tool call and its result, which uses `toolResultText` if it's set.
+
+### Template Variables
+
+The target agent's templates, such as its system prompt, are filled the same way as the templated history messages:
+
+- Variables the call's [`templateContext`](/agents/making-calls) has take their values from it.
+- The model generates the rest when it hands off. They appear to the model as the handoff tool's parameters, using the types in the
+  target agent's `contextSchema`.
+
+The target agent's tool `authTokens` are different: the model never generates them, so they always come from the call's
+`templateContext`. The default `contextSchema` of an agent requires the variables that the auth tokens of every agent it can reach
+through handoffs use. If you set `contextSchema` yourself, it must include them.
+
+## What Changes on a Handoff
+
+A handoff starts a new [call stage](/agents/call-stages). These settings come from the target agent:
+
+- `systemPrompt` and `temperature`
+- `voice`, `voiceOverrides` or `externalVoice`
+- `languageHint` and `transcriptionSettings`
+- `timeExceededMessage` and `inactivityMessages`
+- `selectedTools` and `handoffs`
+- `sharedSecrets`
+
+Settings the target agent doesn't set are left unset rather than kept from the previous agent. Everything else belongs to the call
+and comes from the agent the call started with. That includes `model`, `medium`, `firstSpeakerSettings`, `maxDuration`,
+`recordingEnabled`, `vadSettings` and `triggers`.
+
+<Warning>
+  <b>Things to Remember</b>
+
+  * The call keeps its model. The target agent's `model` is ignored.
+  * A handoff ends the call's [threads](/agents/threads), like any stage change.
+  * Use [`List Call Stages`](/api-reference/calls/calls-stages-list) to see each agent's part of a call.
+</Warning>
+
+## Compacting a Conversation
+
+A handoff to the agent itself continues the call with the same settings and a new conversation history. This one replaces the
+conversation with a summary the model writes, followed by the last four messages:
+
+```js
+{
+  "name": "compact",
+  "description": "Use this once the conversation has gone on for a long time, to continue with a summary of it.",
+  "agentId": "3f0b7d2e-91c4-4a5e-b8d6-7e2a1c9f4b30",
+  "conversationHistory": {
+    "segments": {
+      "segments": [
+        {
+          "template": {
+            "messages": [
+              {
+                "role": "MESSAGE_ROLE_USER",
+                "text": "<instruction>Summary of the conversation so far: {{summary}}</instruction>"
+              }
+            ]
+          }
+        },
+        { "slice": { "start": -4 } }
+      ]
+    }
+  }
+}
+```
+
+An agent's ID isn't known until the agent exists, so create the agent first and then add the handoff to itself.
+
+## Updating and Deleting Agents
+
+A call continues with the agent revisions that were published when it started, however many times it hands off. Updating or
+deleting an agent doesn't affect calls in progress.
+
+Publishing an agent also publishes a new revision of every agent that can reach it through handoffs, so new calls use the update
+right away. If one of those agents can't be updated, for example because its `contextSchema` lacks a variable that a tool auth
+token of the updated agent uses, the request fails with a `409` that lists those agents, and nothing is published.
+
+Deleting an agent that other agents hand off to fails with a `409` that lists those agents. Remove their handoffs first.
