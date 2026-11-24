@@ -93,6 +93,17 @@ Each trigger has:
 * **`sharedVariables`** → Optional. Variables this trigger shares with the call's other triggers that declare them, with their
   initial values. See [Shared Variables](#shared-variables).
 
+### In the Web App
+
+The [Triggers](https://app.ultravox.ai/triggers) page in the Ultravox web app creates and edits [global triggers](#global-triggers),
+showing each one as sentences. Here's the `clock` trigger above:
+
+<img className="block dark:hidden" src="/images/screenshots/triggers-clock-light.png" />
+<img className="hidden dark:block" src="/images/screenshots/triggers-clock-dark.png" />
+
+While editing, click a highlighted value to change it, or switch to the JSON tab to edit the definition directly. To give an agent
+triggers, open Triggers in the agent builder, where you can add global triggers or define triggers for that agent alone.
+
 ## How Triggers Run
 
 Triggers run shortly after their events, in the order the events occur. Their actions may interleave with other activity in the
