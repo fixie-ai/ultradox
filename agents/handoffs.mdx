@@ -79,6 +79,34 @@ The model sees each handoff as a tool. Handoffs aren't tools in the API, though,
 A short summary is often better than the whole conversation, because the target agent then only has to follow what matters for
 its part. The existing messages end with the model's handoff tool call and its result, which uses `toolResultText` if it's set.
 
+This history starts with a summary the model writes when it hands off, followed by the last 10 messages before the handoff. The
+slice ends at `-2` to leave out the handoff's tool call and its result:
+
+```js
+{
+  "conversationHistory": {
+    "segments": {
+      "segments": [
+        {
+          "template": {
+            "messages": [
+              {
+                "role": "MESSAGE_ROLE_USER",
+                "text": "<instructions>Here's a summary of the conversation so far: {{summary}}</instructions>"
+              }
+            ]
+          }
+        },
+        { "slice": { "start": -12, "end": -2 } }
+      ]
+    }
+  }
+}
+```
+
+The model fills in `{{summary}}` like any other [template variable](#template-variables). To keep the tool call and its result,
+use `{ "slice": { "start": -12 } }` instead.
+
 ### Template Variables
 
 The target agent's templates, such as its system prompt, are filled the same way as the templated history messages:
