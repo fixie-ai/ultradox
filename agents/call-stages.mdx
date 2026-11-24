@@ -14,6 +14,10 @@ Each stage can have a new system prompt, a different set of tools, a new voice, 
   Call stages require planning and careful implementation and are likely not required for simple use cases. Make sure to read [Guiding Agents](/agents/guiding-agents) before jumping into the deep end of stages.
 </Note>
 
+<Tip>
+  To pass a call from one agent to another without building a stage change tool, use [handoffs](/agents/handoffs).
+</Tip>
+
 ## Understanding Call Stages
 
 Call Stages ("Stages") provide a way to segment a conversation into distinct phases, each with its own system prompt and potentially different parameters. This enables interactions that can adapt and change focus as the conversation progresses.

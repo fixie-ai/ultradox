@@ -73,6 +73,7 @@
               "agents/threads",
               "agents/triggers",
               "agents/guiding-agents",
+              "agents/handoffs",
               "agents/call-stages",
               "agents/testing-and-debugging"
             ]
