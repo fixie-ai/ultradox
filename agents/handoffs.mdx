@@ -61,7 +61,7 @@ in `{{issue}}` when it hands off, and `{{customerName}}` comes from the call's `
 | --- | --- |
 | `name` | The name of the tool the model uses to hand off. It must be unique among the agent's tools and handoffs. |
 | `description` | When the model should hand off. The model sees it as the tool's description. Required. |
-| `agentId` | The agent to hand off to. It must be published and belong to the same account. It may be the agent itself. An agent may hand off to each agent only once. |
+| `agentId` | The agent to hand off to. It must be published and belong to the same account. It may be the agent itself. An agent may define only one handoff per recipient agent. |
 | `conversationHistory` | The conversation history the target agent starts with. Required. See [Conversation History](#conversation-history). |
 | `toolResultText` | The text of the tool result message created when the model hands off. |
 
