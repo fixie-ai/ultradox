@@ -173,9 +173,33 @@ const startDirectCall = async () => {
 };
 ```
 
-### Continuing a Prior Call
+## Continuing a Prior Call
 
-To continue a conversation from an earlier call, pass the earlier call's ID in the `priorCallId` query param. The prior call's message history becomes the new call's `initialMessages`, so you can't also set `initialMessages`. Everything else about the new call comes from the request body, just as if you were creating the call from scratch.
+To continue a conversation from an earlier call, pass the earlier call's ID in the `priorCallId` query param. The prior call's message history becomes the new call's `initialMessages`, so you can't also set `initialMessages`. Nothing else carries over. The prior call can come from any agent, or from a direct call.
+
+With an agent, everything else comes from the agent and the request body, as on any agent call:
+
+```js Example: Continuing a Prior Call with an Agent
+const continueWithAgent = async (agentId, priorCallId) => {
+  const response = await fetch(`https://api.ultravox.ai/api/agents/${agentId}/calls?priorCallId=${priorCallId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'your-api-key'
+    },
+    body: JSON.stringify({
+      metadata: {
+        continuation: "true",
+        originalCall: priorCallId
+      }
+    })
+  });
+
+  return await response.json();
+};
+```
+
+Direct calls take `priorCallId` too. Configure them fully, just as if you were creating the call from scratch:
 
 ```js Example: Using Prior Call ID
 const continueFromPriorCall = async (priorCallId) => {
