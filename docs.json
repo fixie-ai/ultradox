@@ -188,6 +188,7 @@
               "api-reference/agents/agents-delete",
               "api-reference/agents/agents-calls-list",
               "api-reference/agents/agents-calls-post",
+              "api-reference/agents/agents-incoming-handoffs-list",
               {
                 "group": "Scheduled Call Batches",
                 "expanded": true,

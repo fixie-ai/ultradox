@@ -183,4 +183,4 @@ Publishing an agent also publishes a new revision of every agent that can reach 
 right away. If one of those agents can't be updated, for example because its `contextSchema` lacks a variable that a tool auth
 token of the updated agent uses, the request fails with a `409` that lists those agents, and nothing is published.
 
-Deleting an agent that other agents hand off to fails with a `409` that lists those agents. Remove their handoffs first.
+Deleting an agent that other agents hand off to fails with a `409` that lists those agents. Remove their handoffs first. [List Incoming Handoffs](/api-reference/agents/agents-incoming-handoffs-list) shows which agents hand off to an agent.
