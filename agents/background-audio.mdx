@@ -64,7 +64,9 @@ With the API, set `backgroundAudio` in the agent's `callTemplate`, naming the cl
 }
 ```
 
-`volume` is relative to the agent's voice, from 0 to 10. It defaults to 0.3, which keeps the background well below the agent.
+`volume` multiplies the clip's samples, from 0 to 10. 1 plays the clip as recorded, and the default of 0.3 plays it at 30% of
+its recorded amplitude. Values above 1 amplify the clip, and any sample pushed past the maximum level is clipped, which distorts
+the sound.
 
 Ultravox stores the clip's ID, so renaming a clip doesn't affect the agents that use it.
 
