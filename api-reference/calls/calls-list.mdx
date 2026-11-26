@@ -10,7 +10,7 @@ description: "Returns details for all calls"
 - **Call ID search:** A `search` by call ID finds the call whatever its age.
 
 ## Rate Limit
-Listing calls is limited to 60 requests a minute per account. API keys and the Ultravox console have separate budgets. Past the limit, requests return `429` with a `Retry-After` header. See [Call Listing Limits](/api-reference/introduction#call-listing-limits).
+Listing calls is limited to 60 requests a minute per account, shared by all of the account's API keys. Past the limit, requests return `429` with a `Retry-After` header. See [Call Listing Limits](/api-reference/introduction#call-listing-limits).
 
 To stay under the limit:
 - **Narrow the range.** Ask only for the calls you need with `fromDate` and `toDate`, for example only calls since your last sync.
