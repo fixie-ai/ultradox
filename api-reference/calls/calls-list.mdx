@@ -5,7 +5,7 @@ description: "Returns details for all calls"
 ---
 
 ## Date Range
-- **Default:** Without `fromDate`, the list covers the 30 days before `toDate`, or before now when `toDate` is also omitted. Set `fromDate` to list older calls.
+- **Default:** Without `fromDate`, the list covers the 7 days before `toDate`, or before now when `toDate` is also omitted. Set `fromDate` to list older calls.
 - **Maximum:** `fromDate` to `toDate` (or now) can span at most 90 days. A wider range returns `400`. To read further back, make several requests with consecutive ranges.
 - **Call ID search:** A `search` by call ID finds the call whatever its age.
 
