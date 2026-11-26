@@ -126,6 +126,30 @@ Here's an example of how to do that with an exponential backoff + retry handling
   </Tab>
 </Tabs>
 
+### Reserving Capacity for Other Calls
+If some of your calls matter more than others, you can keep the less important ones from using all of your account's capacity. Set the `quotaUtilizationLimit` query parameter on [Create Call](/api-reference/calls/calls-post) or [Create Agent Call](/api-reference/agents/agents-calls-post) to the fraction of your quota (greater than 0 and at most 1) that the call may use. Calls without a limit can use all of it.
+
+For example, set `quotaUtilizationLimit=0.7` on your outbound calls and leave it unset on your inbound calls. Outbound calls then leave about 30% of your account's capacity for inbound calls.
+
+```js Example: Limiting an Outbound Call
+const response = await fetch(`https://api.ultravox.ai/api/agents/${agentId}/calls?quotaUtilizationLimit=0.7`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your-api-key'
+  },
+  body: JSON.stringify({
+    medium: { twilio: { outgoing: { to: '+15551234567', from: '+15559876543' } } }
+  })
+});
+```
+
+* **Your quota moves with load** → Your account's capacity shrinks as overall load on the system rises, and a call with a limit backs off sooner than one without. So a limited call may get a 429 while calls without a limit are still accepted.
+* **Priority concurrency** → A limited call gets priority only while your account is below that fraction of its priority calls. With 100 priority calls and a limit of 0.7, that's the first 70.
+* **Always a 429** → A call with a limit that can't be created for lack of capacity always gets a 429, never a 503, even when it has priority. Retry it after the `Retry-After` delay as usual.
+* **Per model** → Your account's calls are counted separately for each model, so a limit only holds back calls that use the same model as the calls you're reserving room for.
+* **Hard caps** → Accounts with a [hard concurrency cap](#hard-concurrency-caps) can't set a limit. Requests that do get a 400.
+
 ### Outbound Call Scheduler
 Set it and forget it. You don't have to sweat the load or keep track of 429s. Leave that to us. Available to all accounts with a paid subscription. See [Outbound Call Scheduler](/telephony/outbound-call-scheduler) to get started.
 
