@@ -51,6 +51,10 @@ Outbound Call Scheduler eliminates the complexity of managing outbound call camp
 Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-post) API to upload your call batch.
 
 ### Batch Parameters
+<ParamField body="name" type="string">
+  Optional. A name to help you identify the batch, up to 64 characters.
+</ParamField>
+
 <ParamField body="windowStart" type="string" format="date-time">
   Optional. The earliest time when calls in this batch can be initiated. If unset, calls will start immediately.
 </ParamField>
@@ -67,6 +71,12 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
 
 <ParamField body="webhookSecret" type="string">
   Optional. Secret for webhook request verification.
+</ParamField>
+
+<ParamField body="quotaUtilizationLimit" type="number">
+  Optional. The fraction of your account's call quota (greater than 0 and at most 1) that calls in this batch may use,
+  leaving the rest for your other calls. Defaults to your account's batch limit, which is 0.9 unless changed.
+  See [Reserving Capacity](#reserving-capacity).
 </ParamField>
 
 <ParamField body="calls" type="array" required>
@@ -86,6 +96,7 @@ Use the [Create Scheduled Batch](/api-reference/agents/agents-scheduled-batches-
 
     ```js Example: Creating a Scheduled Batch
     {
+      "name": "Appointment reminders",
       "windowStart": "2025-09-25T09:00:00Z",
       "windowEnd": "2025-09-25T17:00:00Z",
       "calls": [
@@ -174,6 +185,8 @@ Use [Get Scheduled Batch](/api-reference/agents/agents-scheduled-batches-get) to
 ```js Response Example
 {
   "batchId": "uuid",
+  "name": "Appointment reminders",
+  "quotaUtilizationLimit": null,
   "totalCount": 1000,
   "completedCount": 750,
   "windowStart": "2024-01-15T09:00:00Z",
@@ -212,6 +225,14 @@ Use [Update Scheduled Batch](/api-reference/agents/agents-scheduled-batches-patc
   Once paused, batches cannot currently be resumed. Pausing effectively stops processing without deleting the batch.
 </Warning>
 
+You can also rename a batch, or change its `quotaUtilizationLimit` while it runs:
+
+```js Lower a Running Batch's Limit
+{
+  "quotaUtilizationLimit": 0.5
+}
+```
+
 ### Delete a Batch
 Use [Delete Scheduled Batch](/api-reference/agents/agents-scheduled-batches-delete) to remove a batch entirely.
 
@@ -221,6 +242,18 @@ Use [Delete Scheduled Batch](/api-reference/agents/agents-scheduled-batches-dele
 - **Call Count**: No specific limit on number of calls per batch
 - **Request Size**: Maximum 32MB per batch request
 - **Multiple Batches**: Create additional batches if your request size is > 32MB
+
+### Reserving Capacity
+By default, a batch leaves about 10% of your account's capacity for calls it doesn't make, such as inbound calls. Set
+`quotaUtilizationLimit` to change how much it may use.
+
+- **Shared between batches** → The limit scales your whole quota and counts all of your account's calls on the same
+  model, not just this batch's. Two batches on one model that each set 0.3 share about 30% of your quota between them
+  (roughly 15% each), not 30% each.
+- **Longer windows** → With priority concurrency, a lower limit means fewer calls at once, so it raises the minimum
+  window the batch needs. A `windowEnd` that's too close gets the same 400 error with the estimated minimum window.
+
+For calls you create yourself, see [Reserving Capacity for Other Calls](/gettingstarted/concurrency#reserving-capacity-for-other-calls).
 
 ### Time Windows
 - Calls will only be processed during the specified window
