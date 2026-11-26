@@ -3,3 +3,16 @@ openapi: get /api/calls
 title: "List Calls"
 description: "Returns details for all calls"
 ---
+
+## Date Range
+- **Default:** Without `fromDate`, the list covers the 7 days before `toDate`, or before now when `toDate` is also omitted. Set `fromDate` to list older calls.
+- **Maximum:** `fromDate` to `toDate` (or now) can span at most 90 days. A wider range returns `400`. To read further back, make several requests with consecutive ranges.
+- **Call ID search:** A `search` by call ID finds the call whatever its age.
+
+## Rate Limit
+Listing calls is limited to 60 requests a minute per account, shared by all of the account's API keys. Past the limit, requests return `429` with a `Retry-After` header. See [Call Listing Limits](/api-reference/introduction#call-listing-limits).
+
+To stay under the limit:
+- **Narrow the range.** Ask only for the calls you need with `fromDate` and `toDate`, for example only calls since your last sync.
+- **Poll less often.** Polling faster than new calls arrive returns the same calls again.
+- **Use webhooks for new calls.** Subscribe to [`call.started` and `call.ended`](/webhooks/available-webhooks) instead of polling this list to find out when calls arrive or finish.

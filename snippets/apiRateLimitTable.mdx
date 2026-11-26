@@ -19,3 +19,6 @@ In addition to the overall [API limits](#api-limits) above, we place additional 
 | Scale (deprecated) | 30   | 360        |
 
 > _Call creation is limited by whichever threshold is reached first (per second or per minute)._
+
+### Call Listing Limits
+In addition to the overall [API limits](#api-limits) above, [List Calls](/api-reference/calls/calls-list) is limited to 60 requests a minute per account, shared by all of the account's API keys. Each request covers at most 90 days of calls. See [List Calls](/api-reference/calls/calls-list) for how to stay within these limits.
