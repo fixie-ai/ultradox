@@ -1,0 +1,87 @@
+---
+title: 'Background Audio'
+description: 'Play a sound behind the agent, such as office chatter, for the whole call.'
+icon: 'waveform-lines'
+tag: 'NEW'
+---
+
+Background audio plays an audio clip behind the agent's voice for the duration of a call. A little ambient noise, such as a busy
+office or a humming air conditioner, can make an agent sound like it's somewhere real rather than in a silent studio.
+
+The clip loops for the whole call. It plays under the agent's speech and continues while nobody is talking.
+
+## Audio Clips
+
+Background audio comes from an audio clip. Ultravox provides three built-in clips: `office`, `hvac` and `birds`. You can also
+upload up to 5 of your own. Clips you upload are private to your account.
+
+An uploaded clip must be:
+* An uncompressed (PCM) WAV file
+* Mono, with 16-bit samples
+* Sampled between 16kHz and 48kHz
+* At most 60 seconds long, and at most 6MB
+
+Ultravox keeps only the audio and its format from the file you upload, dropping other metadata. A clip's audio can't be
+changed after upload. To replace it, delete the clip and upload a new one.
+
+### In the Web App
+
+The [Audio Clips](https://app.ultravox.ai/audio-clips) page in the Ultravox web app lists your clips and the built-in ones. You can
+play any of them, upload a new clip, or delete one of yours.
+
+### With the API
+
+Upload a clip with [Create Audio Clip](/api-reference/audio-clips/audio-clips-post). Its name must be unique within your account:
+
+```bash
+curl --request POST https://api.ultravox.ai/api/audio_clips \
+  --header 'X-API-Key: YOUR_API_KEY' \
+  --form 'file=@"/path/to/my_office.wav"' \
+  --form 'name=my_office' \
+  --form 'description=Background chatter recorded in our office'
+```
+
+[List Audio Clips](/api-reference/audio-clips/audio-clips-list) returns your clips and the built-in ones, newest first, and
+[Get Audio Clip Audio](/api-reference/audio-clips/audio-clips-audio-get) downloads a clip's audio.
+
+## Adding Background Audio to an Agent
+
+In the [agent builder](https://app.ultravox.ai/agents), open the settings panel and choose a clip under **Background Audio**. You
+can preview the clip there and adjust its volume.
+
+With the API, set `backgroundAudio` in the agent's `callTemplate`, naming the clip by its name or ID:
+
+```js
+{
+  "name": "front_desk",
+  "callTemplate": {
+    "systemPrompt": "You are a friendly receptionist...",
+    "backgroundAudio": {
+      "audioClip": "office",
+      "volume": 0.3
+    }
+  }
+}
+```
+
+`volume` multiplies the clip's samples, from 0 to 10. 1 plays the clip as recorded, and the default of 0.3 plays it at 30% of
+its recorded amplitude. Values above 1 amplify the clip, and any sample pushed past the maximum level is clipped, which distorts
+the sound.
+
+Ultravox stores the clip's ID, so renaming a clip doesn't affect the agents that use it.
+
+## Calls
+
+Calls created with an agent use the agent's background audio. To change it for a single call, set `backgroundAudio` when
+[creating the call](/agents/making-calls#overriding-agent-settings). The call's value replaces the agent's.
+
+Calls created directly, without an agent, take the same `backgroundAudio` field in the
+[Create Call](/api-reference/calls/calls-post) request.
+
+Background audio needs a voice call. Creating an agent or call that sets `backgroundAudio` returns a 400 error when its
+[medium restriction](/agents/making-calls#settings-that-require-voice) doesn't allow voice.
+
+## Deleting a Clip
+
+Deleting a clip you uploaded also removes it from the agents that use it, and their new calls play no background audio. Choose a
+different clip for those agents if you still want one.

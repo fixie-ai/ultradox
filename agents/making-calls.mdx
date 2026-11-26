@@ -71,7 +71,7 @@ When starting a call with an agent, you can override specific settings from the 
 | `toolOverrides` | Changes to the agent's [tools](/tools/custom/changing-call-state#updating-tools) | Object | `{ remove: ["lookup"] }` |
 | `retentionPolicy` | How long to keep the call's data after it ends | String | `"CALL_RETENTION_POLICY_AUTO_DELETE"` |
 | `sharedSecrets` | Secrets for [signing outbound requests](/apps/securing-data-connections) | Array | `["your-secret"]` |
-| `backgroundAudio` | Audio played behind the agent's voice | Object | `{ audioClip: "office", volume: 0.3 }` |
+| `backgroundAudio` | [Audio](/agents/background-audio) played behind the agent's voice | Object | `{ audioClip: "office", volume: 0.3 }` |
 | `admissionPreference` | Whether to prioritize the call or minimize its cost | String | `"CALL_ADMISSION_PREFERENCE_LOWEST_COST"` |
 | `mediumRestriction` | Limit the call to voice or text | Object | `{ allowedMediums: ["MESSAGE_MEDIUM_TEXT"] }` |
 | `additionalModels` | Models the call's [threads](/agents/threads) may use. Replaces the agent's list | Array | `["model-name"]` |

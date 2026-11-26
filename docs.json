@@ -74,6 +74,7 @@
               "agents/triggers",
               "agents/guiding-agents",
               "agents/handoffs",
+              "agents/background-audio",
               "agents/call-stages",
               "agents/testing-and-debugging"
             ]
@@ -203,6 +204,18 @@
                   "api-reference/agents/agents-scheduled-batches-scheduled-calls-list"
                 ]
               }
+            ]
+          },
+          {
+            "group": "Audio Clips",
+            "pages": [
+              "api-reference/audio-clips/audio-clips-list",
+              "api-reference/audio-clips/audio-clips-get",
+              "api-reference/audio-clips/audio-clips-post",
+              "api-reference/audio-clips/audio-clips-put",
+              "api-reference/audio-clips/audio-clips-patch",
+              "api-reference/audio-clips/audio-clips-delete",
+              "api-reference/audio-clips/audio-clips-audio-get"
             ]
           },
           {
